@@ -170,7 +170,7 @@ study_2/
     ├── s2_jags_ges_ttest.rds
     ├── s2_jags_hearing_ttest_by_freq.rds
     └── s2_jags_hearing_ttest_overall.rds
-
+```
 
 ### **Study 1: Dyadic button-press task**
 
