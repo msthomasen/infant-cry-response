@@ -1,0 +1,475 @@
+---
+title: "s1_hearing_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_1_path <- file.path(main_path, "study_1")
+results_path <- file.path(study_1_path, "results")
+models_path <- file.path(main_path, "models")
+
+bp <- 15
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+hearing_trials_clean <- read_csv(file.path(data_path, "hearing_trials_clean.csv"), show_col_types = FALSE)
+hearing_clean <- read_csv(file.path(data_path, "hearing_clean.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+```
+
+```{r}
+# Restrict to the Study 1 analytic sample
+dem_analytic <- demographics %>%
+  filter(!excluded, setup == "COOP")
+
+hearing_participants <- hearing_clean %>%
+  filter(!excluded, setup == "COOP")
+
+hearing_trials_analytic <- hearing_trials_clean %>%
+  filter(!excluded, setup == "COOP")
+```
+
+```{r}
+## Hearing-test availability and participant-level descriptives
+
+hearing_availability <- dem_analytic %>%
+  dplyr::select(
+    id,
+    participant.code,
+    gender,
+    age
+  ) %>%
+  distinct() %>%
+  left_join(
+    hearing_participants %>%
+      dplyr::select(
+        id,
+        participant.code,
+        mean_threshold,
+        mean_amplitude,
+        n_missing_threshold
+      ) %>%
+      distinct() %>%
+      mutate(hearing_test_available = TRUE),
+    by = c("id", "participant.code")
+  ) %>%
+  mutate(
+    hearing_test_available =
+      replace_na(hearing_test_available, FALSE)
+  )
+
+# Hearing-test availability: overall
+hearing_availability %>%
+  summarise(
+    n_total = n(),
+    n_hearing_test_available =
+      sum(hearing_test_available),
+    prop_hearing_test_available =
+      mean(hearing_test_available),
+    percent_hearing_test_available =
+      100 * mean(hearing_test_available)
+  )
+
+# Hearing-test availability: by gender
+hearing_availability %>%
+  group_by(gender) %>%
+  summarise(
+    n_total = n(),
+    n_hearing_test_available =
+      sum(hearing_test_available),
+    prop_hearing_test_available =
+      mean(hearing_test_available),
+    percent_hearing_test_available =
+      100 * mean(hearing_test_available),
+    .groups = "drop"
+  )
+```
+
+```{r}
+# Participants with at least one observed hearing threshold
+hearing_descriptive_sample <- hearing_availability %>%
+  filter(
+    hearing_test_available,
+    !is.na(mean_threshold),
+    !is.na(mean_amplitude)
+  )
+
+# Hearing descriptives: overall
+hearing_descriptive_sample %>%
+  summarise(
+    n_participants = n(),
+
+    mean_hearing_threshold =
+      mean(mean_threshold, na.rm = TRUE),
+    sd_threshold =
+      sd(mean_threshold, na.rm = TRUE),
+
+    mean_hearing_amplitude =
+      mean(mean_amplitude, na.rm = TRUE),
+    sd_amplitude =
+      sd(mean_amplitude, na.rm = TRUE),
+
+    mean_missing_threshold =
+      mean(n_missing_threshold, na.rm = TRUE),
+    sd_missing_threshold =
+      sd(n_missing_threshold, na.rm = TRUE)
+  )
+
+# Hearing descriptives: by gender
+hearing_descriptive_sample %>%
+  group_by(gender) %>%
+  summarise(
+    n_participants = n(),
+
+    mean_hearing_threshold =
+      mean(mean_threshold, na.rm = TRUE),
+    sd_threshold =
+      sd(mean_threshold, na.rm = TRUE),
+
+    mean_hearing_amplitude =
+      mean(mean_amplitude, na.rm = TRUE),
+    sd_amplitude =
+      sd(mean_amplitude, na.rm = TRUE),
+
+    mean_missing_threshold =
+      mean(n_missing_threshold, na.rm = TRUE),
+    sd_missing_threshold =
+      sd(n_missing_threshold, na.rm = TRUE),
+
+    .groups = "drop"
+  )
+```
+
+```{r}
+# Participant IDs for everyone who completed the hearing test
+valid_hearing_participants <- hearing_availability %>%
+  filter(hearing_test_available) %>%
+  dplyr::select(
+    id,
+    participant.code
+  ) %>%
+  distinct()
+
+# Trial-level data for the full hearing-test sample
+hearing_trials_model <- hearing_trials_analytic %>%
+  semi_join(
+    valid_hearing_participants,
+    by = c("id", "participant.code")
+  )
+```
+
+
+```{r}
+# Trial-level censoring
+hearing_trials_model %>%
+  mutate(censored = is.na(threshold)) %>%
+  summarise(
+    trials_total = n(),
+    trials_censored = sum(censored),
+    prop_censored = mean(censored)
+  )
+
+hearing_trials_model %>%
+  mutate(censored = is.na(threshold)) %>%
+  group_by(gender) %>%
+  summarise(
+    trials_total = n(),
+    trials_censored = sum(censored),
+    prop_censored = mean(censored),
+    .groups = "drop"
+  )
+
+hearing_trials_model %>%
+  mutate(censored = is.na(threshold)) %>%
+  group_by(gender, freq_Hz) %>%
+  summarise(
+    prop_censored = mean(censored),
+    .groups = "drop") %>%
+  ggplot(
+    aes(freq_Hz, prop_censored, colour = gender)) +
+  geom_line() +
+  geom_point() +
+  scale_x_log10(
+    breaks = c(200, 500, 1000, 2000, 4000, 8000)) +
+  theme_minimal() +
+  labs(
+    title = "Study 1: proportion censored by frequency",
+    x = "Frequency (Hz)",
+    y = "Proportion censored")
+```
+
+```{r}
+# Descriptive plots
+hearing_trials_model %>%
+  filter(!is.na(threshold)) %>%
+  group_by(gender, ear, freq_Hz) %>%
+  summarise(
+    mean_threshold = mean(threshold),
+    se = sd(threshold) / sqrt(n()),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(freq_Hz, mean_threshold, colour = ear)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = mean_threshold - se, ymax = mean_threshold + se), width = 0.05) +
+  scale_x_log10(breaks = c(200, 500, 1000, 2000, 4000, 8000)) +
+  facet_grid(. ~ gender) +
+  theme_minimal() +
+  labs(
+    title = "Study 1: mean threshold by frequency and gender",
+    x = "Frequency (Hz)",
+    y = "Mean threshold"
+  )
+
+hearing_trials_model %>%
+  filter(!is.na(threshold)) %>%
+  ggplot(aes(threshold, fill = gender)) +
+  geom_density(alpha = .4) +
+  theme_minimal() +
+  labs(title = "Study 1: observed threshold density")
+```
+
+```{r}
+# Data preparation for JAGS models
+# Gender coding used in JAGS:
+# 1 = Male
+# 2 = Female
+participants_all <- hearing_trials_model %>%
+  filter(!is.na(gender)) %>%
+  distinct(id, position, gender) %>%
+  unite("person_id", c(id, position), remove = FALSE) %>%
+  arrange(person_id) %>%
+  mutate(ID = row_number())
+
+frequencies <- hearing_trials_model %>%
+  distinct(freq_Hz) %>%
+  arrange(freq_Hz) %>%
+  mutate(freq_ID = row_number())
+
+n_freq <- nrow(frequencies)
+
+Y_all <- hearing_trials_model %>%
+  filter(!is.na(gender)) %>%
+  unite("person_id", c(id, position), remove = FALSE) %>%
+  left_join(participants_all %>% dplyr::select(person_id, ID), by = "person_id") %>%
+  left_join(frequencies, by = "freq_Hz") %>%
+  mutate(
+    gender = ifelse(gender == "Male", 1L, 2L),
+    ear = ifelse(ear == "LEFT", 1L, 2L)
+  ) %>%
+  transmute(
+    ID = as.integer(ID),
+    gender = as.integer(gender),
+    freq_ID = as.integer(freq_ID),
+    ear = as.integer(ear),
+    threshold = as.numeric(threshold)
+  ) %>%
+  arrange(ID, freq_ID, ear)
+
+p_info <- participants_all %>%
+  transmute(
+    ID = as.integer(ID),
+    gender = as.integer(ifelse(gender == "Male", 1L, 2L))
+  ) %>%
+  arrange(ID)
+
+# Missing trial thresholds indicate no response within the tested range and are treated as censored at the upper boundary BP = 15
+cens <- as.numeric(is.na(Y_all$threshold))
+Y_mat <- as.matrix(Y_all)
+storage.mode(Y_mat) <- "double"
+p_info_mat <- as.matrix(p_info)
+storage.mode(p_info_mat) <- "double"
+storage.mode(cens) <- "double"
+
+data_list_all <- list(
+  Y = Y_mat,
+  cens = cens,
+  BP = bp,
+  p_info = p_info_mat,
+  n_freq = n_freq
+)
+```
+
+```{r}
+# Overall hearing model
+params <- c(
+  "mu", "delta", "a", "sigma", "mu_gender", "mu_i",
+  "mu_prior", "delta_prior", "sigma_prior", "a_prior", "mu_gender_prior"
+)
+
+samples_path <- file.path(results_path, "s1_jags_hearing_ttest_overall.rds")
+
+if (file.exists(samples_path)) {
+  samples_all <- readRDS(samples_path)
+} else {
+  samples_all <- jags.parallel(
+    data = data_list_all,
+    inits = NULL,
+    parameters.to.save = params,
+    model.file = file.path(models_path, "t-test_Hearing.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1
+  )
+  saveRDS(samples_all, samples_path)
+}
+
+samples_all
+```
+
+```{r}
+# Bayes factor for overall gender effect
+s_all <- as.matrix(as.mcmc(samples_all))
+delta_draws_all <- s_all[, "delta"]
+
+d_post <- density(delta_draws_all)
+post_at_0 <- approx(d_post$x, d_post$y, xout = 0)$y
+prior_at_0 <- dt(0, df = 1)
+
+bf01_all <- post_at_0 / prior_at_0
+bf01_all
+
+plot_prior_posterior(
+  draws = s_all,
+  posterior_name = "delta",
+  prior_name = "delta_prior",
+  xlab = "Standardised female − male threshold difference",
+  vline = 0,
+  title = "Study 1 prior vs posterior: overall hearing gender effect",
+  central_prob = 0.95
+)
+```
+
+```{r}
+# Posterior group means
+mu_m_all <- s_all[, "mu_gender[1]"]
+mu_w_all <- s_all[, "mu_gender[2]"]
+
+tibble(Male = mu_m_all, Female = mu_w_all) %>%
+  pivot_longer(everything(), names_to = "group", values_to = "mu") %>%
+  ggplot(aes(mu, fill = group)) +
+  geom_density(alpha = .4) +
+  theme_minimal() +
+  labs(title = "Study 1 posterior group means")
+```
+
+```{r}
+# By-frequency model
+samples_path_indf <- file.path(results_path, "s1_jags_hearing_ttest_by_freq.rds")
+
+if (file.exists(samples_path_indf)) {
+  samples_all_indf <- readRDS(samples_path_indf)
+} else {
+  samples_all_indf <- jags.parallel(
+    data = data_list_all,
+    inits = NULL,
+    parameters.to.save = c(
+      "mu", "delta", "a", "sigma",
+      "mu_prior", "delta_prior", "sigma_prior", "a_prior", "mu_gender_prior"
+    ),
+    model.file = file.path(models_path, "t-test_Hearing_by_frequency.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1
+  )
+  saveRDS(samples_all_indf, samples_path_indf)
+}
+
+samples_all_indf
+
+s_indf <- as.matrix(as.mcmc(samples_all_indf))
+delta_cols <- grep("^delta\\[", colnames(s_indf), value = TRUE)
+
+posterior_delta <- as_tibble(s_indf) %>%
+  dplyr::select(all_of(delta_cols)) %>%
+  pivot_longer(everything(), names_to = "name", values_to = "value") %>%
+  mutate(freq_ID = as.integer(str_extract(name, "\\d+"))) %>%
+  left_join(
+    frequencies,
+    by = "freq_ID")
+
+posterior_delta %>%
+  ggplot(aes(value, colour = factor(freq_Hz))) +
+  geom_density() +
+  geom_vline(xintercept = 0, linetype = 3) +
+  theme_minimal() +
+  labs(title = "Study 1 frequency-specific gender effects",
+       x = "female-male threshold difference",
+       colour = "Frequency (Hz)")
+```
+
+```{r}
+for (col in delta_cols) {
+  draws <- s_indf[, col]
+  d_post <- density(draws)
+  post_at_0 <- approx(d_post$x, d_post$y, xout = 0)$y
+  prior_at_0 <- dt(0, df = 1)
+  bf01 <- post_at_0 / prior_at_0
+
+  freq_id <- as.integer(str_extract(col, "\\d+"))
+  freq_hz <- frequencies$freq_Hz[frequencies$freq_ID == freq_id]
+
+  cat(paste0(freq_hz, " Hz: BF01 ~ ", round(bf01, 2), "\n"))
+}
+
+freq_labels <- frequencies %>%
+  arrange(freq_ID) %>%
+  pull(freq_Hz)
+
+
+hearing_prior_post_freq <- map_dfr(seq_along(freq_labels), function(i) {
+  tibble(
+    value = c(
+      s_indf[, paste0("delta[", i, "]")],
+      s_indf[, paste0("delta_prior[", i, "]")]),
+    distribution = rep(
+      c("posterior", "prior"),
+      each = nrow(s_indf)),
+    freq_Hz = factor(
+      freq_labels[i],
+      levels = freq_labels))})
+
+p_hearing_prior_post_freq <-
+  ggplot(
+    hearing_prior_post_freq %>%
+      filter(value >= -6, value <= 6),
+    aes(
+      x = value,
+      colour = distribution,
+      fill = distribution)) +
+  geom_density(
+    alpha = 0.25,
+    linewidth = 0.7) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 3) +
+  facet_wrap(
+    ~ freq_Hz,
+    ncol = 3,
+    labeller = labeller(
+      freq_Hz = function(x) paste0(x, " Hz"))) +
+  theme_minimal(base_size = 12) +
+  labs(
+    title = "Study 1 prior vs posterior: hearing gender effect by frequency",
+    x = "Standardised female − male threshold difference",
+    y = "Density",
+    colour = NULL,
+    fill = NULL) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"))
+
+p_hearing_prior_post_freq
+```

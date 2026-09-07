@@ -1,0 +1,111 @@
+---
+title: "s1_01_sample_description"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+dyad_info <- read_csv(file.path(data_path, "dyad_info.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+hearing_clean <- read_csv(file.path(data_path, "hearing_clean.csv"), show_col_types = FALSE)
+ges_summary <- read_csv(file.path(data_path, "ges_summary.csv"), show_col_types = FALSE)
+
+excluded_coop_ids <- demographics %>%
+  filter(setup == "COOP", excluded) %>%
+  distinct(id)
+
+```
+
+## Full Study 1 sample (before exclusions)
+
+```{r}
+dem_coop_full <- demographics %>%
+  filter(setup == "COOP")
+
+dem_coop_full %>%
+  summarise(
+    n_participants = n(),
+    n_unique_ids = n_distinct(id),
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE),
+    n_female = sum(gender == "Female", na.rm = TRUE),
+    n_male = sum(gender == "Male", na.rm = TRUE),
+    language_danish = sum(language == "Danish", na.rm = TRUE),
+    language_other = sum(language == "Other", na.rm = TRUE),
+    is_parent = sum(parent == "Yes", na.rm = TRUE),
+    have_experience = sum(experience == "Yes", na.rm = TRUE),
+    regular_exposure = sum(regular == "Yes", na.rm = TRUE)
+  )
+
+dem_coop_full %>%
+  count(id, name = "n_people_in_id") %>%
+  count(n_people_in_id)
+
+```
+
+## Analytic Study 1 sample (after exclusions)
+
+```{r}
+dem_coop_analytic <- demographics %>%
+  filter(setup == "COOP", !excluded)
+
+dyad_info_analytic <- dyad_info %>%
+  filter(!excluded_dyad)
+```
+
+```{r}
+dem_coop_analytic %>%
+  summarise(
+    n_participants = n(),
+    n_dyads = n_distinct(id),
+    n_valid_mixed_gender = sum(dyad_info_analytic$valid_mixed_gender_dyad, na.rm = TRUE),
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE),
+    n_female = sum(gender == "Female", na.rm = TRUE),
+    n_male = sum(gender == "Male", na.rm = TRUE),
+    language_danish = sum(language == "Danish", na.rm = TRUE),
+    language_other = sum(language == "Other", na.rm = TRUE),
+    is_parent = sum(parent == "Yes", na.rm = TRUE),
+    have_experience = sum(experience == "Yes", na.rm = TRUE),
+    regular_exposure = sum(regular == "Yes", na.rm = TRUE)
+  )
+
+dem_coop_analytic %>%
+  count(id, name = "n_people_in_id") %>%
+  count(n_people_in_id)
+
+dem_coop_analytic %>%
+  group_by(gender) %>%
+  summarise(
+    n_participants = n(),
+    n_unique_ids = n_distinct(id),
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE),
+    language_danish = sum(language == "Danish", na.rm = TRUE),
+    language_other = sum(language == "Other", na.rm = TRUE),
+    is_parent = sum(parent == "Yes", na.rm = TRUE),
+    have_experience = sum(experience == "Yes", na.rm = TRUE),
+    regular_exposure = sum(regular == "Yes", na.rm = TRUE),
+    .groups = "drop"
+  )
+
+```
+
+
+## Excluded Study 1 participants
+
+```{r}
+demographics %>%
+  filter(setup == "COOP", excluded) %>%
+  select(id, participant.code, gender, position, setup, age, parent) %>%
+  distinct() %>%
+  arrange(id, position)
+```

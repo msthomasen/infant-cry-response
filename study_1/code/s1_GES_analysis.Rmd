@@ -1,0 +1,219 @@
+---
+title: "s1_GES_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(psych)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_1_path <- file.path(main_path, "study_1")
+
+set.seed(7386)
+
+ges_summary <- read_csv(file.path(data_path, "ges_summary.csv"), show_col_types = FALSE)
+ges_long_clean <- read_csv(file.path(data_path, "ges_long_clean.csv"), show_col_types = FALSE)
+```
+
+```{r}
+# Restrict to the Study 1 analytic sample
+ges_study <- ges_summary %>%
+  filter(!excluded, setup == "COOP")
+```
+
+```{r}
+# GES availability and participant-level descriptives
+
+ges_availability <- ges_study %>%
+  dplyr::select(
+    id,
+    participant.code,
+    gender,
+    ges_score
+  ) %>%
+  distinct() %>%
+  mutate(
+    ges_available = !is.na(ges_score)
+  )
+
+# GES availability: overall
+ges_availability %>%
+  summarise(
+    n_total = n(),
+    n_ges_available = sum(ges_available),
+    prop_ges_available = mean(ges_available),
+    percent_ges_available =
+      100 * mean(ges_available)
+  )
+
+# GES availability: by gender
+ges_availability %>%
+  group_by(gender) %>%
+  summarise(
+    n_total = n(),
+    n_ges_available = sum(ges_available),
+    prop_ges_available = mean(ges_available),
+    percent_ges_available =
+      100 * mean(ges_available),
+    .groups = "drop"
+  )
+
+# Participants with valid GES scores
+ges_descriptive_sample <- ges_availability %>%
+  filter(ges_available)
+
+# GES descriptives: overall
+ges_descriptive_sample %>%
+  summarise(
+    n_participants = n(),
+    ges_mean = mean(ges_score),
+    ges_sd = sd(ges_score)
+  )
+
+# GES descriptives: by gender
+ges_descriptive_sample %>%
+  group_by(gender) %>%
+  summarise(
+    n_participants = n(),
+    ges_mean = mean(ges_score),
+    ges_sd = sd(ges_score),
+    .groups = "drop"
+  )
+```
+
+```{r}
+# Distribution plots
+ges_descriptive_sample  %>%
+  ggplot(aes(x = gender, y = ges_score, fill = gender)) +
+  geom_violin(trim = FALSE, alpha = 0.3) +
+  geom_jitter(width = 0.08, alpha = 0.4) +
+  stat_summary(fun = mean, geom = "point", size = 2) +
+  theme_minimal() +
+  labs(
+    title = "Study 1 GES by gender",
+    x = NULL,
+    y = "GES (mean item score)"
+  )
+```
+## Paired gender comparison
+```{r}
+ges_paired <- ges_descriptive_sample %>%
+  filter(gender %in% c("Female", "Male")) %>%
+  dplyr::select(id, gender, ges_score) %>%
+  pivot_wider(names_from = gender, values_from = ges_score) %>%
+  filter(!is.na(Female), !is.na(Male)) %>%
+  mutate(ges_difference_female_male = Female - Male)
+
+ges_paired %>%
+  summarise(
+    n_complete_dyads = n(),
+    mean_female = mean(Female),
+    sd_female = sd(Female),
+    mean_male = mean(Male),
+    sd_male = sd(Male),
+    mean_difference =
+      mean(ges_difference_female_male),
+    sd_difference =
+      sd(ges_difference_female_male))
+```
+
+### Assumption assessment for paired t-test
+
+```{r}
+# Boxplot of within-dyad difference scores
+p_ges_difference_boxplot <- ggplot(
+  ges_paired, aes(x = "", y = ges_difference_female_male)) +
+  geom_hline(
+    yintercept = 0,
+    linetype = 2,
+    linewidth = 0.6) +
+  geom_boxplot(
+    width = 0.35,
+    outlier.shape = NA) +
+  geom_jitter(
+    width = 0.08,
+    height = 0,
+    alpha = 0.70,
+    size = 1.8) +
+  labs(
+    x = NULL,
+    y = "Female − male GES difference") +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid.minor = element_blank())
+
+p_ges_difference_boxplot
+
+# Q-Q plot of within-dyad difference scores
+p_ges_difference_qq <- ggplot(
+  ges_paired, aes(sample = ges_difference_female_male)) +
+  stat_qq(
+    alpha = 0.75,
+    size = 1.8) +
+  stat_qq_line(
+    linewidth = 0.7) +
+  labs(
+    x = "Theoretical quantiles",
+    y = "Observed quantiles") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank())
+
+p_ges_difference_qq
+
+# Shapiro-Wilk test of within-dyad difference scores
+shapiro.test(ges_paired$ges_difference_female_male)
+```
+
+### Paired-samples t-test
+```{r}
+t.test(
+  ges_paired$Female,
+  ges_paired$Male,
+  paired = TRUE)
+```
+
+## Calculate Cronbach's alpha
+
+```{r}
+ges_items_long <- ges_long_clean %>%
+  filter(!excluded, setup == "COOP") %>%
+  semi_join(
+    ges_study %>%
+      dplyr::select(id, participant.code) %>%
+      distinct(),
+    by = c("id", "participant.code"))
+
+ges_items_long %>% count(variable)
+
+ges_items_long %>%
+  group_by(id, participant.code) %>%
+  summarise(
+    n_items = n_distinct(variable),
+    n_answered = sum(!is.na(value)),
+    .groups = "drop") %>%
+  count(n_items, n_answered)
+
+ges_items_wide <- ges_items_long %>%
+  dplyr::select(id, participant.code, variable, value) %>%
+  pivot_wider(names_from = variable, values_from = value) %>%
+  arrange(id, participant.code)
+
+ges_item_data <- ges_items_wide %>%
+  dplyr::select(starts_with("q")) %>%
+  dplyr::select(order(parse_number(names(.))))
+
+ges_alpha <- psych::alpha(
+  ges_item_data,
+  check.keys = FALSE,
+  warnings = FALSE)
+
+ges_alpha
+```

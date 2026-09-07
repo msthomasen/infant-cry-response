@@ -1,0 +1,353 @@
+---
+title: "s1_02_descriptive_results"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_1_path <- file.path(main_path, "study_1")
+figure_path <- file.path(study_1_path, "figures")
+
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+```
+
+```{r}
+# analytic sample
+dem_analytic <- demographics %>%
+  filter(!excluded, setup == "COOP")
+
+analytic_ids <- dem_analytic %>%
+  distinct(id)
+
+sound_analytic <- sound_events %>%
+  filter(setup == "COOP") %>%
+  semi_join(analytic_ids, by = "id")
+
+roundwise_analytic <- roundwise_clean %>%
+  filter(!excluded, setup == "COOP") %>%
+  semi_join(analytic_ids, by = "id")
+```
+
+
+## Dyad button press descriptives
+```{r}
+dyad_press_summary <- sound_analytic %>%
+  group_by(id) %>%
+  summarise(
+    n_female = sum(responder_gender == "Female", na.rm = TRUE),
+    n_male = sum(responder_gender == "Male", na.rm = TRUE),
+    n_none = sum(responder_gender == "none", na.rm = TRUE),
+    n_press = n_female + n_male,
+    prop_female_given_press = if_else(
+      n_press > 0,
+      n_female / n_press,
+      NA_real_
+    ),
+    .groups = "drop"
+  )
+
+dyad_press_descriptives_full <- dyad_press_summary %>%
+  summarise(
+    sample = "Full analytic sample",
+    n_dyads = n(),
+
+    mean_female_presses = mean(n_female, na.rm = TRUE),
+    sd_female_presses = sd(n_female, na.rm = TRUE),
+
+    mean_male_presses = mean(n_male, na.rm = TRUE),
+    sd_male_presses = sd(n_male, na.rm = TRUE),
+
+    mean_no_press_events = mean(n_none, na.rm = TRUE),
+    sd_no_press_events = sd(n_none, na.rm = TRUE),
+
+    n_no_press_dyads = sum(n_press == 0, na.rm = TRUE),
+    prop_no_press_dyads = mean(n_press == 0, na.rm = TRUE)
+  )
+
+dyad_press_descriptives_full
+
+dyad_press_summary_pressing_dyads <- dyad_press_summary %>%
+  filter(n_press > 0)
+
+dyad_press_descriptives_excluded_no_press <- dyad_press_summary_pressing_dyads %>%
+  summarise(
+    sample = "Sample excluding no-press dyads",
+    n_dyads = n(),
+
+    mean_female_presses = mean(n_female, na.rm = TRUE),
+    sd_female_presses = sd(n_female, na.rm = TRUE),
+
+    mean_male_presses = mean(n_male, na.rm = TRUE),
+    sd_male_presses = sd(n_male, na.rm = TRUE),
+
+    mean_no_press_events = mean(n_none, na.rm = TRUE),
+    sd_no_press_events = sd(n_none, na.rm = TRUE)
+  )
+
+dyad_press_descriptives_excluded_no_press
+
+```
+
+
+## Participant-level task performance and sound exposure
+```{r}
+study1_participant_performance <- roundwise_analytic %>%
+  group_by(id, participant.code, gender) %>%
+  summarise(
+    n_matrices_seen = n(),
+    n_matrices_completed = sum(completed, na.rm = TRUE),
+    n_matrices_correct = sum(success, na.rm = TRUE),
+    
+    mean_round_duration_secs = mean(secs, na.rm = TRUE),
+    n_rounds_with_any_sound = sum(any_stimulus, na.rm = TRUE),
+    n_rounds_with_more_than_one_sound = sum(n_sound_episodes > 1, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+study1_participant_performance %>%
+  summarise(
+    mean_matrices_seen = mean(n_matrices_seen, na.rm = TRUE),
+    sd_matrices_seen = sd(n_matrices_seen, na.rm = TRUE),
+
+    mean_matrices_completed = mean(n_matrices_completed, na.rm = TRUE),
+    sd_matrices_completed = sd(n_matrices_completed, na.rm = TRUE),
+
+    mean_matrices_correct = mean(n_matrices_correct, na.rm = TRUE),
+    sd_matrices_correct = sd(n_matrices_correct, na.rm = TRUE),
+
+    mean_rounds_with_any_sound = mean(n_rounds_with_any_sound, na.rm = TRUE),
+    sd_rounds_with_any_sound = sd(n_rounds_with_any_sound, na.rm = TRUE),
+
+    mean_rounds_with_more_than_one_sound = mean(n_rounds_with_more_than_one_sound, na.rm = TRUE),
+    sd_rounds_with_more_than_one_sound = sd(n_rounds_with_more_than_one_sound, na.rm = TRUE),
+
+    mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
+    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE)
+  )
+
+study1_participant_performance %>%
+  group_by(gender) %>%
+  summarise(
+    mean_matrices_seen = mean(n_matrices_seen, na.rm = TRUE),
+    sd_matrices_seen = sd(n_matrices_seen, na.rm = TRUE),
+
+    mean_matrices_completed = mean(n_matrices_completed, na.rm = TRUE),
+    sd_matrices_completed = sd(n_matrices_completed, na.rm = TRUE),
+
+    mean_matrices_correct = mean(n_matrices_correct, na.rm = TRUE),
+    sd_matrices_correct = sd(n_matrices_correct, na.rm = TRUE),
+
+    mean_rounds_with_any_sound = mean(n_rounds_with_any_sound, na.rm = TRUE),
+    sd_rounds_with_any_sound = sd(n_rounds_with_any_sound, na.rm = TRUE),
+
+    mean_rounds_with_more_than_one_sound = mean(n_rounds_with_more_than_one_sound, na.rm = TRUE),
+    sd_rounds_with_more_than_one_sound = sd(n_rounds_with_more_than_one_sound, na.rm = TRUE),
+
+    mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
+    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+## Paired gender comparisons of participant-level task performance
+study1_performance_wide <- study1_participant_performance %>%
+  dplyr::select(
+    id,
+    gender,
+    n_matrices_seen,
+    n_matrices_completed,
+    n_matrices_correct
+  ) %>%
+  pivot_wider(
+    names_from = gender,
+    values_from = c(
+      n_matrices_seen,
+      n_matrices_completed,
+      n_matrices_correct
+    )
+  )
+
+study1_difference_scores <- study1_performance_wide %>%
+  transmute(
+    id,
+    matrices_seen_diff =
+      n_matrices_seen_Female - n_matrices_seen_Male,
+    matrices_answered_diff =
+      n_matrices_completed_Female - n_matrices_completed_Male,
+    matrices_correct_diff =
+      n_matrices_correct_Female - n_matrices_correct_Male
+  )
+
+study1_difference_scores_long <- study1_difference_scores %>%
+  pivot_longer(
+    cols = -id,
+    names_to = "outcome",
+    values_to = "difference"
+  )
+```
+
+```{r}
+# Clear outcome labels
+study1_difference_scores_long <-
+  study1_difference_scores_long %>%
+  mutate(
+    outcome = factor(
+      outcome,
+      levels = c(
+        "matrices_seen_diff",
+        "matrices_answered_diff",
+        "matrices_correct_diff"
+      ),
+      labels = c(
+        "Matrices seen",
+        "Matrices answered",
+        "Matrices correct"
+      )
+    )
+  )
+
+p_study1_difference_boxplots <-
+  ggplot(
+    study1_difference_scores_long,
+    aes(
+      x = "",
+      y = difference
+    )
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = 2,
+    linewidth = 0.6
+  ) +
+  geom_boxplot(
+    width = 0.45,
+    outlier.shape = NA
+  ) +
+  geom_jitter(
+    width = 0.08,
+    height = 0,
+    alpha = 0.65,
+    size = 1.8
+  ) +
+  facet_wrap(
+    ~ outcome,
+    scales = "free_y",
+    nrow = 1
+  ) +
+  labs(
+    x = NULL,
+    y = "Female − male difference"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+plot_png_path <- file.path(
+  figure_path,
+  "s1_task_performance_difference_boxplots.png"
+)
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_study1_difference_boxplots,
+  width = 9,
+  height = 4,
+  dpi = 300
+)
+
+p_study1_difference_qq <-
+  ggplot(
+    study1_difference_scores_long,
+    aes(sample = difference)
+  ) +
+  stat_qq(
+    alpha = 0.70,
+    size = 1.6
+  ) +
+  stat_qq_line(
+    linewidth = 0.7
+  ) +
+  facet_wrap(
+    ~ outcome,
+    scales = "free",
+    nrow = 1
+  ) +
+  labs(
+    x = "Theoretical quantiles",
+    y = "Observed quantiles"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold")
+  )
+
+plot_png_path <- file.path(
+  figure_path,
+  "s1_task_performance_difference_qqplots.png"
+)
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_study1_difference_qq,
+  width = 9,
+  height = 4,
+  dpi = 300
+)
+```
+
+```{r}
+# Shapiro-Wilk tests of within-dyad difference scores
+
+shapiro.test(
+  study1_difference_scores$matrices_seen_diff
+)
+
+shapiro.test(
+  study1_difference_scores$matrices_answered_diff
+)
+
+shapiro.test(
+  study1_difference_scores$matrices_correct_diff
+)
+```
+
+```{r}
+## Primary paired-samples t-tests
+
+t.test(
+  study1_performance_wide$n_matrices_seen_Female,
+  study1_performance_wide$n_matrices_seen_Male,
+  paired = TRUE
+)
+
+t.test(
+  study1_performance_wide$n_matrices_completed_Female,
+  study1_performance_wide$n_matrices_completed_Male,
+  paired = TRUE
+)
+
+t.test(
+  study1_performance_wide$n_matrices_correct_Female,
+  study1_performance_wide$n_matrices_correct_Male,
+  paired = TRUE
+)
+```
+

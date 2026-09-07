@@ -1,0 +1,797 @@
+---
+title: "s1_05_prisoners_dilemma"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+library(patchwork)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_1_path <- file.path(main_path, "study_1")
+results_path <- file.path(study_1_path, "results")
+models_path <- file.path(main_path, "models")
+figure_path <- file.path(study_1_path, "figures")
+
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+prisoner_long <- read_csv(file.path(data_path, "prisoner_dilemma_clean.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+```
+
+```{r}
+dem_analytic <- demographics %>%
+  filter(
+    !excluded,
+    setup == "COOP"
+  )
+
+analytic_ids <- dem_analytic %>%
+  distinct(id)
+
+prisoner_long <- prisoner_long %>%
+  filter(setup == "COOP") %>%
+  semi_join(
+    analytic_ids,
+    by = "id"
+  )
+
+sound_analytic <- sound_events %>%
+  filter(setup == "COOP") %>%
+  semi_join(
+    analytic_ids,
+    by = "id"
+  )
+```
+
+```{r}
+participant_press_summary <- sound_analytic %>%
+  group_by(id) %>%
+  summarise(
+    female_press_count =
+      sum(responder_gender == "Female", na.rm = TRUE),
+
+    male_press_count =
+      sum(responder_gender == "Male", na.rm = TRUE),
+
+    no_press_count =
+      sum(responder_gender == "none", na.rm = TRUE),
+
+    total_dyad_presses =
+      female_press_count + male_press_count,
+
+    n_sound_events = n(),
+
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    cols = c(
+      female_press_count,
+      male_press_count
+    ),
+    names_to = "gender",
+    values_to = "own_press_count"
+  ) %>%
+  mutate(
+    gender = recode(
+      gender,
+      female_press_count = "Female",
+      male_press_count = "Male"
+    ),
+
+    partner_press_count =
+      total_dyad_presses - own_press_count,
+
+    relative_press_count =
+      own_press_count - partner_press_count,
+
+    own_never_pressed =
+      as.integer(own_press_count == 0),
+
+    partner_never_pressed =
+      as.integer(partner_press_count == 0),
+
+    neither_pressed =
+      as.integer(total_dyad_presses == 0)
+  )
+```
+
+```{r}
+prisoner_long <- prisoner_long %>%
+  mutate(
+    cooperation = case_when(
+      decision == "Cooperate" ~ 1L,
+      decision == "Defect"    ~ 0L,
+      TRUE                    ~ NA_integer_
+    )
+  )
+
+prisoner_partner <- prisoner_long %>%
+  dplyr::select(
+    id,
+    round_number,
+    id_in_group,
+    partner_code = participant.code,
+    partner_gender = gender,
+    partner_cooperation = cooperation,
+    partner_decision = decision,
+    partner_pay_off = pay_off
+  ) %>%
+  mutate(
+    id_in_group = case_when(
+      id_in_group == 1 ~ 2,
+      id_in_group == 2 ~ 1,
+      TRUE ~ NA_real_
+    )
+  )
+
+prisoner_long <- prisoner_long %>%
+  left_join(
+    prisoner_partner,
+    by = c("id", "round_number", "id_in_group")
+  ) %>%
+  mutate(
+    round_outcome = case_when(
+      cooperation == 1 & partner_cooperation == 1 ~ "CC",
+      cooperation == 1 & partner_cooperation == 0 ~ "CD",
+      cooperation == 0 & partner_cooperation == 1 ~ "DC",
+      cooperation == 0 & partner_cooperation == 0 ~ "DD",
+      TRUE ~ NA_character_
+    ),
+    dyad_outcome = case_when(
+      round_outcome == "CC" ~ "Mutual cooperation",
+      round_outcome == "DD" ~ "Mutual defection",
+      round_outcome %in% c("CD", "DC") ~ "Asymmetric",
+      TRUE ~ NA_character_
+    )
+  )
+
+```
+
+```{r}
+prisoner_model_data <- prisoner_long %>%
+  left_join(
+    participant_press_summary,
+    by = c("id", "gender")
+  )
+
+mean_total_dyad_presses <- participant_press_summary %>%
+  distinct(id, total_dyad_presses) %>%
+  summarise(
+    mean_total = mean(total_dyad_presses)
+  ) %>%
+  pull(mean_total)
+
+prisoner_model_data <- prisoner_model_data %>%
+  mutate(
+    total_dyad_presses_c =
+      total_dyad_presses - mean_total_dyad_presses,
+
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")
+    )
+  )
+```
+
+```{r}
+prisoner_participant_summary <- prisoner_long %>%
+  group_by(
+    setup,
+    id,
+    participant.code,
+    id_in_group,
+    gender,
+    position
+  ) %>%
+  summarise(
+    n_rounds = sum(!is.na(cooperation)),
+    n_cooperate = sum(cooperation == 1, na.rm = TRUE),
+    n_defect = sum(cooperation == 0, na.rm = TRUE),
+    cooperation_prop = mean(cooperation, na.rm = TRUE),
+
+    n_mutual_cooperation = sum(round_outcome == "CC", na.rm = TRUE),
+    n_exploited = sum(round_outcome == "CD", na.rm = TRUE),
+    n_exploited_partner = sum(round_outcome == "DC", na.rm = TRUE),
+    n_mutual_defection = sum(round_outcome == "DD", na.rm = TRUE),
+
+    total_payoff = sum(pay_off, na.rm = TRUE),
+    mean_payoff = mean(pay_off, na.rm = TRUE),
+
+    .groups = "drop"
+  ) %>%
+  arrange(id, id_in_group)
+
+print(prisoner_participant_summary, n = 98)
+```
+
+```{r}
+prisoner_dyad_summary <- prisoner_long %>%
+  group_by(setup, id) %>%
+  summarise(
+    n_participants = n_distinct(participant.code),
+    n_rounds = n_distinct(round_number),
+    n_decisions = sum(!is.na(cooperation)),
+
+    n_cooperate = sum(cooperation == 1, na.rm = TRUE),
+    n_defect = sum(cooperation == 0, na.rm = TRUE),
+    cooperation_prop = mean(cooperation, na.rm = TRUE),
+
+    total_dyad_payoff = sum(pay_off, na.rm = TRUE),
+    combined_payoff_per_round =
+      sum(pay_off, na.rm = TRUE) / n_distinct(round_number),
+
+    .groups = "drop"
+  ) %>%
+  left_join(
+    prisoner_long %>%
+      filter(id_in_group == 1) %>%
+      group_by(setup, id) %>%
+      summarise(
+        mutual_cooperation_rounds =
+          sum(dyad_outcome == "Mutual cooperation", na.rm = TRUE),
+
+        asymmetric_rounds =
+          sum(dyad_outcome == "Asymmetric", na.rm = TRUE),
+
+        mutual_defection_rounds =
+          sum(dyad_outcome == "Mutual defection", na.rm = TRUE),
+
+        mutual_cooperation_prop =
+          mean(dyad_outcome == "Mutual cooperation", na.rm = TRUE),
+
+        asymmetric_prop =
+          mean(dyad_outcome == "Asymmetric", na.rm = TRUE),
+
+        mutual_defection_prop =
+          mean(dyad_outcome == "Mutual defection", na.rm = TRUE),
+
+        .groups = "drop"
+      ),
+    by = c("setup", "id")
+  ) %>%
+  arrange(id)
+
+print(prisoner_dyad_summary, n = 49)
+```
+
+```{r}
+prisoner_round_individual_summary <- prisoner_long %>%
+  group_by(setup, round_number) %>%
+  summarise(
+    n_participants = sum(!is.na(cooperation)),
+    n_cooperate = sum(cooperation == 1, na.rm = TRUE),
+    n_defect = sum(cooperation == 0, na.rm = TRUE),
+    cooperation_prop = mean(cooperation, na.rm = TRUE),
+
+    mean_payoff = mean(pay_off, na.rm = TRUE),
+    total_payoff = sum(pay_off, na.rm = TRUE),
+
+    .groups = "drop"
+  ) %>%
+  arrange(round_number)
+
+prisoner_round_individual_summary
+
+
+prisoner_round_dyad_summary <- prisoner_long %>%
+  filter(id_in_group == 1) %>%
+  count(
+    setup,
+    round_number,
+    dyad_outcome,
+    name = "n_dyads"
+  ) %>%
+  group_by(setup, round_number) %>%
+  mutate(
+    proportion = n_dyads / sum(n_dyads)
+  ) %>%
+  ungroup() %>%
+  arrange(round_number, dyad_outcome)
+
+print(prisoner_round_dyad_summary, n = 30)
+
+prisoner_round_dyad_wide <- prisoner_round_dyad_summary %>%
+  dplyr::select(
+    setup,
+    round_number,
+    dyad_outcome,
+    n_dyads,
+    proportion
+  ) %>%
+  pivot_wider(
+    names_from = dyad_outcome,
+    values_from = c(n_dyads, proportion),
+    values_fill = 0
+  )
+
+prisoner_round_dyad_wide
+```
+
+```{r}
+prisoner_overall_summary <- prisoner_long %>%
+  summarise(
+    n_participants = n_distinct(participant.code),
+    n_dyads = n_distinct(id),
+    n_rounds = n_distinct(round_number),
+    n_decisions = sum(!is.na(cooperation)),
+    n_cooperate = sum(cooperation == 1, na.rm = TRUE),
+    n_defect = sum(cooperation == 0, na.rm = TRUE),
+    cooperation_prop = mean(cooperation, na.rm = TRUE),
+    mean_payoff_per_decision = mean(pay_off, na.rm = TRUE)
+  )
+
+prisoner_overall_summary
+
+prisoner_overall_dyad_outcomes <- prisoner_long %>%
+  filter(id_in_group == 1) %>%
+  count(dyad_outcome, name = "n_dyad_rounds") %>%
+  mutate(
+    proportion = n_dyad_rounds / sum(n_dyad_rounds)
+  )
+
+prisoner_overall_dyad_outcomes
+```
+
+```{r}
+pd_gender_difference <- prisoner_participant_summary %>%
+  dplyr::select(
+    id,
+    gender,
+    n_cooperate,
+    cooperation_prop
+  ) %>%
+  pivot_wider(
+    names_from = gender,
+    values_from = c(n_cooperate, cooperation_prop)
+  ) %>%
+  mutate(
+    cooperation_count_diff_female_male =
+      n_cooperate_Female - n_cooperate_Male,
+
+    cooperation_prop_diff_female_male =
+      cooperation_prop_Female - cooperation_prop_Male
+  )
+```
+
+```{r}
+pd_gender_difference %>%
+  count(
+    cooperation_count_diff_female_male,
+    sort = FALSE
+  )
+
+pd_gender_difference %>%
+  summarise(
+    n_dyads = n(),
+    mean_difference =
+      mean(cooperation_count_diff_female_male),
+    sd_difference =
+      sd(cooperation_count_diff_female_male),
+    median_difference =
+      median(cooperation_count_diff_female_male),
+    min_difference =
+      min(cooperation_count_diff_female_male),
+    max_difference =
+      max(cooperation_count_diff_female_male),
+    n_equal =
+      sum(cooperation_count_diff_female_male == 0),
+    prop_equal =
+      mean(cooperation_count_diff_female_male == 0)
+  )
+```
+
+```{r}
+round1_partner_press_descriptives <- prisoner_model_data %>%
+  filter(round_number == 1) %>%
+  group_by(partner_never_pressed) %>%
+  summarise(
+    n_participants = n(),
+    n_cooperate = sum(cooperation == 1, na.rm = TRUE),
+    n_defect = sum(cooperation == 0, na.rm = TRUE),
+    cooperation_prop = mean(cooperation, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+round1_partner_press_descriptives
+
+overall_partner_press_descriptives <- prisoner_model_data %>%
+  group_by(partner_never_pressed) %>%
+  summarise(
+    n_participants = n_distinct(participant.code),
+    n_decisions = n(),
+    cooperation_prop = mean(cooperation, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+overall_partner_press_descriptives
+
+overall_own_press_descriptives <- prisoner_model_data %>%
+  group_by(own_never_pressed) %>%
+  summarise(
+    n_participants = n_distinct(participant.code),
+    n_decisions = n(),
+    cooperation_prop = mean(cooperation, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+overall_own_press_descriptives
+```
+
+```{r}
+p_pd_cooperation_round <- prisoner_round_individual_summary %>%
+  ggplot(aes(x = round_number, y = cooperation_prop)) +
+  geom_line(
+    linewidth = 0.8,
+    colour = "black"
+  ) +
+  geom_point(
+    size = 2.5,
+    colour = "black"
+  ) +
+  scale_x_continuous(breaks = 1:10) +
+  scale_y_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.2),
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  labs(
+    x = "Prisoner’s Dilemma round",
+    y = "Proportion cooperating"
+  ) +
+  theme_classic(base_size = 12)
+
+p_pd_dyad_outcomes <- prisoner_round_dyad_summary %>%
+  mutate(
+    dyad_outcome = factor(
+      dyad_outcome,
+      levels = c(
+        "Mutual cooperation",
+        "Asymmetric",
+        "Mutual defection"
+      )
+    )
+  ) %>%
+  ggplot(
+    aes(x = round_number, y = proportion, colour = dyad_outcome, shape = dyad_outcome, group = dyad_outcome)
+  ) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 2.4) +
+  scale_colour_manual(
+    values = c(
+      "Mutual cooperation" = "#5B9BD5",
+      "Asymmetric" = "#C27AC0",
+      "Mutual defection" = "#C58B6B")
+    ) +
+  scale_shape_manual(
+    values = c(
+      "Mutual cooperation" = 16,
+      "Asymmetric" = 17,
+      "Mutual defection" = 15
+    )
+  ) +
+  scale_x_continuous(breaks = 1:10) +
+  scale_y_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.2),
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  labs(
+    x = "Prisoner’s Dilemma round",
+    y = "Proportion of dyads",
+    colour = "Dyad outcome",
+    shape = "Dyad outcome"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(legend.position = "bottom")
+
+p_pd_combined <- p_pd_cooperation_round +
+  p_pd_dyad_outcomes +
+  plot_layout(widths = c(1, 1), guides = "collect") +
+  plot_annotation(tag_levels = "A") &
+  theme(
+    legend.position = "bottom",
+    plot.tag = element_text(face = "bold", size = 13)
+  )
+
+plot_png_path <- file.path(figure_path, "s1_prisoners_dilemma_cooperation_two_panel.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_pd_combined,
+  width = 12,
+  height = 5,
+  dpi = 300
+)
+
+```
+
+
+##########
+Model: initial Prisoner's Dilemma cooperation
+Was earlier button-press behavior associated with the participant's initial decision to cooperate with the same partner?
+```{r}
+#prepare data
+pd_round1_data <- prisoner_model_data %>%
+  filter(
+    round_number == 1,
+    !is.na(cooperation),
+    !is.na(total_dyad_presses_c),
+    !is.na(relative_press_count),
+    !is.na(id)
+  ) %>%
+  mutate(
+    dyad_index = as.integer(factor(id))
+  ) %>%
+  arrange(dyad_index, participant.code)
+
+```
+
+```{r}
+### Correlation check between the two predictors
+pd_round1_data %>%
+  summarise(
+    r = cor(
+      total_dyad_presses_c,
+      relative_press_count
+    )
+  )
+```
+
+```{r}
+data_list_pd <- list(
+  N = nrow(pd_round1_data),
+  N_dyads =
+    n_distinct(pd_round1_data$dyad_index),
+  cooperation =
+    as.integer(pd_round1_data$cooperation),
+  total_dyad_presses_c =
+    as.numeric(pd_round1_data$total_dyad_presses_c),
+  relative_press_count =
+    as.numeric(pd_round1_data$relative_press_count),
+  dyad_index =
+    as.integer(pd_round1_data$dyad_index))
+
+str(data_list_pd)
+
+params_pd <- c(
+  # Posterior parameters
+  "beta0",
+  "beta_total",
+  "beta_relative",
+  "sigma_dyad",
+  "p_reference",
+
+  # Posterior predictive quantity
+  "n_cooperate_rep",
+
+  # Direct prior draws
+  "beta0_prior",
+  "beta_total_prior",
+  "beta_relative_prior",
+  "sigma_dyad_prior",
+
+  # Prior predictive quantity
+  "n_cooperate_prior"
+)
+```
+
+```{r}
+samples_path_pd <- file.path(
+  results_path,
+  "s1_jags_prisoners_dilemma_round1_logistic.rds")
+
+if (file.exists(samples_path_pd)) {
+  samples_pd <- readRDS(samples_path_pd)
+  } else {
+    samples_pd <- jags.parallel(
+      data = data_list_pd,
+      inits = NULL,
+      parameters.to.save = params_pd,
+  
+      model.file = file.path(
+        models_path,
+        "s1_prisoners_dilemma_log_reg.bugs"
+      ),
+  
+      n.chains = 12,
+      n.iter = 25000,
+      n.burnin = 5000,
+      n.thin = 1)
+  
+    saveRDS(
+      samples_pd,
+      samples_path_pd)}
+
+samples_pd
+
+mcmc_pd <- as.mcmc(samples_pd)
+s_pd <- as.matrix(mcmc_pd)
+```
+
+```{r}
+p_total_positive <- mean(
+  s_pd[, "beta_total"] > 0
+)
+
+p_total_negative <- mean(
+  s_pd[, "beta_total"] < 0
+)
+
+p_relative_positive <- mean(
+  s_pd[, "beta_relative"] > 0
+)
+
+p_relative_negative <- mean(
+  s_pd[, "beta_relative"] < 0
+)
+
+p_total_positive
+p_total_negative
+p_relative_positive
+p_relative_negative
+```
+
+```{r}
+# Bayes factors for H0: beta = 0 versus H1: beta ~ Normal(0, 0.25)
+
+prior_density_zero <- dnorm(
+  0,
+  mean = 0,
+  sd = 0.25
+)
+
+posterior_density_at_zero <- function(draws) {
+
+  dens <- density(
+    draws,
+    n = 2^15
+  )
+
+  approx(
+    x = dens$x,
+    y = dens$y,
+    xout = 0
+  )$y
+}
+
+posterior_density_total_zero <-
+  posterior_density_at_zero(
+    s_pd[, "beta_total"]
+  )
+
+posterior_density_relative_zero <-
+  posterior_density_at_zero(
+    s_pd[, "beta_relative"]
+  )
+
+BF01_total <-
+  posterior_density_total_zero /
+  prior_density_zero
+
+BF01_relative <-
+  posterior_density_relative_zero /
+  prior_density_zero
+
+BF10_total <- 1 / BF01_total
+BF10_relative <- 1 / BF01_relative
+
+BF01_total
+BF01_relative
+BF10_total
+BF10_relative
+```
+
+```{r}
+plot_png_path <- file.path(
+  figure_path,
+  "s1_prisoners_dilemma_round1_logistic_traceplots.png"
+)
+
+if (!file.exists(plot_png_path)) {
+  mcmc_list_pd <- as.mcmc(samples_pd)
+  trace_df_pd <- purrr::map2_dfr(
+    mcmc_list_pd,
+    seq_along(mcmc_list_pd),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y)
+      )
+  ) %>%
+    dplyr::select(
+      iteration,
+      chain,
+      beta0,
+      beta_total,
+      beta_relative,
+      sigma_dyad
+    ) %>%
+    group_by(chain) %>%
+    slice(seq(1, n(), by = 20)) %>%
+    ungroup() %>%
+    pivot_longer(
+      cols = c(
+        beta0,
+        beta_total,
+        beta_relative,
+        sigma_dyad
+      ),
+      names_to = "parameter",
+      values_to = "value")
+
+  p_trace_pd <- ggplot(
+    trace_df_pd,
+    aes(
+      x = iteration,
+      y = value,
+      colour = chain)) +
+    geom_line(
+      alpha = 0.6,
+      linewidth = 0.25) +
+    facet_wrap(
+      ~parameter,
+      scales = "free_y",
+      ncol = 1) +
+    theme_minimal() +
+    labs(
+      title = "Traceplots: first-round Prisoner’s Dilemma model",
+      x = "Iteration",
+      y = "Value",
+      colour = "Chains")
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_pd,
+    width = 8,
+    height = 9,
+    dpi = 300)
+  } else {
+    show_or_save_ggplot(
+      plot_png_path = plot_png_path)
+    }
+```
+
+```{r}
+plot_pd_total <- plot_prior_posterior(
+  draws = s_pd,
+  posterior_name = "beta_total",
+  prior_name = "beta_total_prior",
+  xlab = "Total dyad press coefficient (log-odds)",
+  vline = 0,
+  central_prob = 0.95
+)
+
+plot_pd_relative <- plot_prior_posterior(
+  draws = s_pd,
+  posterior_name = "beta_relative",
+  prior_name = "beta_relative_prior",
+  xlab = "Relative press coefficient (log-odds)",
+  vline = 0,
+  central_prob = 0.95
+)
+
+p_pd_prior_posterior <-
+  (plot_pd_total /plot_pd_relative) +
+  plot_annotation(tag_levels = "A")
+
+plot_png_path <- file.path(
+  figure_path,
+  "s1_prisoners_dilemma_round1_prior_posterior.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_pd_prior_posterior,
+  width = 8,
+  height = 6,
+  dpi = 300)
+```

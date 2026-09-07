@@ -1,0 +1,576 @@
+---
+title: "s1_07_prior_sensitivity_testing"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+library(knitr)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_1_path <- file.path(main_path, "study_1")
+results_path <- file.path(study_1_path, "results/prior_sensitivity")
+prior_models_path <- file.path(main_path, "models/prior_sensitivity_test")
+figure_path <- file.path(study_1_path, "figures/prior_sensitivity")
+
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+```
+
+
+
+## Data preparation
+```{r}
+dem_analytic <- demographics %>%
+  filter(!excluded, setup == "COOP")
+
+analytic_ids <- dem_analytic %>%
+  distinct(id)
+
+sound_analytic <- sound_events %>%
+  filter(setup == "COOP") %>%
+  semi_join(analytic_ids, by = "id")
+
+bb_data <- sound_analytic %>%
+  filter(responder_gender %in% c("Male", "Female")) %>%
+  group_by(id) %>%
+  arrange(sound_event_order, .by_group = TRUE) %>%
+  mutate(press_number = row_number()) %>%
+  ungroup() %>%
+  mutate(
+    y = ifelse(responder_gender == "Female", 1, 0)
+  ) %>%
+  dplyr::select(id, press_number, y)
+
+bb_wide <- bb_data %>%
+  pivot_wider(names_from = press_number, values_from = y) %>%
+  arrange(id)
+
+bb_mat <- bb_wide %>%
+  dplyr::select(-id) %>%
+  as.matrix()
+
+storage.mode(bb_mat) <- "numeric"
+
+dim(bb_mat)
+
+markov_data <- sound_analytic %>%
+  group_by(id) %>%
+  arrange(sound_event_order, .by_group = TRUE) %>%
+  mutate(event_number = row_number()) %>%
+  ungroup() %>%
+  mutate(
+    response = case_when(
+      responder_gender == "none" ~ 1,
+      responder_gender == "Male" ~ 2,
+      responder_gender == "Female" ~ 3
+    )
+  ) %>%
+  dplyr::select(id, event_number, response)
+
+markov_wide <- markov_data %>%
+  pivot_wider(names_from = event_number, values_from = response) %>%
+  arrange(id)
+
+markov_mat <- markov_wide %>%
+  dplyr::select(-id) %>%
+  as.matrix()
+
+storage.mode(markov_mat) <- "numeric"
+```
+
+## Hierarchical Beta-Bernoulli
+
+```{r}
+data_list_bb <- list(
+  N = nrow(bb_mat),
+  y = bb_mat
+)
+
+params_bb <- c("mu", "nu", "pop_p", "p", "mu_prior", "nu_prior", "pop_p_prior", "p_prior")
+
+if (file.exists(file.path(results_path, "s1_prior_sens_beta_bernoulli_original.rds"))) {
+  samples_bb_orig <- readRDS(file.path(results_path, "s1_prior_sens_beta_bernoulli_original.rds"))
+} else {
+  samples_bb_orig <- jags.parallel(
+    data = data_list_bb,
+    inits = NULL,
+    parameters.to.save = params_bb,
+    model.file = file.path(prior_models_path, "s1_hier_beta_bernoulli_original.bugs"),
+    n.chains = 12,
+    n.iter = 20000,
+    n.burnin = 5000,
+    n.thin = 1
+  )
+  saveRDS(samples_bb_orig, file.path(results_path, "s1_prior_sens_beta_bernoulli_original.rds"))
+}
+
+
+if (file.exists(file.path(results_path, "s1_prior_sens_beta_bernoulli_beta22.rds"))) {
+  samples_bb_beta22 <- readRDS(file.path(results_path, "s1_prior_sens_beta_bernoulli_beta22.rds"))
+} else {
+  samples_bb_beta22 <- jags.parallel(
+    data = data_list_bb,
+    inits = NULL,
+    parameters.to.save = params_bb,
+    model.file = file.path(prior_models_path, "s1_hier_beta_bernoulli_beta22.bugs"),
+    n.chains = 12,
+    n.iter = 20000,
+    n.burnin = 5000,
+    n.thin = 1
+  )
+  saveRDS(samples_bb_beta22, file.path(results_path, "s1_prior_sens_beta_bernoulli_beta22.rds"))
+}
+
+
+if (file.exists(file.path(results_path, "s1_prior_sens_beta_bernoulli_nu20.rds"))) {
+  samples_bb_nu20 <- readRDS(file.path(results_path, "s1_prior_sens_beta_bernoulli_nu20.rds"))
+} else {
+  samples_bb_nu20 <- jags.parallel(
+    data = data_list_bb,
+    inits = NULL,
+    parameters.to.save = params_bb,
+    model.file = file.path(prior_models_path, "s1_hier_beta_bernoulli_nu20.bugs"),
+    n.chains = 12,
+    n.iter = 20000,
+    n.burnin = 5000,
+    n.thin = 1
+  )
+  saveRDS(samples_bb_nu20, file.path(results_path, "s1_prior_sens_beta_bernoulli_nu20.rds"))
+}
+```
+
+### Posterior summaries and DIC
+```{r}
+table_bb_summary <- bind_rows(
+  extract_summary(samples_bb_orig, "original", c("mu", "nu")),
+  extract_summary(samples_bb_beta22, "beta22", c("mu", "nu")),
+  extract_summary(samples_bb_nu20, "nu20", c("mu", "nu"))
+)
+
+table_bb_dic <- tibble(
+  model = c("original", "beta22", "nu20"),
+  dic = c(
+    samples_bb_orig$BUGSoutput$DIC,
+    samples_bb_beta22$BUGSoutput$DIC,
+    samples_bb_nu20$BUGSoutput$DIC
+  ),
+  pD = c(
+    samples_bb_orig$BUGSoutput$pD,
+    samples_bb_beta22$BUGSoutput$pD,
+    samples_bb_nu20$BUGSoutput$pD
+  )
+)
+
+kable(table_bb_summary, digits = 3)
+kable(table_bb_dic, digits = 2)
+```
+
+### Prior vs posterior across Beta-Bernoulli sensitivity conditions
+```{r}
+draws_bb_orig <- as.matrix(as.mcmc(samples_bb_orig))
+draws_bb_beta22 <- as.matrix(as.mcmc(samples_bb_beta22))
+draws_bb_nu20 <- as.matrix(as.mcmc(samples_bb_nu20))
+
+bb_pp_df <- bind_rows(
+  tibble(value = draws_bb_orig[, "mu"], source = "posterior", model = "original", parameter = "mu"),
+  tibble(value = draws_bb_orig[, "mu_prior"], source = "prior", model = "original", parameter = "mu"),
+  tibble(value = draws_bb_beta22[, "mu"], source = "posterior", model = "beta22", parameter = "mu"),
+  tibble(value = draws_bb_beta22[, "mu_prior"], source = "prior", model = "beta22", parameter = "mu"),
+  tibble(value = draws_bb_nu20[, "mu"], source = "posterior", model = "nu20", parameter = "mu"),
+  tibble(value = draws_bb_nu20[, "mu_prior"], source = "prior", model = "nu20", parameter = "mu"),
+
+  tibble(value = draws_bb_orig[, "nu"], source = "posterior", model = "original", parameter = "nu"),
+  tibble(value = draws_bb_orig[, "nu_prior"], source = "prior", model = "original", parameter = "nu"),
+  tibble(value = draws_bb_beta22[, "nu"], source = "posterior", model = "beta22", parameter = "nu"),
+  tibble(value = draws_bb_beta22[, "nu_prior"], source = "prior", model = "beta22", parameter = "nu"),
+  tibble(value = draws_bb_nu20[, "nu"], source = "posterior", model = "nu20", parameter = "nu"),
+  tibble(value = draws_bb_nu20[, "nu_prior"], source = "prior", model = "nu20", parameter = "nu"),
+
+  tibble(value = draws_bb_orig[, "pop_p"], source = "posterior", model = "original", parameter = "pop_p"),
+  tibble(value = draws_bb_orig[, "pop_p_prior"], source = "prior", model = "original", parameter = "pop_p"),
+  tibble(value = draws_bb_beta22[, "pop_p"], source = "posterior", model = "beta22", parameter = "pop_p"),
+  tibble(value = draws_bb_beta22[, "pop_p_prior"], source = "prior", model = "beta22", parameter = "pop_p"),
+  tibble(value = draws_bb_nu20[, "pop_p"], source = "posterior", model = "nu20", parameter = "pop_p"),
+  tibble(value = draws_bb_nu20[, "pop_p_prior"], source = "prior", model = "nu20", parameter = "pop_p")
+) %>%
+  mutate(
+    parameter = factor(parameter, levels = c("mu", "nu", "pop_p"),
+                       labels = c("Population mean", "Concentration", "Population distribution draw")),
+    model = factor(model, levels = c("original", "beta22", "nu20"))
+  )
+
+plot_png_path <- file.path(figure_path, "s1_prior_sens_beta_bernoulli_prior_posterior.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  p_bb_prior_post_sens <- ggplot(bb_pp_df, aes(value, fill = source, colour = source)) +
+    geom_density(alpha = 0.22, linewidth = 0.4) +
+    facet_grid(parameter ~ model, scales = "free_y") +
+    theme_minimal() +
+    labs(
+      title = "Hierarchical Beta-Bernoulli: prior vs posterior across sensitivity conditions",
+      x = "Value",
+      y = "Density",
+      fill = NULL,
+      colour = NULL
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_bb_prior_post_sens,
+    width = 10,
+    height = 8,
+    dpi = 300
+  )
+}
+```
+
+
+## Hierarchical first-order Markov
+```{r}
+data_list_markov <- list(
+  y = markov_mat,
+  K = 3,
+  alpha = rep(1, 3)
+)
+
+params_markov <- c(
+  "theta0", "theta", "theta_p",
+  "theta0_prior", "theta_prior", "theta_p_prior")
+
+```
+
+### Pooling sensitivity
+```{r}
+
+if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_mult3.rds"))) {
+  samples_markov_mult3 <- readRDS(file.path(results_path, "s1_prior_sens_hier_markov_mult3.rds"))
+} else {
+  samples_markov_mult3 <- jags.parallel(
+    data = data_list_markov,
+    inits = NULL,
+    parameters.to.save = params_markov,
+    model.file = file.path(prior_models_path, "s1_hier_markov_mult3.bugs"),
+    n.chains = 12,
+    n.iter = 15000,
+    n.burnin = 2500,
+    n.thin = 1
+  )
+  saveRDS(samples_markov_mult3, file.path(results_path, "s1_prior_sens_hier_markov_mult3.rds"))
+}
+
+if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_mult1.rds"))) {
+  samples_markov_mult1 <- readRDS(file.path(results_path, "s1_prior_sens_hier_markov_mult1.rds"))
+} else {
+  samples_markov_mult1 <- jags.parallel(
+    data = data_list_markov,
+    inits = NULL,
+    parameters.to.save = params_markov,
+    model.file = file.path(prior_models_path, "s1_hier_markov_mult1.bugs"),
+    n.chains = 12,
+    n.iter = 15000,
+    n.burnin = 2500,
+    n.thin = 1
+  )
+  saveRDS(samples_markov_mult1,file.path(results_path, "s1_prior_sens_hier_markov_mult1.rds"))
+}
+
+if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_mult10.rds"))) {
+  samples_markov_mult10 <- readRDS(file.path(results_path, "s1_prior_sens_hier_markov_mult10.rds"))
+} else {
+  samples_markov_mult10 <- jags.parallel(
+    data = data_list_markov,
+    inits = NULL,
+    parameters.to.save = params_markov,
+    model.file = file.path(prior_models_path, "s1_hier_markov_mult10.bugs"),
+    n.chains = 12,
+    n.iter = 15000,
+    n.burnin = 2500,
+    n.thin = 1
+  )
+  saveRDS(samples_markov_mult10, file.path(results_path, "s1_prior_sens_hier_markov_mult10.rds"))
+}
+
+```
+
+#### Population transition summaries
+```{r}
+table_markov_pool <- bind_rows(
+  extract_theta_summary(samples_markov_mult1, "mult1"),
+  extract_theta_summary(samples_markov_mult3, "mult3"),
+  extract_theta_summary(samples_markov_mult10, "mult10")
+)
+
+kable(table_markov_pool, digits = 3)
+```
+
+#### Overlaid posterior transition densities
+```{r}
+theta_markov_pool_draws <- bind_rows(
+  extract_theta_draws(samples_markov_mult1, "mult1"),
+  extract_theta_draws(samples_markov_mult3, "mult3"),
+  extract_theta_draws(samples_markov_mult10, "mult10")
+)
+
+theta_markov_pool_prior_draws <- bind_rows(
+  extract_theta_prior_draws(samples_markov_mult1, "mult1"),
+  extract_theta_prior_draws(samples_markov_mult3, "mult3"),
+  extract_theta_prior_draws(samples_markov_mult10, "mult10")
+)
+
+
+plot_png_path <- file.path(figure_path, "s1_prior_sens_markov_pool_prior_posterior.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  p_markov_pool_overlay <- ggplot() +
+    geom_density(
+      data = theta_markov_pool_draws,
+      aes(x = value, fill = to),
+      alpha = 0.35
+    ) +
+    geom_density(
+      data = theta_markov_pool_prior_draws,
+      aes(x = value, colour = to),
+      fill = NA,
+      linetype = 2,
+      linewidth = 0.7
+    ) +
+  
+    facet_grid(from ~ model) +
+    theme_minimal() +
+    labs(
+      title = "Hierarchical Markov: pooling sensitivity",
+      subtitle = "Dashed lines = monitored prior draws; filled densities = posterior draws",
+      x = "Transition probability",
+      y = "Density"
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_pool_overlay,
+    width = 10,
+    height = 7,
+    dpi = 300
+  )
+}
+```
+
+#### Heatmaps by pooling prior
+```{r}
+plot_png_path <- file.path(figure_path, "s1_prior_sens_markov_pool_heatmap.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  p_markov_pool_heatmap <- table_markov_pool %>%
+    ggplot(aes(from, to, fill = mean)) +
+    geom_tile() +
+    geom_text(aes(label = round(mean, 2)), colour = "white", size = 4) +
+    facet_wrap(~ model) +
+    theme_minimal() +
+    labs(
+      title = "Hierarchical first-order Markov: population transition probabilities by pooling prior",
+      x = "Previous state",
+      y = "Next state"
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_pool_heatmap,
+    width = 9,
+    height = 4,
+    dpi = 300
+  )
+}
+```
+
+```{r}
+plot_png_path <- file.path(figure_path, "s1_prior_sens_markov_dyad_prior_posterior.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  selected_dyads <- c(1, 10, 25, 40)
+
+  theta_p_post_compare <- bind_rows(
+    extract_theta_p_draws(samples_markov_mult1, "mult1"),
+    extract_theta_p_draws(samples_markov_mult3, "mult3"),
+    extract_theta_p_draws(samples_markov_mult10, "mult10")
+  ) %>%
+    filter(
+      dyad %in% selected_dyads,
+      (from == "none" & to == "none") |
+        (from == "male" & to == "male") |
+        (from == "female" & to == "female")
+    ) %>%
+    mutate(
+      transition = paste0(from, " → ", to),
+      source = "posterior"
+    )
+
+  theta_p_prior_compare <- bind_rows(
+    extract_theta_p_prior_draws(samples_markov_mult1, "mult1"),
+    extract_theta_p_prior_draws(samples_markov_mult3, "mult3"),
+    extract_theta_p_prior_draws(samples_markov_mult10, "mult10")
+  ) %>%
+    filter(
+      dyad %in% selected_dyads,
+      (from == "none" & to == "none") |
+        (from == "male" & to == "male") |
+        (from == "female" & to == "female")
+    ) %>%
+    mutate(
+      transition = paste0(from, " → ", to),
+      source = "prior"
+    )
+
+  p_markov_dyad_sens <- bind_rows(theta_p_post_compare, theta_p_prior_compare) %>%
+    ggplot(aes(value, colour = model, fill = model, linetype = source)) +
+    geom_density(alpha = 0.18, linewidth = 0.4) +
+    facet_grid(transition ~ dyad, scales = "free_y") +
+    theme_minimal() +
+    labs(
+      title = "Hierarchical first-order Markov: dyad-level prior vs posterior sensitivity",
+      subtitle = "Solid = posterior, dashed = monitored prior draws",
+      x = "Dyad-level transition probability",
+      y = "Density",
+      colour = "Pooling prior",
+      fill = "Pooling prior",
+      linetype = NULL
+    ) +
+    scale_linetype_manual(values = c(prior = 2, posterior = 1))
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_dyad_sens,
+    width = 11,
+    height = 7,
+    dpi = 300
+  )
+}
+```
+
+
+### Dirichlet alpha sensitivity
+```{r}
+data_list_markov_alpha05 <- list(
+  y = markov_mat,
+  K = 3,
+  alpha = rep(0.5, 3)
+)
+
+data_list_markov_alpha2 <- list(
+  y = markov_mat,
+  K = 3,
+  alpha = rep(2, 3)
+)
+
+
+if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_alpha0_5.rds"))) {
+  samples_markov_alpha05 <- readRDS(file.path(results_path, "s1_prior_sens_hier_markov_alpha0_5.rds"))
+} else {
+  samples_markov_alpha05 <- jags.parallel(
+    data = data_list_markov_alpha05,
+    inits = NULL,
+    parameters.to.save = params_markov,
+    model.file = file.path(prior_models_path, "s1_hier_markov_mult3.bugs"),
+    n.chains = 12,
+    n.iter = 15000,
+    n.burnin = 2500,
+    n.thin = 1
+  )
+  saveRDS(samples_markov_alpha05, file.path(results_path, "s1_prior_sens_hier_markov_alpha0_5.rds"))
+}
+
+
+if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_alpha2.rds"))) {
+  samples_markov_alpha2 <- readRDS(file.path(results_path, "s1_prior_sens_hier_markov_alpha2.rds"))
+} else {
+  samples_markov_alpha2 <- jags.parallel(
+    data = data_list_markov_alpha2,
+    inits = NULL,
+    parameters.to.save = params_markov,
+    model.file = file.path(prior_models_path, "s1_hier_markov_mult3.bugs"),
+    n.chains = 12,
+    n.iter = 15000,
+    n.burnin = 2500,
+    n.thin = 1
+  )
+  saveRDS(samples_markov_alpha2, file.path(results_path, "s1_prior_sens_hier_markov_alpha2.rds"))
+}
+
+samples_markov_alpha1 <- samples_markov_mult3
+
+```
+
+#### Alpha sensitivity summaries
+```{r}
+table_markov_alpha <- bind_rows(
+  extract_theta_summary(samples_markov_alpha05, "alpha0.5"),
+  extract_theta_summary(samples_markov_alpha1, "alpha1"),
+  extract_theta_summary(samples_markov_alpha2, "alpha2")
+)
+
+kable(table_markov_alpha, digits = 3)
+```
+
+#### Alpha sensitivity with monitored prior draws
+```{r}
+plot_png_path <- file.path(figure_path, "s1_prior_sens_markov_alpha_prior_posterior.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  theta_markov_alpha_draws <- bind_rows(
+    extract_theta_draws(samples_markov_alpha05, "alpha0.5"),
+    extract_theta_draws(samples_markov_alpha1, "alpha1"),
+    extract_theta_draws(samples_markov_alpha2, "alpha2")
+  )
+  
+  theta_markov_alpha_prior_draws <- bind_rows(
+    extract_theta_prior_draws(samples_markov_alpha05, "alpha0.5"),
+    extract_theta_prior_draws(samples_markov_alpha1, "alpha1"),
+    extract_theta_prior_draws(samples_markov_alpha2, "alpha2")
+  )
+  
+  p_markov_alpha_overlay <- bind_rows(
+    theta_markov_alpha_draws %>% mutate(source = "posterior"),
+    theta_markov_alpha_prior_draws %>% mutate(source = "prior")
+  ) %>%
+    ggplot(aes(value, colour = model, fill = model, linetype = source)) +
+    geom_density(alpha = 0.18, linewidth = 0.4) +
+    facet_grid(from ~ to) +
+    theme_minimal() +
+    labs(
+      title = "Hierarchical first-order Markov: Dirichlet concentration sensitivity",
+      subtitle = "Solid = posterior, dashed = monitored prior draws",
+      x = "Transition probability",
+      y = "Density",
+      colour = "Prior condition",
+      fill = "Prior condition",
+      linetype = NULL
+    ) +
+    scale_linetype_manual(values = c(prior = 2, posterior = 1))
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_alpha_overlay,
+    width = 10,
+    height = 7,
+    dpi = 300
+  )
+}
+```

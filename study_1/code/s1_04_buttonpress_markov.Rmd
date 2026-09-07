@@ -1,0 +1,546 @@
+---
+title: "s1_04_buttonpress_markov"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+library(igraph)
+library(ggraph)
+library(grid)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+
+study_1_path <- file.path(main_path, "study_1")
+results_path <- file.path(study_1_path, "results")
+models_path <- file.path(main_path, "models")
+figure_path <- file.path(study_1_path, "figures")
+
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+
+```
+
+```{r}
+# analytic sample
+dem_analytic <- demographics %>%
+  filter(!excluded, setup == "COOP")
+
+analytic_ids <- dem_analytic %>%
+  distinct(id)
+
+sound_analytic <- sound_events %>%
+  filter(setup == "COOP") %>%
+  semi_join(analytic_ids, by = "id")
+```
+
+## Markov model preparation
+```{r}
+markov_data <- sound_analytic %>%
+  group_by(id) %>%
+  arrange(sound_event_order, .by_group = TRUE) %>%
+  mutate(event_number = row_number()) %>%
+  ungroup() %>%
+  mutate(
+    response = case_when(
+      responder_gender == "none" ~ 1,
+      responder_gender == "Male" ~ 2,
+      responder_gender == "Female" ~ 3
+    )
+  ) %>%
+  dplyr::select(id, event_number, response)
+
+markov_wide <- markov_data %>%
+  pivot_wider(names_from = event_number, values_from = response) %>%
+  arrange(id)
+
+markov_mat <- markov_wide %>%
+  dplyr::select(-id) %>%
+  as.matrix()
+
+dim(markov_mat)
+
+storage.mode(markov_mat) <- "numeric"
+
+data_list_markov <- list(
+  y = markov_mat,
+  K = 3,
+  alpha = rep(1, 3)
+)
+```
+
+## Hierarchical Markov model
+
+```{r}
+params_markov_hier <- c(
+  "theta0", "theta", "theta_p",
+  "theta0_prior", "theta_prior", "theta_p_prior")
+
+samples_path_markov_hier <- file.path(results_path, "s1_jags_buttonpress_markov_hierarchical.rds")
+
+if (file.exists(samples_path_markov_hier)) {
+  samples_markov_hier <- readRDS(samples_path_markov_hier)
+} else {
+  samples_markov_hier <- jags.parallel(
+    data = data_list_markov,
+    inits = NULL,
+    parameters.to.save = params_markov_hier,
+    model.file = file.path(models_path, "s1_Markov_hierarchical.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1
+  )
+  saveRDS(samples_markov_hier, samples_path_markov_hier)
+}
+
+samples_markov_hier
+
+
+```
+
+```{r}
+markov_draws <- as.matrix(
+  as.mcmc(samples_markov_hier)
+)
+
+p_none_persist <- markov_draws[, "theta[1,1]"]
+p_male_persist <- markov_draws[, "theta[2,2]"]
+p_female_persist <- markov_draws[, "theta[3,3]"]
+
+persistence_differences <- tibble(
+  comparison = c(
+    "Female − male",
+    "No press − male",
+    "No press − female"),
+  difference = list(
+    p_female_persist - p_male_persist,
+    p_none_persist - p_male_persist,
+    p_none_persist - p_female_persist)) %>%
+  mutate(
+    mean_difference = map_dbl(
+      difference,
+      mean),
+    lower_95_CrI = map_dbl(
+      difference,
+      ~ quantile(.x, probs = .025)),
+    upper_95_CrI = map_dbl(
+      difference,
+      ~ quantile(.x, probs = .975)),
+    posterior_probability_positive = map_dbl(
+      difference,
+      ~ mean(.x > 0)),
+    posterior_probability_negative = map_dbl(
+      difference,
+      ~ mean(.x < 0))) %>%
+  dplyr::select(-difference)
+
+persistence_differences %>%
+  mutate(
+    across(
+      where(is.numeric),
+      ~ round(.x, 3))) %>%
+  print(width = Inf)
+```
+
+
+```{r}
+plot_png_path <- file.path(figure_path, "s1_buttonpress_markov_traceplots.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  mcmc_list_markov <- as.mcmc(samples_markov_hier)
+
+  trace_df_markov <- purrr::map2_dfr(
+    mcmc_list_markov,
+    seq_along(mcmc_list_markov),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y)
+      )
+  ) %>%
+    dplyr::select(
+      iteration, chain,
+      `theta0[1]`, `theta0[2]`, `theta0[3]`,
+      `theta[1,1]`, `theta[2,2]`, `theta[3,3]`
+    ) %>%
+    group_by(chain) %>%
+    slice(seq(1, n(), by = 20)) %>%
+    ungroup() %>%
+    pivot_longer(
+      cols = -c(iteration, chain),
+      names_to = "parameter",
+      values_to = "value"
+    ) %>%
+    mutate(
+      parameter = factor(
+        parameter,
+        levels = c(
+          "theta0[1]", "theta0[2]", "theta0[3]",
+          "theta[1,1]", "theta[2,2]", "theta[3,3]"
+        ),
+        labels = c(
+          "theta0[none]", "theta0[male]", "theta0[female]",
+          "theta[none,none]", "theta[male,male]", "theta[female,female]"
+        )
+      )
+    )
+
+  p_trace_markov <- ggplot(trace_df_markov, aes(x = iteration, y = value, colour = chain)) +
+    geom_line(alpha = 0.6, linewidth = 0.25) +
+    facet_wrap(~ parameter, scales = "free_y", ncol = 1) +
+    theme_minimal() +
+    labs(
+      x = "Iteration",
+      y = "Value",
+      colour = "Chain"
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_markov,
+    width = 8,
+    height = 10,
+    dpi = 300
+  )
+}
+```
+
+```{r}
+hier_summary <- samples_markov_hier$BUGSoutput$summary %>%
+  as.data.frame() %>%
+  rownames_to_column("parameter")
+
+theta0_hier <- hier_summary %>%
+  filter(str_detect(parameter, "^theta0\\[")) %>%
+  mutate(state = str_match(parameter, "^theta0\\[(\\d+)\\]")[, 2] %>% as.integer()) %>%
+  transmute(
+    state = factor(state, levels = 1:3, labels = c("none", "male", "female")),
+    mean = mean,
+    lower = `2.5%`,
+    upper = `97.5%`
+  )
+
+theta_hier <- hier_summary %>%
+  filter(str_detect(parameter, "^theta\\[")) %>%
+  mutate(
+    from = str_match(parameter, "^theta\\[(\\d+),(\\d+)\\]")[, 2] %>% as.integer(),
+    to   = str_match(parameter, "^theta\\[(\\d+),(\\d+)\\]")[, 3] %>% as.integer()
+  ) %>%
+  transmute(
+    from = factor(from, levels = 1:3, labels = c("none", "male", "female")),
+    to   = factor(to, levels = 1:3, labels = c("none", "male", "female")),
+    mean = mean,
+    lower = `2.5%`,
+    upper = `97.5%`
+  )
+
+```
+
+```{r}
+plot_png_path <- file.path(figure_path, "s1_buttonpress_markov_transition_densities.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  s_hier_markov <- as.matrix(as.mcmc(samples_markov_hier))
+
+  theta_hier_post_long <- as_tibble(s_hier_markov) %>%
+    dplyr::select(matches("^theta\\[")) %>%
+    pivot_longer(cols = everything(), names_to = "parameter", values_to = "value") %>%
+    mutate(
+      from = str_match(parameter, "^theta\\[(\\d+),(\\d+)\\]")[, 2] %>% as.integer(),
+      to   = str_match(parameter, "^theta\\[(\\d+),(\\d+)\\]")[, 3] %>% as.integer(),
+      from = factor(from, levels = 1:3, labels = c("none", "male", "female")),
+      to   = factor(to, levels = 1:3, labels = c("none", "male", "female")),
+      source = "posterior"
+    )
+
+  theta_hier_prior_long <- as_tibble(s_hier_markov) %>%
+    dplyr::select(matches("^theta_prior\\[")) %>%
+    pivot_longer(cols = everything(), names_to = "parameter", values_to = "value") %>%
+    mutate(
+      from = str_match(parameter, "^theta_prior\\[(\\d+),(\\d+)\\]")[, 2] %>% as.integer(),
+      to   = str_match(parameter, "^theta_prior\\[(\\d+),(\\d+)\\]")[, 3] %>% as.integer(),
+      from = factor(from, levels = 1:3, labels = c("none", "male", "female")),
+      to   = factor(to, levels = 1:3, labels = c("none", "male", "female")),
+      source = "prior"
+    )
+
+
+  p_markov_transition_density <- ggplot() +
+    geom_density(
+      data = theta_hier_post_long,
+      aes(x = value, fill = to),
+      alpha = 0.35
+    ) +
+    geom_density(
+      data = theta_hier_prior_long,
+      aes(x = value, colour = to),
+      fill = NA,
+      linetype = 2,
+      linewidth = 0.7
+    ) +
+    facet_grid(from ~ 1) +
+    theme_minimal() +
+    labs(
+      x = "Transition probability",
+      y = "Density"
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_transition_density,
+    width = 8,
+    height = 7,
+    dpi = 300
+  )
+}
+
+plot_png_path <- file.path(figure_path, "s1_buttonpress_markov_selected_dyads.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  selected_dyads <- c(1, 10, 25, 40)
+
+  selected_dyad_labels <- markov_wide %>%
+    mutate(dyad = row_number()) %>%
+    filter(dyad %in% selected_dyads) %>%
+    dplyr::select(dyad, id) %>%
+    mutate(dyad_label = paste0(id))
+
+  theta_p_post_selected <- extract_theta_p_draws(
+    samples_markov_hier,
+    "main",
+    dyads_keep = selected_dyads,
+    from_keep = 1:3,
+    to_keep = 1:3
+  ) %>%
+    filter(
+      (from == "none" & to == "none") |
+        (from == "male" & to == "male") |
+        (from == "female" & to == "female")
+    ) %>%
+    left_join(selected_dyad_labels, by = "dyad") %>%
+    mutate(
+      transition = factor(
+        paste0(from, " -> ", to),
+        levels = c("none -> none", "male -> male", "female -> female")
+      ),
+      source = "posterior"
+    )
+
+  theta_p_prior_selected <- extract_theta_p_prior_draws(
+    samples_markov_hier,
+    "main",
+    dyads_keep = selected_dyads,
+    from_keep = 1:3,
+    to_keep = 1:3
+  ) %>%
+    filter(
+      (from == "none" & to == "none") |
+        (from == "male" & to == "male") |
+        (from == "female" & to == "female")
+    ) %>%
+    left_join(selected_dyad_labels, by = "dyad") %>%
+    mutate(
+      transition = factor(
+        paste0(from, " -> ", to),
+        levels = c("none -> none", "male -> male", "female -> female")
+      ),
+      source = "prior"
+    )
+
+  p_markov_selected_dyads <- bind_rows(theta_p_post_selected, theta_p_prior_selected) %>%
+    ggplot(aes(x = value)) +
+    geom_density(
+      data = ~ dplyr::filter(.x, source == "posterior"),
+      aes(fill = dyad_label, colour = dyad_label),
+      alpha = 0.12,
+      linewidth = 0.5
+    ) +
+    geom_density(
+      data = ~ dplyr::filter(.x, source == "prior"),
+      inherit.aes = FALSE,
+      aes(x = value),
+      colour = "black",
+      linetype = 2,
+      linewidth = 0.8
+    ) +
+    facet_wrap(~ transition, nrow = 1, scales = "free_y") +
+    theme_minimal() +
+    labs(
+      title = "Hierarchical Markov: prior vs posterior for selected dyads",
+      subtitle = "Persistence transitions shown for selected dyads; coloured fills = posterior, black dashed line = monitored prior draws",
+      x = "Transition probability",
+      y = "Density",
+      colour = "Dyad",
+      fill = "Dyad"
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_selected_dyads,
+    width = 10,
+    height = 4,
+    dpi = 300
+  )
+}
+```
+
+## Dyad-level heterogeneity in the hierarchical Markov model
+
+```{r}
+plot_png_path <- file.path(figure_path, "s1_buttonpress_markov_dyad_persistence.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  theta_p_post_means <- extract_theta_p_draws(
+    samples_markov_hier,
+    "posterior",
+    from_keep = 1:3,
+    to_keep = 1:3
+  ) %>%
+    filter(
+      (from == "none" & to == "none") |
+        (from == "male" & to == "male") |
+        (from == "female" & to == "female")
+    ) %>%
+    group_by(dyad, from, to) %>%
+    summarise(value = mean(value), .groups = "drop") %>%
+    mutate(
+      transition = factor(
+        paste0(from, " -> ", to),
+        levels = c("none -> none", "male -> male", "female -> female")
+      )
+    )
+
+  p_markov_dyad_persistence <- ggplot(theta_p_post_means, aes(value, fill = transition, colour = transition)) +
+    geom_density(alpha = 0.18, linewidth = 0.5) +
+    theme_minimal() +
+    labs(
+      title = "Distribution of dyad-level persistence probabilities",
+      subtitle = "Posterior means across dyads from the hierarchical Markov model",
+      x = "Posterior mean transition probability",
+      y = "Density",
+      fill = "Transition",
+      colour = "Transition"
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_dyad_persistence,
+    width = 8,
+    height = 5,
+    dpi = 300
+  )
+}
+```
+
+
+```{r}
+transition_graph_df <- theta_hier %>%
+  mutate(
+    from = as.character(from),
+    to = as.character(to),
+    trans = round(mean, 2)
+  ) %>%
+  dplyr::select(from, to, trans)
+
+vertex_df <- tibble(
+  name = c(
+    "none",
+    "male",
+    "female"
+  ),
+  x = c(0, -1, 1),
+  y = c(1, 0, 0),
+  p0 = round(
+    theta0_hier$mean[
+      match(
+        c("none", "male", "female"),
+        as.character(theta0_hier$state)
+      )
+    ],
+    2
+  )
+)
+
+graph <- graph_from_data_frame(
+  d = transition_graph_df,
+  vertices = vertex_df,
+  directed = TRUE
+)
+
+p_markov_network <- ggraph(graph, layout = "manual", x = vertex_df$x, y = vertex_df$y) +
+  geom_edge_fan(
+    aes(alpha = trans, label = trans),
+    angle_calc = "along",
+    arrow = arrow(length = unit(4, "mm")),
+    start_cap = circle(6, "mm"),
+    end_cap = circle(6.5, "mm"),
+    label_dodge = unit(2.5, "mm"),
+    label_size = 2.5,
+    show.legend = FALSE
+  ) +
+  geom_edge_loop(
+    aes(alpha = trans, label = trans),
+    angle_calc = "along",
+    arrow = arrow(length = unit(4, "mm")),
+    start_cap = circle(6, "mm"),
+    end_cap = circle(6.5, "mm"),
+    label_dodge = unit(2.5, "mm"),
+    label_size = 2.5, 
+    show.legend = FALSE
+  ) +
+  geom_node_point(aes(x = x, y = y, color = name), size = 10) +
+  geom_node_text(aes(x = x, y = y, label = p0), color = "white", size = 3) +
+  theme_void(base_size = 10) +
+  scale_color_manual(
+    values = c(
+      none = "#9487b6",
+      male = "#eb8005",
+      female = "#2A9D8F"
+    ),
+    labels = c(
+      none = "None",
+      male = "Male",
+      female = "Female"
+    )
+  ) +
+  labs(
+    color = "Button-press response"
+  ) +
+  theme(
+        legend.title = element_text(size = 8.5, lineheight = 0.9),
+        legend.text = element_text(size = 8),
+        plot.margin = margin(t = 25, r = 35, b = 25, l = 35))
+
+plot_png_path <- file.path(figure_path, "s1_buttonpress_markov_network.png")
+
+if (file.exists(plot_png_path)) {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+} else {
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_markov_network,
+    width = 8,
+    height = 5,
+    dpi = 300
+  )
+}
+```

@@ -1,0 +1,1183 @@
+---
+title: "s1_06_no_press_dyads_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(emmeans)
+library(patchwork)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_1_path <- file.path(main_path, "study_1")
+figure_path <- file.path(study_1_path, "figures")
+
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+```
+
+## Identify the no-press dyads
+
+```{r}
+# Full analytic Study 1 sample
+dem_coop_analytic <- demographics %>%
+  filter(
+    !excluded,
+    setup == "COOP"
+  )
+
+analytic_coop_ids <- dem_coop_analytic %>%
+  distinct(id)
+
+sound_coop_analytic <- sound_events %>%
+  filter(setup == "COOP") %>%
+  semi_join(analytic_coop_ids, by = "id")
+
+# Dyads in which neither participant pressed during any sound event
+no_press_dyads <- sound_coop_analytic %>%
+  group_by(id) %>%
+  summarise(
+    n_female_presses = sum(
+      responder_gender == "Female",
+      na.rm = TRUE
+    ),
+    n_male_presses = sum(
+      responder_gender == "Male",
+      na.rm = TRUE
+    ),
+    n_no_press_events = sum(
+      responder_gender == "none",
+      na.rm = TRUE
+    ),
+    n_presses = n_female_presses + n_male_presses,
+    .groups = "drop"
+  ) %>%
+  filter(n_presses == 0)
+
+no_press_dyads
+nrow(no_press_dyads)
+```
+
+```{r}
+# Participants and rounds from the no-press dyads
+dem_no_press <- dem_coop_analytic %>%
+  semi_join(no_press_dyads, by = "id")
+
+no_press_rounds <- roundwise_clean %>%
+  filter(
+    !excluded,
+    setup == "COOP"
+  ) %>%
+  semi_join(no_press_dyads, by = "id")
+```
+
+## Derive performance and sound variables
+
+```{r}
+no_press_rounds <- no_press_rounds %>%
+  mutate(
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")
+    ),
+    completed = as.integer(completed),
+    success = as.integer(success),
+    skipped = as.integer(completed == 0),
+    secs = as.numeric(secs),
+    log_secs = log(secs + 1),
+    n_sound_episodes = replace_na(n_sound_episodes, 0),
+    any_sound = as.integer(
+      replace_na(any_stimulus, FALSE)
+    )
+  ) %>%
+  mutate(
+    sound1_lower = str_to_lower(
+      coalesce(sound1_stimulus, "")
+    ),
+    sound2_lower = str_to_lower(
+      coalesce(sound2_stimulus, "")
+    ),
+    sound3_lower = str_to_lower(
+      coalesce(sound3_stimulus, "")
+    ),
+    any_cry = as.integer(
+      str_detect(sound1_lower, "cry|cries") |
+        str_detect(sound2_lower, "cry|cries") |
+        str_detect(sound3_lower, "cry|cries")
+    ),
+    any_alarm = as.integer(
+      str_detect(sound1_lower, "alarm") |
+        str_detect(sound2_lower, "alarm") |
+        str_detect(sound3_lower, "alarm")
+    ),
+    round_sound_type = case_when(
+      any_sound == 0 ~ "none",
+      any_cry == 1 & any_alarm == 0 ~ "cry_only",
+      any_cry == 0 & any_alarm == 1 ~ "alarm_only",
+      any_cry == 1 & any_alarm == 1 ~ "mixed_cry_alarm",
+      TRUE ~ "unclear"
+    ),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "none",
+        "alarm_only",
+        "cry_only",
+        "mixed_cry_alarm",
+        "unclear"
+      )
+    )
+  )
+
+# Retain the sound conditions represented in the no-press dyads
+# Exclude mixed cry-alarm rounds
+no_press_rounds <- no_press_rounds %>%
+  filter(round_sound_type != "mixed_cry_alarm")
+```
+
+## Sample checks
+
+```{r}
+dem_no_press %>%
+  summarise(
+    n_dyads = n_distinct(id),
+    n_participants = n(),
+    n_female = sum(gender == "Female", na.rm = TRUE),
+    n_male = sum(gender == "Male", na.rm = TRUE),
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE)
+  )
+
+no_press_rounds %>%
+  summarise(
+    n_rounds = n(),
+    n_dyads = n_distinct(id),
+    n_participants = n_distinct(participant.code)
+  )
+
+no_press_rounds %>%
+  count(round_sound_type, sort = TRUE)
+
+no_press_rounds %>%
+  count(gender, round_sound_type)
+```
+
+## Participant-level task-performance descriptives
+
+```{r}
+no_press_participant_performance <- no_press_rounds %>%
+  group_by(
+    id,
+    participant.code,
+    gender
+  ) %>%
+  summarise(
+    n_matrices_seen = n(),
+    n_matrices_completed = sum(
+      completed,
+      na.rm = TRUE
+    ),
+    n_matrices_correct = sum(
+      success,
+      na.rm = TRUE
+    ),
+    n_matrices_skip = sum(
+      skipped,
+      na.rm = TRUE
+    ),
+    mean_round_duration_secs = mean(
+      secs,
+      na.rm = TRUE
+    ),
+    n_rounds_with_any_sound = sum(
+      any_sound,
+      na.rm = TRUE
+    ),
+    n_rounds_with_more_than_one_sound = sum(
+      n_sound_episodes > 1,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+no_press_participant_performance %>%
+  summarise(
+    n_participants = n(),
+
+    mean_matrices_seen =
+      mean(n_matrices_seen, na.rm = TRUE),
+    sd_matrices_seen =
+      sd(n_matrices_seen, na.rm = TRUE),
+
+    mean_matrices_completed =
+      mean(n_matrices_completed, na.rm = TRUE),
+    sd_matrices_completed =
+      sd(n_matrices_completed, na.rm = TRUE),
+
+    mean_matrices_correct =
+      mean(n_matrices_correct, na.rm = TRUE),
+    sd_matrices_correct =
+      sd(n_matrices_correct, na.rm = TRUE),
+
+    mean_matrices_skip =
+      mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip =
+      sd(n_matrices_skip, na.rm = TRUE),
+
+    round_duration_mean =
+      mean(mean_round_duration_secs, na.rm = TRUE),
+    round_duration_sd =
+      sd(mean_round_duration_secs, na.rm = TRUE),
+
+    mean_rounds_with_any_sound =
+      mean(n_rounds_with_any_sound, na.rm = TRUE),
+    sd_rounds_with_any_sound =
+      sd(n_rounds_with_any_sound, na.rm = TRUE),
+
+    mean_rounds_with_more_than_one_sound =
+      mean(
+        n_rounds_with_more_than_one_sound,
+        na.rm = TRUE
+      ),
+    sd_rounds_with_more_than_one_sound =
+      sd(
+        n_rounds_with_more_than_one_sound,
+        na.rm = TRUE
+      )
+  )
+
+no_press_participant_performance %>%
+  group_by(gender) %>%
+  summarise(
+    n_participants = n(),
+
+    mean_matrices_seen =
+      mean(n_matrices_seen, na.rm = TRUE),
+    sd_matrices_seen =
+      sd(n_matrices_seen, na.rm = TRUE),
+
+    mean_matrices_completed =
+      mean(n_matrices_completed, na.rm = TRUE),
+    sd_matrices_completed =
+      sd(n_matrices_completed, na.rm = TRUE),
+
+    mean_matrices_correct =
+      mean(n_matrices_correct, na.rm = TRUE),
+    sd_matrices_correct =
+      sd(n_matrices_correct, na.rm = TRUE),
+
+    mean_matrices_skip =
+      mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip =
+      sd(n_matrices_skip, na.rm = TRUE),
+
+    round_duration_mean =
+      mean(mean_round_duration_secs, na.rm = TRUE),
+    round_duration_sd =
+      sd(mean_round_duration_secs, na.rm = TRUE),
+
+    mean_rounds_with_any_sound =
+      mean(n_rounds_with_any_sound, na.rm = TRUE),
+    sd_rounds_with_any_sound =
+      sd(n_rounds_with_any_sound, na.rm = TRUE),
+
+    mean_rounds_with_more_than_one_sound =
+      mean(
+        n_rounds_with_more_than_one_sound,
+        na.rm = TRUE
+      ),
+    sd_rounds_with_more_than_one_sound =
+      sd(
+        n_rounds_with_more_than_one_sound,
+        na.rm = TRUE
+      ),
+    .groups = "drop"
+  )
+```
+
+## Paired gender comparisons of participant-level performance
+
+```{r}
+no_press_performance_wide <- no_press_participant_performance %>%
+  dplyr::select(
+    id,
+    gender,
+    n_matrices_seen,
+    n_matrices_completed,
+    n_matrices_correct,
+    mean_round_duration_secs
+  ) %>%
+  pivot_wider(
+    names_from = gender,
+    values_from = c(
+      n_matrices_seen,
+      n_matrices_completed,
+      n_matrices_correct,
+      mean_round_duration_secs
+    )
+  )
+
+no_press_difference_scores <- no_press_performance_wide %>%
+  transmute(
+    id,
+    matrices_seen_diff =
+      n_matrices_seen_Female -
+      n_matrices_seen_Male,
+    matrices_answered_diff =
+      n_matrices_completed_Female -
+      n_matrices_completed_Male,
+    matrices_correct_diff =
+      n_matrices_correct_Female -
+      n_matrices_correct_Male,
+    mean_duration_diff =
+      mean_round_duration_secs_Female -
+      mean_round_duration_secs_Male
+  )
+
+no_press_difference_scores_long <-
+  no_press_difference_scores %>%
+  pivot_longer(
+    cols = -id,
+    names_to = "outcome",
+    values_to = "difference"
+  ) %>%
+  mutate(
+    outcome = factor(
+      outcome,
+      levels = c(
+        "matrices_seen_diff",
+        "matrices_answered_diff",
+        "matrices_correct_diff",
+        "mean_duration_diff"
+      ),
+      labels = c(
+        "Matrices seen",
+        "Matrices answered",
+        "Matrices correct",
+        "Mean round duration"
+      )
+    )
+  )
+```
+
+```{r}
+# Distributional checks of within-dyad difference scores
+# Boxplots of within-dyad difference scores
+p_no_press_difference_boxplots <-
+  ggplot(
+    no_press_difference_scores_long,
+    aes(
+      x = "",
+      y = difference
+    )
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = 2,
+    linewidth = 0.6
+  ) +
+  geom_boxplot(
+    width = 0.45,
+    outlier.shape = NA
+  ) +
+  geom_jitter(
+    width = 0.08,
+    height = 0,
+    alpha = 0.70,
+    size = 1.8
+  ) +
+  facet_wrap(
+    ~ outcome,
+    scales = "free_y",
+    ncol = 2
+  ) +
+  labs(
+    x = NULL,
+    y = "Female − male difference"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+plot_png_path <- file.path(
+    figure_path,
+    "s1_no_press_difference_boxplots.png"
+  )
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_no_press_difference_boxplots,
+  width = 9,
+  height = 7,
+  dpi = 300
+)
+
+# Q-Q plots of within-dyad difference scores
+p_no_press_difference_qq <-
+  ggplot(
+    no_press_difference_scores_long,
+    aes(sample = difference)
+  ) +
+  stat_qq(
+    alpha = 0.75,
+    size = 1.8
+  ) +
+  stat_qq_line(
+    linewidth = 0.7
+  ) +
+  facet_wrap(
+    ~ outcome,
+    scales = "free",
+    ncol = 2
+  ) +
+  labs(
+    x = "Theoretical quantiles",
+    y = "Observed quantiles"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold")
+  )
+
+plot_png_path <- file.path(
+    figure_path,
+    "s1_no_press_difference_qqplots.png"
+  )
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_no_press_difference_qq,
+  width = 9,
+  height = 7,
+  dpi = 300
+)
+
+```
+
+```{r}
+# Shapiro-Wilk tests of within-dyad difference scores
+shapiro.test(
+  no_press_difference_scores$matrices_seen_diff
+)
+
+shapiro.test(
+  no_press_difference_scores$matrices_answered_diff
+)
+
+shapiro.test(
+  no_press_difference_scores$matrices_correct_diff
+)
+
+shapiro.test(
+  no_press_difference_scores$mean_duration_diff
+)
+```
+
+```{r}
+# Paired-samples t-tests
+t.test(
+  no_press_performance_wide$n_matrices_seen_Female,
+  no_press_performance_wide$n_matrices_seen_Male,
+  paired = TRUE)
+
+t.test(
+  no_press_performance_wide$n_matrices_completed_Female,
+  no_press_performance_wide$n_matrices_completed_Male,
+  paired = TRUE)
+
+t.test(
+  no_press_performance_wide$n_matrices_correct_Female,
+  no_press_performance_wide$n_matrices_correct_Male,
+  paired = TRUE)
+
+t.test(
+  no_press_performance_wide$mean_round_duration_secs_Female,
+  no_press_performance_wide$mean_round_duration_secs_Male,
+  paired = TRUE)
+```
+
+## Descriptives by sound condition
+
+```{r}
+no_press_sound_condition_rounds <- no_press_rounds %>%
+  filter(
+    round_sound_type %in% c(
+      "none",
+      "cry_only"
+      )
+  )
+
+no_press_soundtype_participant_performance <-
+  no_press_sound_condition_rounds %>%
+  group_by(
+    round_sound_type,
+    id,
+    participant.code,
+    gender
+  ) %>%
+  summarise(
+    n_rounds_seen = n(),
+    n_rounds_completed = sum(
+      completed,
+      na.rm = TRUE
+    ),
+    n_rounds_correct = sum(
+      success,
+      na.rm = TRUE
+    ),
+    n_matrices_skip = sum(
+      skipped,
+      na.rm = TRUE
+    ),
+    mean_round_duration_secs = mean(
+      secs,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+no_press_soundtype_participant_performance %>%
+  group_by(round_sound_type) %>%
+  summarise(
+    mean_rounds_seen =
+      mean(n_rounds_seen, na.rm = TRUE),
+    sd_rounds_seen =
+      sd(n_rounds_seen, na.rm = TRUE),
+
+    mean_rounds_completed =
+      mean(n_rounds_completed, na.rm = TRUE),
+    sd_rounds_completed =
+      sd(n_rounds_completed, na.rm = TRUE),
+
+    mean_rounds_correct =
+      mean(n_rounds_correct, na.rm = TRUE),
+    sd_rounds_correct =
+      sd(n_rounds_correct, na.rm = TRUE),
+
+    mean_matrices_skip =
+      mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip =
+      sd(n_matrices_skip, na.rm = TRUE),
+
+    round_duration_mean =
+      mean(mean_round_duration_secs, na.rm = TRUE),
+    round_duration_sd =
+      sd(mean_round_duration_secs, na.rm = TRUE),
+
+    .groups = "drop"
+  )
+
+no_press_soundtype_participant_performance %>%
+  group_by(
+    round_sound_type,
+    gender
+  ) %>%
+  summarise(
+    mean_rounds_seen =
+      mean(n_rounds_seen, na.rm = TRUE),
+    sd_rounds_seen =
+      sd(n_rounds_seen, na.rm = TRUE),
+
+    mean_rounds_completed =
+      mean(n_rounds_completed, na.rm = TRUE),
+    sd_rounds_completed =
+      sd(n_rounds_completed, na.rm = TRUE),
+
+    mean_rounds_correct =
+      mean(n_rounds_correct, na.rm = TRUE),
+    sd_rounds_correct =
+      sd(n_rounds_correct, na.rm = TRUE),
+
+    mean_matrices_skip =
+      mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip =
+      sd(n_matrices_skip, na.rm = TRUE),
+    
+    round_duration_mean =
+      mean(mean_round_duration_secs, na.rm = TRUE),
+    round_duration_sd =
+      sd(mean_round_duration_secs, na.rm = TRUE),
+    
+    .groups = "drop"
+  )
+```
+
+## Duration model fitted to answered rounds
+
+```{r}
+duration_data <- no_press_rounds %>%
+  filter(
+    completed == 1,
+    round_sound_type %in% c(
+      "none",
+      "cry_only"
+    ),
+    !is.na(log_secs),
+    !is.na(gender),
+    !is.na(participant.code),
+    !is.na(id)
+  ) %>%
+  droplevels() %>%
+  mutate(
+    gender = relevel(
+      gender,
+      ref = "Female"
+    ),
+    round_sound_type = relevel(
+      round_sound_type,
+      ref = "none"
+    )
+  )
+
+duration_data %>%
+  count(
+    gender,
+    round_sound_type
+  )
+
+duration_data %>%
+  summarise(
+    n_rounds = n(),
+    n_dyads = n_distinct(id),
+    n_participants =
+      n_distinct(participant.code)
+  )
+```
+
+```{r}
+# Raw and log-transformed duration distributions
+duration_dist_df <- duration_data %>%
+  dplyr::select(secs, log_secs) %>%
+  pivot_longer(
+    cols = c(secs, log_secs),
+    names_to = "scale",
+    values_to = "duration"
+  ) %>%
+  mutate(
+    scale = factor(
+      scale,
+      levels = c("secs", "log_secs"),
+      labels = c(
+        "Raw round duration",
+        "Log-transformed round duration"
+      )
+    )
+  )
+
+p_no_press_duration_distributions <-
+  ggplot(
+    duration_dist_df,
+    aes(x = duration)
+  ) +
+  geom_histogram(
+    bins = 30
+  ) +
+  facet_wrap(
+    ~ scale,
+    scales = "free_x",
+    ncol = 2
+  ) +
+  theme_minimal(base_size = 12) +
+  labs(
+    x = NULL,
+    y = "Count"
+  ) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold")
+  )
+
+plot_png_path <- file.path(
+    figure_path,
+    "s1_no_press_duration_raw_log_distributions.png"
+  )
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_no_press_duration_distributions,
+  width = 10,
+  height = 5,
+  dpi = 300
+)
+
+```
+
+```{r}
+# The dyad random intercept accounts for dependence between partners.
+duration_model <- lmer(
+  log_secs ~
+    round_sound_type * gender +
+    (1 | id) +
+    (1 | participant.code),
+  data = duration_data,
+  REML = TRUE
+)
+
+summary(duration_model)
+
+duration_summary <- coef(summary(duration_model))
+
+cbind(
+  Estimate = duration_summary[, "Estimate"],
+  lower_95_CI =
+    duration_summary[, "Estimate"] -
+    qt(0.975, duration_summary[, "df"]) *
+    duration_summary[, "Std. Error"],
+  upper_95_CI =
+    duration_summary[, "Estimate"] +
+    qt(0.975, duration_summary[, "df"]) *
+    duration_summary[, "Std. Error"]
+)
+```
+
+## Estimated sound-condition contrasts
+
+```{r}
+# Estimated cry-versus-no-sound contrast within each gender
+duration_emmeans <- emmeans(
+  duration_model,
+  ~ round_sound_type | gender,
+  lmer.df = "satterthwaite"
+)
+
+duration_sound_contrasts <- contrast(
+  duration_emmeans,
+  method = list(
+    "cry_only - none" = c(-1, 1)
+  )
+)
+
+summary(
+  duration_sound_contrasts,
+  infer = c(TRUE, TRUE),
+  adjust = "none"
+)
+
+duration_gender_interaction <- contrast(
+  duration_sound_contrasts,
+  method = "revpairwise",
+  by = NULL
+)
+
+summary(
+  duration_gender_interaction,
+  infer = c(TRUE, TRUE),
+  adjust = "none"
+)
+```
+
+## Duration-model diagnostics
+
+```{r}
+duration_data %>%
+  summarise(
+    n_rounds = n(),
+    n_dyads = n_distinct(id),
+    n_participants =
+      n_distinct(participant.code),
+    min_secs = min(secs, na.rm = TRUE),
+    max_secs = max(secs, na.rm = TRUE),
+    n_zero_secs = sum(secs == 0, na.rm = TRUE),
+    n_negative_secs = sum(secs < 0, na.rm = TRUE)
+  )
+
+duration_data %>%
+  count(
+    participant.code,
+    gender,
+    name = "n_rounds"
+  ) %>%
+  summarise(
+    min_rounds = min(n_rounds),
+    median_rounds = median(n_rounds),
+    mean_rounds = mean(n_rounds),
+    max_rounds = max(n_rounds)
+  )
+
+isSingular(
+  duration_model,
+  tol = 1e-4
+)
+
+VarCorr(duration_model)
+
+duration_model@optinfo$conv$lme4$messages
+
+fixed_effect_matrix <- getME(
+  duration_model,
+  "X"
+)
+
+c(
+  number_of_columns =
+    ncol(fixed_effect_matrix),
+  matrix_rank =
+    qr(fixed_effect_matrix)$rank
+)
+```
+
+```{r}
+duration_diagnostics <- tibble(
+  fitted = fitted(duration_model),
+  residual = resid(duration_model),
+  standardised_residual =
+    resid(duration_model) / sigma(duration_model)
+)
+
+# Residuals versus fitted values
+p_duration_residuals_fitted <-
+  ggplot(
+    duration_diagnostics,
+    aes(
+      x = fitted,
+      y = standardised_residual
+    )
+  ) +
+  geom_point(
+    alpha = 0.45,
+    size = 1.3
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = 2
+  ) +
+  geom_hline(
+    yintercept = c(-2, 2),
+    linetype = 3
+  ) +
+  labs(
+    title = "A.",
+    x = "Fitted log duration",
+    y = "Standardised residual"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+
+# Normal Q-Q plot
+p_duration_residual_qq <-
+  ggplot(
+    duration_diagnostics,
+    aes(sample = standardised_residual)
+  ) +
+  stat_qq(
+    alpha = 0.50,
+    size = 1.3
+  ) +
+  stat_qq_line(
+    linewidth = 0.7
+  ) +
+  labs(
+    title = "B.",
+    x = "Theoretical quantiles",
+    y = "Observed quantiles"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+
+# Histogram of standardised residuals
+p_duration_residual_histogram <-
+  ggplot(
+    duration_diagnostics,
+    aes(x = standardised_residual)
+  ) +
+  geom_histogram(
+    bins = 30,
+    boundary = 0
+  ) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 2
+  ) +
+  labs(
+    title = "C.",
+    x = "Standardised residual",
+    y = "Count"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+
+p_no_press_duration_diagnostics <-
+  p_duration_residuals_fitted /
+  (p_duration_residual_qq +
+     p_duration_residual_histogram) +
+  plot_layout(
+    heights = c(1, 1)
+  )
+
+plot_png_path <- file.path(
+    figure_path,
+    "s1_no_press_duration_model_diagnostics.png"
+  )
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_no_press_duration_diagnostics,
+  width = 11,
+  height = 9,
+  dpi = 300
+)
+```
+
+## Duration figure
+
+```{r}
+# Participant-level mean log durations
+duration_participant_log_means <- duration_data %>%
+  group_by(
+    participant.code,
+    gender,
+    round_sound_type
+  ) %>%
+  summarise(
+    mean_log_secs =
+      mean(log_secs, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    gender = factor(
+      gender,
+      levels = c(
+        "Female",
+        "Male"
+      )
+    ),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "none",
+        "cry_only"
+      ),
+      labels = c(
+        "No sound",
+        "Infant cry"
+      )
+    )
+  )
+
+# Model-estimated means
+duration_emmeans_plot <- summary(
+  duration_emmeans,
+  infer = c(TRUE, TRUE)
+) %>%
+  as_tibble() %>%
+  mutate(
+    gender = factor(
+      gender,
+      levels = c(
+        "Female",
+        "Male"
+      )
+    ),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "none",
+        "cry_only"
+      ),
+      labels = c(
+        "No sound",
+        "Infant cry"
+      )
+    )
+  )
+
+# Cry-minus-no-sound contrasts within each gender
+duration_contrast_plot <- 
+  summary(
+    duration_sound_contrasts,
+    infer = c(TRUE, TRUE),
+    adjust = "none"
+  ) %>%
+  as_tibble() %>%
+  mutate(
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")
+    ),
+    contrast_label = "Infant cry versus no sound"
+  )
+
+
+gender_colours <- c(
+  "Female" = "#2A9D8F",
+  "Male" = "#eb8005"
+)
+
+duration_dodge <-
+  position_dodge(width = 0.78)
+```
+
+```{r}
+p_no_press_duration_means <- 
+  ggplot(
+    duration_participant_log_means,
+    aes(
+      x = round_sound_type,
+      y = mean_log_secs,
+      fill = gender,
+      colour = gender
+    )
+  ) +
+  geom_violin(
+    aes(
+      group = interaction(
+        round_sound_type,
+        gender
+      )
+    ),
+    position = duration_dodge,
+    width = 0.70,
+    scale = "width",
+    trim = FALSE,
+    alpha = 0.20,
+    linewidth = 0.55
+  ) +
+  geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.07,
+      jitter.height = 0,
+      dodge.width = 0.78
+    ),
+    size = 1.7,
+    alpha = 0.40
+  ) +
+  geom_errorbar(
+    data = duration_emmeans_plot,
+    aes(
+      x = round_sound_type,
+      ymin = lower.CL,
+      ymax = upper.CL,
+      colour = gender
+    ),
+    position = duration_dodge,
+    width = 0.10,
+    linewidth = 0.9,
+    inherit.aes = FALSE
+  ) +
+  geom_point(
+    data = duration_emmeans_plot,
+    aes(
+      x = round_sound_type,
+      y = emmean,
+      colour = gender
+    ),
+    position = duration_dodge,
+    size = 3.2,
+    inherit.aes = FALSE
+  ) +
+  scale_fill_manual(
+    values = gender_colours
+  ) +
+  scale_colour_manual(
+    values = gender_colours
+  ) +
+  labs(
+    title = "A.",
+    x = NULL,
+    y = "Log-transformed answered-round duration",
+    fill = "Gender",
+    colour = "Gender"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor =
+      element_blank(),
+    panel.grid.major.x =
+      element_blank(),
+    legend.position = "top",
+    legend.title =
+      element_blank()
+  )
+```
+
+```{r}
+p_no_press_duration_contrasts <- ggplot(
+  duration_contrast_plot,
+  aes(
+    x = estimate,
+    y = contrast_label,
+    colour = gender
+  )
+) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 2,
+    linewidth = 0.7
+  ) +
+  geom_errorbar(
+    aes(
+      xmin = lower.CL,
+      xmax = upper.CL
+    ),
+    position = position_dodge(width = 0.45),
+    width = 0.12,
+    linewidth = 0.9,
+    orientation = "y"
+  ) +
+  geom_point(
+    position = position_dodge(width = 0.45),
+    size = 3.2
+  ) +
+  scale_colour_manual(
+    values = gender_colours
+  ) +
+  labs(
+    title = "B.",
+    x = "Estimated difference in log-transformed round duration",
+    y = "Infant cry versus no sound",
+    colour = "Gender"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+
+    # Remove the horizontal category label only
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+
+    # Keep the vertical y-axis title
+    axis.title.y = element_text(
+      margin = margin(r = 10)
+    )
+  )
+```
+
+```{r}
+p_no_press_duration_full <-
+  p_no_press_duration_means +
+  p_no_press_duration_contrasts +
+  plot_layout(widths = c(1.9, 1)) 
+
+plot_png_path <- file.path(
+    figure_path,
+    "s1_no_press_duration_results.png"
+  )
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_no_press_duration_full,
+  width = 12,
+  height = 8,
+  dpi = 300
+)
+```
+

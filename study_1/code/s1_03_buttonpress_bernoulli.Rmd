@@ -1,0 +1,345 @@
+---
+title: "s1_03_buttonpress_bernoulli"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+library(patchwork)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_1_path <- file.path(main_path, "study_1")
+results_path <- file.path(study_1_path, "results")
+models_path <- file.path(main_path, "models")
+figure_path <- file.path(study_1_path, "figures")
+
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+```
+
+```{r}
+# analytic sample
+dem_analytic <- demographics %>%
+  filter(!excluded, setup == "COOP")
+
+analytic_ids <- dem_analytic %>%
+  distinct(id)
+
+sound_analytic <- sound_events %>%
+  filter(setup == "COOP") %>%
+  semi_join(analytic_ids, by = "id")
+```
+
+## Hierarchical Beta-Bernoulli model
+### Estimates gender differences in pressing among dyads with at least one press, while allowing the female press probability to vary across dyads
+```{r}
+# The Beta-Bernoulli outcome is responder gender conditional on a button press.
+# Dyads that never pressed are therefore excluded. 
+# Within retained dyads, no-press events are coded NA and do not contribute observed Bernoulli outcomes.
+simple_press <- sound_analytic %>%
+  mutate(
+    y = case_when(
+      responder_gender == "Female" ~ 1,
+      responder_gender == "Male" ~ 0,
+      responder_gender == "none" ~ NA_real_,
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  group_by(id) %>%
+  filter(any(!is.na(y))) %>%
+  arrange(sound_event_order, .by_group = TRUE) %>%
+  mutate(event_number = row_number()) %>%
+  ungroup()
+
+simple_press %>%
+  summarise(
+    n_dyads = n_distinct(id),
+    n_events = n(),
+    n_presses = sum(!is.na(y)),
+    n_female_presses = sum(y == 1, na.rm = TRUE),
+    n_male_presses = sum(y == 0, na.rm = TRUE)
+  )
+
+y_wide <- simple_press %>%
+  dplyr::select(id, event_number, y) %>%
+  pivot_wider(names_from = event_number, values_from = y) %>%
+  arrange(id)
+
+for (j in 1:8) {
+  col_name <- as.character(j)
+  if (!col_name %in% names(y_wide)) {
+    y_wide[[col_name]] <- NA_real_
+  }
+}
+
+y_wide <- y_wide %>%
+  dplyr::select(id, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`)
+
+y_mat <- y_wide %>%
+  dplyr::select(-id) %>%
+  as.matrix()
+
+storage.mode(y_mat) <- "numeric"
+
+data_list_hier <- list(
+  N = nrow(y_mat),
+  y = y_mat
+)
+
+params_hier <- c(
+  "mu", "nu", "alpha", "beta", "p", "pop_p",
+  "mu_prior", "nu_prior", "alpha_prior", "beta_prior", "pop_p_prior", "p_prior")
+
+samples_path_hier <- file.path(results_path, "s1_jags_buttonpress_hierarchical_bernoulli.rds")
+
+if (file.exists(samples_path_hier)) {
+  samples_hier <- readRDS(samples_path_hier)
+} else {
+  samples_hier <- jags.parallel(
+    data = data_list_hier,
+    inits = NULL,
+    parameters.to.save = params_hier,
+    model.file = file.path(models_path, "s1_Hierarchy_Bernoulli.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1
+  )
+  saveRDS(samples_hier, samples_path_hier)
+}
+
+samples_hier
+
+s_hier <- as.matrix(as.mcmc(samples_hier))
+mu_draws <- s_hier[, "mu"]
+
+# Savage-Dickey BF01 for H0: mu = .50.
+# Under mu ~ Beta(1,1), the prior density at .50 equals 1.
+
+d_post_mu <- density(mu_draws)
+post_at_half_mu <- approx(d_post_mu$x, d_post_mu$y, xout = 0.5)$y
+prior_at_half_mu <- 1
+bf01_hier <- post_at_half_mu / prior_at_half_mu
+round(bf01_hier, 2)
+
+
+tibble(mu = mu_draws) %>%
+  ggplot(aes(mu)) +
+  geom_density() +
+  geom_vline(xintercept = 0.5, linetype = 2) +
+  theme_minimal() +
+  labs(
+    title = paste0("Posterior for population mean female press probability (BF01 ≈ ", round(bf01_hier, 2), ")"),
+    x = "mu",
+    y = "Density"
+  )
+
+p_summary <- samples_hier$BUGSoutput$summary %>%
+  as.data.frame() %>%
+  rownames_to_column("parameter") %>%
+  filter(str_detect(parameter, "^p\\[")) %>%
+  mutate(
+    dyad_index = str_extract(parameter, "\\d+") %>%
+      as.integer()
+  ) %>%
+  transmute(
+    dyad_index,
+    mean = mean,
+    lower = `2.5%`,
+    upper = `97.5%`
+  )
+
+dyad_lookup <- y_wide %>%
+  arrange(id) %>%
+  distinct(id) %>%
+  mutate(dyad_index = row_number())
+
+```
+
+
+```{r}
+plot_png_path <- file.path(figure_path, "s1_buttonpress_beta_bernoulli_traceplots.png")
+
+if (!file.exists(plot_png_path)) {
+  mcmc_list_bb <- as.mcmc(samples_hier)
+
+  trace_df_bb <- purrr::map2_dfr(
+    mcmc_list_bb,
+    seq_along(mcmc_list_bb),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y)
+      )
+  ) %>%
+    dplyr::select(iteration, chain, mu, nu, pop_p) %>%
+    group_by(chain) %>%
+    slice(seq(1, n(), by = 20)) %>%
+    ungroup() %>%
+    pivot_longer(
+      cols = c(mu, nu, pop_p),
+      names_to = "parameter",
+      values_to = "value"
+    )
+
+  p_trace_bb <- ggplot(trace_df_bb, aes(x = iteration, y = value, colour = chain)) +
+    geom_line(alpha = 0.6, linewidth = 0.25) +
+    facet_wrap(~ parameter, scales = "free_y", ncol = 1) +
+    theme_minimal() +
+    labs(
+      title = "Traceplots: hierarchical Beta-Bernoulli",
+      x = "Iteration",
+      y = "Value",
+      colour = "Chain"
+    )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_bb,
+    width = 8,
+    height = 8,
+    dpi = 300
+  )
+} else {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+}
+```
+
+
+```{r}
+# dyad bias plot
+
+plot_df_press_only <- p_summary %>%
+  left_join(dyad_lookup, by = "dyad_index") %>%
+  arrange(mean) %>%
+  mutate(plot_id = row_number())
+
+plot_png_path <- file.path(figure_path, "s1_buttonpress_dyad_gender_bias.png")
+
+if (!file.exists(plot_png_path)) {
+  p_dyad_bias <- ggplot(plot_df_press_only, aes(x = mean, y = plot_id)) +
+  annotate(
+    "rect",
+    xmin = 0.005, xmax = 0.495,
+    ymin = 0, ymax = max(plot_df_press_only$plot_id) + 1,
+    alpha = 0.15, fill = "#eb8005"
+  ) +
+  annotate(
+    "rect",
+    xmin = 0.505, xmax = 0.995,
+    ymin = 0, ymax = max(plot_df_press_only$plot_id) + 1,
+    alpha = 0.15, fill = "#2A9D8F"
+  ) +
+  geom_vline(xintercept = 0.5, linetype = 2, colour = "red", linewidth = 0.5) +
+  geom_errorbar(
+    aes(xmin = lower, xmax = upper),
+    width = 0.15, linewidth = 0.4, orientation = "y"
+  ) +
+  geom_point(size = 1.7) +
+  annotate(
+    "text",
+    x = 0.25,
+    y = Inf,
+    label = "Male-dominant",
+    vjust = -0.8,
+    size = 3.5
+  ) +
+  annotate(
+    "text",
+    x = 0.75,
+    y = Inf,
+    label = "Female-dominant",
+    vjust = -0.8,
+    size = 3.5
+  ) +
+  coord_cartesian(clip = "off") +
+  theme_minimal() +
+  labs(
+    x = "Estimated female press probability",
+    y = "Dyad (ordered by probability estimate)"
+  ) +
+  theme(
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 8),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(t = 20, r = 10, b = 10, l = 10)
+  )
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_dyad_bias,
+    width = 8,
+    height = 6,
+    dpi = 300
+  )
+} else {
+  show_or_save_ggplot(plot_png_path = plot_png_path)
+}
+
+plot_png_path <- file.path(figure_path, "s1_buttonpress_beta_bernoulli_prior_posterior.png")
+
+plot_bb_mu <- plot_prior_posterior(
+  draws = s_hier,
+  posterior_name = "mu",
+  prior_name = "mu_prior",
+  xlab = "Population-level female press probability",
+  vline = 0.5,
+  central_prob = 0.99
+) +
+  scale_x_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.25),
+    expand = expansion(mult = c(0.01, 0.01))
+  ) +
+  theme(
+    plot.margin = margin(8, 12, 8, 12)
+  )
+
+plot_bb_pop <- plot_prior_posterior(
+  draws = s_hier,
+  posterior_name = "pop_p",
+  prior_name = "pop_p_prior",
+  xlab = "Population distribution of dyad-level female press probabilities",
+  vline = 0.5,
+  central_prob = 0.99
+) +
+  scale_x_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.25),
+    expand = expansion(mult = c(0.01, 0.01))
+  ) +
+  theme(
+    plot.margin = margin(8, 12, 8, 12)
+  )
+
+p_bb_prior_post <-
+  (plot_bb_mu / plot_bb_pop) +
+  plot_annotation(
+    theme = theme(
+      plot.margin = margin(
+        t = 20,
+        r = 35,
+        b = 25,
+        l = 35
+      )
+    )
+  )
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_bb_prior_post,
+  width = 9,
+  height = 6,
+  dpi = 300
+)
+```
