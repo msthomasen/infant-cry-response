@@ -1,0 +1,981 @@
+setup,participant.code,session.code,gender,id,position,age,round_number,id_in_group,decision,pay_off
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,1,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,2,2,Cooperate,0
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,3,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,4,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,5,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,6,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,7,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,8,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,9,2,Cooperate,1.5
+COOP,45sk3cpe,bz0a2wxz,Male,ADORING INDIGO ANGELFISH,Right,29,10,2,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,1,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,2,1,Defect,2
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,3,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,4,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,5,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,6,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,7,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,8,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,9,1,Cooperate,1.5
+COOP,5tmmpyuu,bz0a2wxz,Female,ADORING INDIGO ANGELFISH,Left,28,10,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,1,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,2,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,3,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,4,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,5,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,6,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,7,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,8,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,9,1,Cooperate,1.5
+COOP,0jns5j10,69a24mib,Female,AMPLE BLACK ROTTWEILER,Right,24,10,1,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,1,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,2,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,3,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,4,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,5,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,6,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,7,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,8,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,9,2,Cooperate,1.5
+COOP,vu9m5cyv,69a24mib,Male,AMPLE BLACK ROTTWEILER,Left,41,10,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,1,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,2,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,3,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,4,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,5,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,6,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,7,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,8,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,9,2,Cooperate,1.5
+COOP,6870a851,wdt8tk46,Male,ANGELIC SALMON DINGO,Right,19,10,2,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,1,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,2,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,3,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,4,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,5,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,6,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,7,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,8,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,9,1,Cooperate,1.5
+COOP,hhxdbjc9,wdt8tk46,Female,ANGELIC SALMON DINGO,Left,24,10,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,1,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,2,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,3,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,4,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,5,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,6,1,Defect,2
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,7,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,8,1,Cooperate,1.5
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,9,1,Defect,2
+COOP,4bfk6o1v,ciyc6bsd,Female,BONNY LEMON KOALA,Left,21,10,1,Cooperate,0
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,1,2,Cooperate,1.5
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,2,2,Cooperate,1.5
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,3,2,Cooperate,1.5
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,4,2,Cooperate,1.5
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,5,2,Cooperate,1.5
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,6,2,Cooperate,0
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,7,2,Cooperate,1.5
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,8,2,Cooperate,1.5
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,9,2,Cooperate,0
+COOP,yjy1gm94,ciyc6bsd,Male,BONNY LEMON KOALA,Right,26,10,2,Defect,2
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,1,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,2,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,3,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,4,2,Defect,2
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,5,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,6,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,7,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,8,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,9,2,Cooperate,1.5
+COOP,jiubxfz0,2ex47ehp,Female,BRIGHT SEPIA RHINOCEROS,Left,35,10,2,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,1,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,2,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,3,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,4,1,Cooperate,0
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,5,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,6,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,7,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,8,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,9,1,Cooperate,1.5
+COOP,owi0qoer,2ex47ehp,Male,BRIGHT SEPIA RHINOCEROS,Right,24,10,1,Cooperate,1.5
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,1,2,Cooperate,0
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,2,2,Cooperate,0
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,3,2,Defect,0.5
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,4,2,Defect,2
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,5,2,Defect,0.5
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,6,2,Defect,0.5
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,7,2,Cooperate,1.5
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,8,2,Cooperate,1.5
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,9,2,Cooperate,1.5
+COOP,bsocbgrw,o4pvyacr,Female,CRISP EBONY HAMMERHEAD SHARK,Right,19,10,2,Cooperate,0
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,1,1,Defect,2
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,2,1,Defect,2
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,3,1,Defect,0.5
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,4,1,Cooperate,0
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,5,1,Defect,0.5
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,6,1,Defect,0.5
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,7,1,Cooperate,1.5
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,8,1,Cooperate,1.5
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,9,1,Cooperate,1.5
+COOP,vji90pvn,o4pvyacr,Male,CRISP EBONY HAMMERHEAD SHARK,Left,18,10,1,Defect,2
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,1,2,Defect,2
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,2,2,Cooperate,1.5
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,3,2,Cooperate,1.5
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,4,2,Defect,2
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,5,2,Cooperate,0
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,6,2,Defect,2
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,7,2,Cooperate,0
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,8,2,Defect,2
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,9,2,Cooperate,1.5
+COOP,n1valhpo,myh4qeuw,Male,DELICATE TOPAZ MAGPIE,Left,52,10,2,Cooperate,0
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,1,1,Cooperate,0
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,2,1,Cooperate,1.5
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,3,1,Cooperate,1.5
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,4,1,Cooperate,0
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,5,1,Defect,2
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,6,1,Cooperate,0
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,7,1,Defect,2
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,8,1,Cooperate,0
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,9,1,Cooperate,1.5
+COOP,y0b4so6h,myh4qeuw,Female,DELICATE TOPAZ MAGPIE,Right,20,10,1,Defect,2
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,1,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,2,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,3,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,4,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,5,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,6,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,7,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,8,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,9,1,Cooperate,1.5
+COOP,26c2h9yp,sc8kz9jn,Male,EFFUSIVE GRAPE HONEY BEE,Left,26,10,1,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,1,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,2,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,3,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,4,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,5,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,6,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,7,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,8,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,9,2,Cooperate,1.5
+COOP,7rrnsmpl,sc8kz9jn,Female,EFFUSIVE GRAPE HONEY BEE,Right,25,10,2,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,1,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,2,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,3,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,4,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,5,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,6,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,7,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,8,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,9,1,Cooperate,1.5
+COOP,5g9kpgn3,vm23hmj5,Female,ERR-FREE RED SEA SLUG,Right,25,10,1,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,1,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,2,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,3,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,4,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,5,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,6,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,7,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,8,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,9,2,Cooperate,1.5
+COOP,7muxn0tw,vm23hmj5,Male,ERR-FREE RED SEA SLUG,Left,23,10,2,Cooperate,1.5
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,1,1,Cooperate,1.5
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,2,1,Cooperate,0
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,3,1,Cooperate,1.5
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,4,1,Defect,0.5
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,5,1,Defect,2
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,6,1,Defect,0.5
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,7,1,Cooperate,1.5
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,8,1,Cooperate,1.5
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,9,1,Defect,2
+COOP,0cvne5m3,vxe9rtte,Male,ETHICAL AMBER AKBASH,Left,31,10,1,Defect,0.5
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,1,2,Cooperate,1.5
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,2,2,Defect,2
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,3,2,Cooperate,1.5
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,4,2,Defect,0.5
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,5,2,Cooperate,0
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,6,2,Defect,0.5
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,7,2,Cooperate,1.5
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,8,2,Cooperate,1.5
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,9,2,Cooperate,0
+COOP,2zpvzpso,vxe9rtte,Female,ETHICAL AMBER AKBASH,Right,35,10,2,Defect,0.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,1,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,2,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,3,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,4,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,5,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,6,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,7,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,8,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,9,2,Cooperate,1.5
+COOP,rmbfv7dx,kk0gzi0i,Female,FAIR YELLOW HERON,Right,23,10,2,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,1,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,2,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,3,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,4,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,5,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,6,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,7,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,8,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,9,1,Cooperate,1.5
+COOP,xqzuejd7,kk0gzi0i,Male,FAIR YELLOW HERON,Left,28,10,1,Cooperate,1.5
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,1,1,Cooperate,1.5
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,2,1,Defect,0.5
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,3,1,Cooperate,0
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,4,1,Defect,2
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,5,1,Cooperate,1.5
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,6,1,Cooperate,0
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,7,1,Defect,0.5
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,8,1,Cooperate,1.5
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,9,1,Cooperate,1.5
+COOP,09y6zh37,q4rvf3i3,Male,FASTER SALMON BEAR,Left,20,10,1,Cooperate,0
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,1,2,Cooperate,1.5
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,2,2,Defect,0.5
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,3,2,Defect,2
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,4,2,Cooperate,0
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,5,2,Cooperate,1.5
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,6,2,Defect,2
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,7,2,Defect,0.5
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,8,2,Cooperate,1.5
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,9,2,Cooperate,1.5
+COOP,x7zh1c8a,q4rvf3i3,Female,FASTER SALMON BEAR,Right,20,10,2,Defect,2
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,1,1,Cooperate,1.5
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,2,1,Cooperate,0
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,3,1,Defect,0.5
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,4,1,Defect,2
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,5,1,Cooperate,1.5
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,6,1,Cooperate,0
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,7,1,Defect,2
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,8,1,Cooperate,1.5
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,9,1,Defect,2
+COOP,mnjzfgno,spacmiod,Female,FREE MAUVE COYOTE,Left,22,10,1,Cooperate,1.5
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,1,2,Cooperate,1.5
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,2,2,Defect,2
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,3,2,Defect,0.5
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,4,2,Cooperate,0
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,5,2,Cooperate,1.5
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,6,2,Defect,2
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,7,2,Cooperate,0
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,8,2,Cooperate,1.5
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,9,2,Cooperate,0
+COOP,ve1ixdzb,spacmiod,Male,FREE MAUVE COYOTE,Right,25,10,2,Cooperate,1.5
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,1,1,Cooperate,0
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,2,1,Cooperate,1.5
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,3,1,Defect,2
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,4,1,Defect,2
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,5,1,Cooperate,0
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,6,1,Cooperate,1.5
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,7,1,Cooperate,1.5
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,8,1,Cooperate,1.5
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,9,1,Cooperate,1.5
+COOP,7up92y9s,1uyz49kz,Male,FRESH OLIVE JACK RUSSEL,Right,24,10,1,Cooperate,1.5
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,1,2,Defect,2
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,2,2,Cooperate,1.5
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,3,2,Cooperate,0
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,4,2,Cooperate,0
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,5,2,Defect,2
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,6,2,Cooperate,1.5
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,7,2,Cooperate,1.5
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,8,2,Cooperate,1.5
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,9,2,Cooperate,1.5
+COOP,c1v2gzcy,1uyz49kz,Female,FRESH OLIVE JACK RUSSEL,Left,23,10,2,Cooperate,1.5
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,1,1,Cooperate,1.5
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,2,1,Cooperate,0
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,3,1,Cooperate,1.5
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,4,1,Defect,0.5
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,5,1,Defect,2
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,6,1,Defect,0.5
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,7,1,Defect,2
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,8,1,Defect,2
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,9,1,Defect,0.5
+COOP,h4u0ct07,a4iqe30m,Male,GUTSY SALMON GUINEA FOWL,Left,22,10,1,Defect,0.5
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,1,2,Cooperate,1.5
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,2,2,Defect,2
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,3,2,Cooperate,1.5
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,4,2,Defect,0.5
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,5,2,Cooperate,0
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,6,2,Defect,0.5
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,7,2,Cooperate,0
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,8,2,Cooperate,0
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,9,2,Defect,0.5
+COOP,xdoh2cp5,a4iqe30m,Female,GUTSY SALMON GUINEA FOWL,Right,29,10,2,Defect,0.5
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,1,1,Cooperate,1.5
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,2,1,Cooperate,1.5
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,3,1,Cooperate,0
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,4,1,Cooperate,1.5
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,5,1,Defect,2
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,6,1,Cooperate,1.5
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,7,1,Cooperate,0
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,8,1,Cooperate,1.5
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,9,1,Defect,0.5
+COOP,4syibofn,jdxs7z6i,Male,HELPFUL SNOW HYENA,Right,25,10,1,Cooperate,1.5
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,1,2,Cooperate,1.5
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,2,2,Cooperate,1.5
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,3,2,Defect,2
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,4,2,Cooperate,1.5
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,5,2,Cooperate,0
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,6,2,Cooperate,1.5
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,7,2,Defect,2
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,8,2,Cooperate,1.5
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,9,2,Defect,0.5
+COOP,4yww1dir,jdxs7z6i,Female,HELPFUL SNOW HYENA,Left,21,10,2,Cooperate,1.5
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,1,2,Cooperate,1.5
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,2,2,Defect,2
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,3,2,Defect,2
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,4,2,Defect,2
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,5,2,Cooperate,0
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,6,2,Defect,0.5
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,7,2,Defect,2
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,8,2,Defect,0.5
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,9,2,Cooperate,0
+COOP,dtz7w9me,x89wb7wp,Female,HOPEFUL SILVER CROCODILE,Left,23,10,2,Defect,0.5
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,1,1,Cooperate,1.5
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,2,1,Cooperate,0
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,3,1,Cooperate,0
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,4,1,Cooperate,0
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,5,1,Defect,2
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,6,1,Defect,0.5
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,7,1,Cooperate,0
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,8,1,Defect,0.5
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,9,1,Defect,2
+COOP,f2scrafr,x89wb7wp,Male,HOPEFUL SILVER CROCODILE,Right,27,10,1,Defect,0.5
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,1,1,Defect,2
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,2,1,Defect,0.5
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,3,1,Defect,0.5
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,4,1,Cooperate,0
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,5,1,Cooperate,1.5
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,6,1,Defect,2
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,7,1,Cooperate,0
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,8,1,Defect,2
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,9,1,Defect,0.5
+COOP,74rl08o2,jy8dd1k0,Female,HUMANE MELON EAGLE,Left,21,10,1,Defect,0.5
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,1,2,Cooperate,0
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,2,2,Defect,0.5
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,3,2,Defect,0.5
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,4,2,Defect,2
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,5,2,Cooperate,1.5
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,6,2,Cooperate,0
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,7,2,Defect,2
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,8,2,Cooperate,0
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,9,2,Defect,0.5
+COOP,co60xjb5,jy8dd1k0,Male,HUMANE MELON EAGLE,Right,41,10,2,Defect,0.5
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,1,1,Cooperate,1.5
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,2,1,Cooperate,1.5
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,3,1,Cooperate,1.5
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,4,1,Cooperate,1.5
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,5,1,Cooperate,0
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,6,1,Cooperate,1.5
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,7,1,Cooperate,0
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,8,1,Cooperate,1.5
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,9,1,Defect,2
+COOP,1g63fo8v,ycraewk6,Female,IMPROVED JADE HORSE,Left,23,10,1,Cooperate,0
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,1,2,Cooperate,1.5
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,2,2,Cooperate,1.5
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,3,2,Cooperate,1.5
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,4,2,Cooperate,1.5
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,5,2,Defect,2
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,6,2,Cooperate,1.5
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,7,2,Defect,2
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,8,2,Cooperate,1.5
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,9,2,Cooperate,0
+COOP,huoodmoc,ycraewk6,Male,IMPROVED JADE HORSE,Right,32,10,2,Defect,2
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,1,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,2,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,3,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,4,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,5,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,6,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,7,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,8,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,9,1,Cooperate,1.5
+COOP,1m7ustt0,o2g72x89,Female,KEEN MAUVE SEA LION,Right,27,10,1,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,1,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,2,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,3,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,4,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,5,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,6,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,7,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,8,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,9,2,Cooperate,1.5
+COOP,cvu7hj0p,o2g72x89,Male,KEEN MAUVE SEA LION,Left,31,10,2,Cooperate,1.5
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,1,2,Cooperate,1.5
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,2,2,Cooperate,1.5
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,3,2,Cooperate,1.5
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,4,2,Defect,2
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,5,2,Defect,2
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,6,2,Defect,0.5
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,7,2,Defect,2
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,8,2,Defect,0.5
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,9,2,Cooperate,0
+COOP,39u9wakl,yy29ab1i,Female,LEADING ECRU GECKO,Right,27,10,2,Defect,0.5
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,1,1,Cooperate,1.5
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,2,1,Cooperate,1.5
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,3,1,Cooperate,1.5
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,4,1,Cooperate,0
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,5,1,Cooperate,0
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,6,1,Defect,0.5
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,7,1,Cooperate,0
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,8,1,Defect,0.5
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,9,1,Defect,2
+COOP,m7m4qlg0,yy29ab1i,Male,LEADING ECRU GECKO,Left,22,10,1,Defect,0.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,1,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,2,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,3,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,4,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,5,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,6,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,7,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,8,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,9,1,Cooperate,1.5
+COOP,j63l2809,sw6xg45y,Male,LIKABLE SALMON BEETLE,Right,31,10,1,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,1,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,2,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,3,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,4,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,5,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,6,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,7,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,8,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,9,2,Cooperate,1.5
+COOP,k885cvux,sw6xg45y,Female,LIKABLE SALMON BEETLE,Left,24,10,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,1,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,2,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,3,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,4,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,5,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,6,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,7,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,8,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,9,2,Cooperate,1.5
+COOP,991sctch,pczzgw7o,Male,LIKE PINK CUTTLEFISH,Left,19,10,2,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,1,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,2,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,3,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,4,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,5,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,6,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,7,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,8,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,9,1,Cooperate,1.5
+COOP,nwrci505,pczzgw7o,Female,LIKE PINK CUTTLEFISH,Right,25,10,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,1,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,2,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,3,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,4,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,5,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,6,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,7,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,8,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,9,1,Cooperate,1.5
+COOP,ca1b3sww,qimm90dc,Male,LIVELY RUBY TORTOISE,Right,27,10,1,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,1,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,2,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,3,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,4,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,5,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,6,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,7,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,8,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,9,2,Cooperate,1.5
+COOP,oo3ocbpf,qimm90dc,Female,LIVELY RUBY TORTOISE,Left,20,10,2,Cooperate,1.5
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,1,2,Cooperate,1.5
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,2,2,Defect,2
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,3,2,Cooperate,0
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,4,2,Cooperate,1.5
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,5,2,Defect,2
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,6,2,Cooperate,1.5
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,7,2,Cooperate,0
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,8,2,Defect,2
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,9,2,Cooperate,1.5
+COOP,qemll9xu,hl2x0qfw,Female,LOGICAL ONYXS GUINEA FOWL,Right,31,10,2,Cooperate,1.5
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,1,1,Cooperate,1.5
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,2,1,Cooperate,0
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,3,1,Defect,2
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,4,1,Cooperate,1.5
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,5,1,Cooperate,0
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,6,1,Cooperate,1.5
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,7,1,Defect,2
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,8,1,Cooperate,0
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,9,1,Cooperate,1.5
+COOP,x7k43qbh,hl2x0qfw,Male,LOGICAL ONYXS GUINEA FOWL,Left,25,10,1,Cooperate,1.5
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,1,2,Cooperate,1.5
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,2,2,Cooperate,0
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,3,2,Cooperate,1.5
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,4,2,Cooperate,1.5
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,5,2,Cooperate,0
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,6,2,Defect,2
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,7,2,Defect,2
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,8,2,Cooperate,1.5
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,9,2,Cooperate,1.5
+COOP,csekjh23,kt6t9yni,Male,LOVELY PEARL CRAB,Left,21,10,2,Cooperate,0
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,1,1,Cooperate,1.5
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,2,1,Defect,2
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,3,1,Cooperate,1.5
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,4,1,Cooperate,1.5
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,5,1,Defect,2
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,6,1,Cooperate,0
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,7,1,Cooperate,0
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,8,1,Cooperate,1.5
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,9,1,Cooperate,1.5
+COOP,mpkfmikf,kt6t9yni,Female,LOVELY PEARL CRAB,Right,21,10,1,Defect,2
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,1,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,2,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,3,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,4,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,5,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,6,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,7,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,8,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,9,1,Cooperate,1.5
+COOP,nykyus9y,fi073624,Male,LUMINOUS WINE CORAL,Left,25,10,1,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,1,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,2,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,3,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,4,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,5,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,6,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,7,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,8,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,9,2,Cooperate,1.5
+COOP,y07l9iiu,fi073624,Female,LUMINOUS WINE CORAL,Right,24,10,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,1,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,2,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,3,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,4,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,5,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,6,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,7,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,8,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,9,2,Cooperate,1.5
+COOP,0d4zi6fv,8llj0aji,Female,MODEST PURPLE BUTTERFLY FISH,Left,26,10,2,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,1,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,2,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,3,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,4,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,5,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,6,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,7,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,8,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,9,1,Cooperate,1.5
+COOP,9v5a70yn,8llj0aji,Male,MODEST PURPLE BUTTERFLY FISH,Right,21,10,1,Cooperate,1.5
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,1,2,Cooperate,1.5
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,2,2,Cooperate,0
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,3,2,Defect,2
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,4,2,Defect,0.5
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,5,2,Cooperate,1.5
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,6,2,Defect,0.5
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,7,2,Defect,2
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,8,2,Defect,2
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,9,2,Cooperate,0
+COOP,6vkju72y,6bmb0a2d,Female,NEATEST LIME SPIDER,Left,22,10,2,Cooperate,0
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,1,1,Cooperate,1.5
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,2,1,Defect,2
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,3,1,Cooperate,0
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,4,1,Defect,0.5
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,5,1,Cooperate,1.5
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,6,1,Defect,0.5
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,7,1,Cooperate,0
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,8,1,Cooperate,0
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,9,1,Defect,2
+COOP,t6z30ctr,6bmb0a2d,Male,NEATEST LIME SPIDER,Right,27,10,1,Defect,2
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,1,2,Cooperate,1.5
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,2,2,Cooperate,0
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,3,2,Cooperate,0
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,4,2,Cooperate,1.5
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,5,2,Cooperate,1.5
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,6,2,Cooperate,0
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,7,2,Cooperate,0
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,8,2,Cooperate,1.5
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,9,2,Cooperate,1.5
+COOP,xisrzhem,iciwln1v,Male,POSH SAND RACCOON DOG,Right,29,10,2,Cooperate,1.5
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,1,1,Cooperate,1.5
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,2,1,Defect,2
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,3,1,Defect,2
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,4,1,Cooperate,1.5
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,5,1,Cooperate,1.5
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,6,1,Defect,2
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,7,1,Defect,2
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,8,1,Cooperate,1.5
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,9,1,Cooperate,1.5
+COOP,xqmxfhtt,iciwln1v,Female,POSH SAND RACCOON DOG,Left,23,10,1,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,1,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,2,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,3,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,4,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,5,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,6,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,7,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,8,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,9,2,Cooperate,1.5
+COOP,jrewwufv,cgeeq6eq,Male,PROLIFIC TAN LIZARD,Left,35,10,2,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,1,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,2,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,3,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,4,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,5,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,6,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,7,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,8,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,9,1,Cooperate,1.5
+COOP,pcsqxaq2,cgeeq6eq,Female,PROLIFIC TAN LIZARD,Right,25,10,1,Cooperate,1.5
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,1,1,Cooperate,1.5
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,2,1,Cooperate,1.5
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,3,1,Cooperate,1.5
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,4,1,Cooperate,1.5
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,5,1,Cooperate,0
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,6,1,Cooperate,0
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,7,1,Cooperate,0
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,8,1,Defect,0.5
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,9,1,Defect,2
+COOP,5420u8b9,xpau3fdq,Female,PROUD RUBY DOBERMAN,Right,27,10,1,Cooperate,0
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,1,2,Cooperate,1.5
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,2,2,Cooperate,1.5
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,3,2,Cooperate,1.5
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,4,2,Cooperate,1.5
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,5,2,Defect,2
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,6,2,Defect,2
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,7,2,Defect,2
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,8,2,Defect,0.5
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,9,2,Cooperate,0
+COOP,vqxiqagy,xpau3fdq,Male,PROUD RUBY DOBERMAN,Left,25,10,2,Defect,2
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,1,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,2,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,3,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,4,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,5,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,6,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,7,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,8,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,9,1,Cooperate,1.5
+COOP,qw1425c9,zkn6txa9,Female,READABLE LILAC DISCUS,Left,21,10,1,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,1,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,2,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,3,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,4,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,5,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,6,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,7,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,8,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,9,2,Cooperate,1.5
+COOP,rlyac7rj,zkn6txa9,Male,READABLE LILAC DISCUS,Right,18,10,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,1,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,2,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,3,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,4,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,5,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,6,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,7,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,8,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,9,2,Cooperate,1.5
+COOP,htqlrore,m9lecn4e,Female,RELIABLE ROSE PIRANHA,Left,22,10,2,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,1,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,2,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,3,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,4,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,5,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,6,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,7,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,8,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,9,1,Cooperate,1.5
+COOP,sc5bfgbp,m9lecn4e,Male,RELIABLE ROSE PIRANHA,Right,24,10,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,1,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,2,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,3,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,4,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,5,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,6,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,7,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,8,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,9,1,Cooperate,1.5
+COOP,dm4v6z9b,zt38ifpa,Female,RESTFUL SEPIA BUFFALO,Left,20,10,1,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,1,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,2,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,3,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,4,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,5,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,6,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,7,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,8,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,9,2,Cooperate,1.5
+COOP,s0yargws,zt38ifpa,Male,RESTFUL SEPIA BUFFALO,Right,26,10,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,1,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,2,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,3,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,4,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,5,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,6,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,7,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,8,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,9,2,Cooperate,1.5
+COOP,5pe0h9ls,dtebuzu7,Female,ROBUST LIME SCORPION,Left,21,10,2,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,1,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,2,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,3,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,4,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,5,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,6,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,7,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,8,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,9,1,Cooperate,1.5
+COOP,r4arj9ow,dtebuzu7,Male,ROBUST LIME SCORPION,Right,23,10,1,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,1,2,Cooperate,0
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,2,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,3,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,4,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,5,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,6,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,7,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,8,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,9,2,Cooperate,1.5
+COOP,ab5ffdj5,jadc8ltq,Female,ROBUST MELON SLOTH,Right,29,10,2,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,1,1,Defect,2
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,2,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,3,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,4,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,5,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,6,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,7,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,8,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,9,1,Cooperate,1.5
+COOP,yfmtrfp6,jadc8ltq,Male,ROBUST MELON SLOTH,Left,27,10,1,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,1,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,2,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,3,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,4,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,5,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,6,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,7,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,8,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,9,2,Cooperate,1.5
+COOP,1q7xfb9a,epkpxzrp,Female,ROBUST YELLOW HUMMINGBIRD,Left,26,10,2,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,1,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,2,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,3,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,4,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,5,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,6,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,7,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,8,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,9,1,Cooperate,1.5
+COOP,5odhqv2t,epkpxzrp,Male,ROBUST YELLOW HUMMINGBIRD,Right,22,10,1,Cooperate,1.5
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,1,2,Cooperate,0
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,2,2,Cooperate,1.5
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,3,2,Defect,0.5
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,4,2,Defect,2
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,5,2,Cooperate,0
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,6,2,Cooperate,1.5
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,7,2,Defect,0.5
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,8,2,Defect,2
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,9,2,Cooperate,0
+COOP,phd5gbss,0km38ksd,Male,ROSY BLOND KINGFISHER,Right,21,10,2,Defect,2
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,1,1,Defect,2
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,2,1,Cooperate,1.5
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,3,1,Defect,0.5
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,4,1,Cooperate,0
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,5,1,Defect,2
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,6,1,Cooperate,1.5
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,7,1,Defect,0.5
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,8,1,Cooperate,0
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,9,1,Defect,2
+COOP,tsthc4o0,0km38ksd,Female,ROSY BLOND KINGFISHER,Left,20,10,1,Cooperate,0
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,1,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,2,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,3,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,4,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,5,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,6,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,7,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,8,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,9,2,Cooperate,1.5
+COOP,0fp6htft,jhecz3qe,Female,SALUTARY JASPER TERMITE,Left,27,10,2,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,1,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,2,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,3,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,4,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,5,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,6,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,7,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,8,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,9,1,Cooperate,1.5
+COOP,sdoz6ep4,jhecz3qe,Male,SALUTARY JASPER TERMITE,Right,66,10,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,1,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,2,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,3,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,4,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,5,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,6,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,7,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,8,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,9,1,Cooperate,1.5
+COOP,fug8isy3,7bg9w1g9,Female,SHINY GRAY QUAIL,Right,24,10,1,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,1,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,2,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,3,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,4,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,5,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,6,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,7,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,8,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,9,2,Cooperate,1.5
+COOP,s10xa21h,7bg9w1g9,Male,SHINY GRAY QUAIL,Left,25,10,2,Cooperate,1.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,1,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,2,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,3,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,4,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,5,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,6,2,Cooperate,0
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,7,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,8,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,9,2,Defect,0.5
+COOP,q0pgg6yz,4lilx7ia,Female,SMILING BLOND SEA SLUG,Right,33,10,2,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,1,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,2,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,3,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,4,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,5,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,6,1,Defect,2
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,7,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,8,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,9,1,Defect,0.5
+COOP,xstndwvx,4lilx7ia,Male,SMILING BLOND SEA SLUG,Left,22,10,1,Defect,0.5
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,1,2,Defect,2
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,2,2,Defect,0.5
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,3,2,Defect,0.5
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,4,2,Defect,0.5
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,5,2,Defect,0.5
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,6,2,Defect,0.5
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,7,2,Cooperate,0
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,8,2,Cooperate,0
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,9,2,Cooperate,0
+COOP,opoid5ru,qwmdigt3,Male,SWANKIER YELLOW HOUND,Right,23,10,2,Cooperate,0
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,1,1,Cooperate,0
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,2,1,Defect,0.5
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,3,1,Defect,0.5
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,4,1,Defect,0.5
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,5,1,Defect,0.5
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,6,1,Defect,0.5
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,7,1,Defect,2
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,8,1,Defect,2
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,9,1,Defect,2
+COOP,thd9rakl,qwmdigt3,Female,SWANKIER YELLOW HOUND,Left,30,10,1,Defect,2
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,1,2,Cooperate,1.5
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,2,2,Defect,2
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,3,2,Cooperate,1.5
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,4,2,Defect,2
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,5,2,Defect,2
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,6,2,Defect,2
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,7,2,Defect,2
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,8,2,Defect,0.5
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,9,2,Cooperate,1.5
+COOP,5rhw5eal,dwz9jrxu,Female,TIDY RED SEA SLUG,Left,30,10,2,Defect,2
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,1,1,Cooperate,1.5
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,2,1,Cooperate,0
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,3,1,Cooperate,1.5
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,4,1,Cooperate,0
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,5,1,Cooperate,0
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,6,1,Cooperate,0
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,7,1,Cooperate,0
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,8,1,Defect,0.5
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,9,1,Cooperate,1.5
+COOP,r3ip0hay,dwz9jrxu,Male,TIDY RED SEA SLUG,Right,27,10,1,Cooperate,0
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,1,1,Defect,2
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,2,1,Defect,2
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,3,1,Defect,2
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,4,1,Defect,2
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,5,1,Defect,0.5
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,6,1,Cooperate,0
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,7,1,Cooperate,0
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,8,1,Defect,0.5
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,9,1,Defect,0.5
+COOP,0d7kkyzi,z4i1l0zm,Male,TOPS PEACH RATTLESNAKE,Left,21,10,1,Defect,0.5
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,1,2,Cooperate,0
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,2,2,Cooperate,0
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,3,2,Cooperate,0
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,4,2,Cooperate,0
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,5,2,Defect,0.5
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,6,2,Defect,2
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,7,2,Defect,2
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,8,2,Defect,0.5
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,9,2,Defect,0.5
+COOP,lib7ywjg,z4i1l0zm,Female,TOPS PEACH RATTLESNAKE,Right,21,10,2,Defect,0.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,1,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,2,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,3,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,4,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,5,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,6,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,7,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,8,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,9,2,Cooperate,1.5
+COOP,2cyspoyq,ycpv42y2,Male,TRUTHFUL ALMOND HOUND,Left,24,10,2,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,1,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,2,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,3,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,4,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,5,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,6,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,7,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,8,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,9,1,Cooperate,1.5
+COOP,8t1fy6et,ycpv42y2,Female,TRUTHFUL ALMOND HOUND,Right,24,10,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,1,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,2,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,3,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,4,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,5,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,6,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,7,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,8,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,9,1,Cooperate,1.5
+COOP,8cobpmmj,lp8su85z,Female,UPSCALE TOMATO COCKROACH,Left,24,10,1,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,1,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,2,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,3,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,4,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,5,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,6,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,7,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,8,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,9,2,Cooperate,1.5
+COOP,aq3d6u9h,lp8su85z,Male,UPSCALE TOMATO COCKROACH,Right,23,10,2,Cooperate,1.5
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,1,2,Cooperate,1.5
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,2,2,Cooperate,0
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,3,2,Cooperate,0
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,4,2,Defect,2
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,5,2,Defect,2
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,6,2,Cooperate,1.5
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,7,2,Cooperate,1.5
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,8,2,Cooperate,1.5
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,9,2,Cooperate,1.5
+COOP,dfa8xp31,c1mnlc84,Male,WILLING RUBY GERBIL,Left,19,10,2,Cooperate,1.5
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,1,1,Cooperate,1.5
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,2,1,Defect,2
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,3,1,Defect,2
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,4,1,Cooperate,0
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,5,1,Cooperate,0
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,6,1,Cooperate,1.5
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,7,1,Cooperate,1.5
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,8,1,Cooperate,1.5
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,9,1,Cooperate,1.5
+COOP,tk2jtsop,c1mnlc84,Female,WILLING RUBY GERBIL,Right,28,10,1,Cooperate,1.5
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,1,2,Cooperate,0
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,2,2,Cooperate,1.5
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,3,2,Cooperate,1.5
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,4,2,Cooperate,0
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,5,2,Cooperate,0
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,6,2,Cooperate,0
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,7,2,Defect,0.5
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,8,2,Defect,2
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,9,2,Cooperate,1.5
+COOP,pvgmj2kb,1o9coeea,Male,YOUNG JASPER HERON,Left,24,10,2,Cooperate,0
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,1,1,Defect,2
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,2,1,Cooperate,1.5
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,3,1,Cooperate,1.5
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,4,1,Defect,2
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,5,1,Defect,2
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,6,1,Defect,2
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,7,1,Defect,0.5
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,8,1,Cooperate,0
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,9,1,Cooperate,1.5
+COOP,zh27hxpr,1o9coeea,Female,YOUNG JASPER HERON,Right,23,10,1,Defect,2
