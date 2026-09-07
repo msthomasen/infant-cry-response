@@ -1,0 +1,35 @@
+model 
+{
+  # Alternative prior on the population mean
+  mu ~ dbeta(2, 2)
+  nu ~ dunif(1, 8)
+
+  alpha <- mu * nu
+  beta <- (1 - mu) * nu
+
+  pop_p ~ dbeta(alpha, beta)
+
+  for (n in 1:N) {
+    p[n] ~ dbeta(alpha, beta)
+  }
+
+  # Button-press likelihood
+  for (n in 1:N) {
+    for (i in 1:8) {
+      y[n,i] ~ dbern(p[n])
+    }
+  }
+
+  # Disconnected prior-reference draws
+  mu_prior ~ dbeta(2, 2)
+  nu_prior ~ dunif(1, 8)
+
+  alpha_prior <- mu_prior * nu_prior
+  beta_prior <- (1 - mu_prior) * nu_prior
+
+  pop_p_prior ~ dbeta(alpha_prior, beta_prior)
+
+  for (n in 1:N) {
+    p_prior[n] ~ dbeta(alpha_prior, beta_prior)
+  }
+}

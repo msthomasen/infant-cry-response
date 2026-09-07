@@ -1,0 +1,38 @@
+model {
+  # Population-level mean female-press probability
+  mu ~ dbeta(1, 1)
+
+  # Concentration parameter
+  nu ~ dunif(1, 8)
+
+  alpha <- mu * nu
+  beta <- (1 - mu) * nu
+
+  # Draw from the population distribution of dyad-level probabilities
+  pop_p ~ dbeta(alpha, beta)
+
+  # Dyad-specific female-press probabilities
+  for (n in 1:N) {
+    p[n] ~ dbeta(alpha, beta)
+  }
+
+  # Button-press observations: 0 = male, 1 = female
+  for (n in 1:N) {
+    for (i in 1:8) {
+      y[n, i] ~ dbern(p[n])
+    }
+  }
+
+  # Disconnected prior-reference draws
+  mu_prior ~ dbeta(1, 1)
+  nu_prior ~ dunif(1, 8)
+
+  alpha_prior <- mu_prior * nu_prior
+  beta_prior <- (1 - mu_prior) * nu_prior
+
+  pop_p_prior ~ dbeta(alpha_prior, beta_prior)
+
+  for (n in 1:N) {
+    p_prior[n] ~ dbeta(alpha_prior, beta_prior)
+  }
+}

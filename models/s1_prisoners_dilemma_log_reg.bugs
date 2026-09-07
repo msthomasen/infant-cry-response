@@ -1,0 +1,65 @@
+model 
+{
+  # Cooperation likelihood
+  for (i in 1:N)
+  {
+    cooperation[i] ~ dbern(p_cooperate[i])
+
+    logit(p_cooperate[i]) <-
+      beta0 +
+      beta_total * total_dyad_presses_c[i] +
+      beta_relative * relative_press_count[i] +
+      dyad_effect[dyad_index[i]]
+
+    # Posterior predictive replication
+    cooperation_rep[i] ~ dbern(p_cooperate[i])
+  }
+
+  # Dyad-level random intercepts
+  for (d in 1:N_dyads)
+  {
+    dyad_z[d] ~ dnorm(0, 1)
+    dyad_effect[d] <- dyad_z[d] * sigma_dyad
+  }
+
+  # Fixed-effect priors
+  beta0 ~ dnorm(0, 0.4444444)
+  beta_total ~ dnorm(0, 16)
+  beta_relative ~ dnorm(0, 16)
+
+  # Dyad-level random-effect SD prior
+  sigma_dyad ~ dexp(1)
+
+  # Cooperation probability at the reference values
+  p_reference <- ilogit(beta0)
+
+  # Posterior predictive number of cooperative decisions
+  n_cooperate_rep <- sum(cooperation_rep[])
+
+  # Disconnected prior-reference draws
+  beta0_prior ~ dnorm(0, 0.4444444)
+  beta_total_prior ~ dnorm(0, 16)
+  beta_relative_prior ~ dnorm(0, 16)
+
+  sigma_dyad_prior ~ dexp(1)
+
+  for (d in 1:N_dyads)
+  {
+    dyad_z_prior[d] ~ dnorm(0, 1)
+    dyad_effect_prior[d] <-
+      dyad_z_prior[d] * sigma_dyad_prior
+  }
+
+  for (i in 1:N)
+  {
+    logit(p_cooperate_prior[i]) <-
+      beta0_prior +
+      beta_total_prior * total_dyad_presses_c[i] +
+      beta_relative_prior * relative_press_count[i] +
+      dyad_effect_prior[dyad_index[i]]
+
+    cooperation_prior[i] ~ dbern(p_cooperate_prior[i])
+  }
+
+  n_cooperate_prior <- sum(cooperation_prior[])
+}

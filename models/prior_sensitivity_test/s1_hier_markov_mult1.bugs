@@ -1,0 +1,57 @@
+data 
+{
+  # Dimensions of the dyad-by-event state matrix
+  D <- dim(y)
+}
+
+model 
+{
+  # Initial-state probabilities
+  theta0[1:K] ~ ddirch(alpha)
+
+  # Population transition probabilities: concentration multiplier = 1
+  for (s in 1:K)
+  {
+    theta[s,1:K] ~ ddirch(theta0 * 1)
+  }
+
+  # Dyad-specific transition probabilities
+  for (p in 1:D[1])
+  {
+    for (s in 1:K)
+    {
+      theta_p[p,s,1:K] ~ ddirch(theta[s,] * 1)
+    }
+  }
+
+  # Initial states
+  for (p in 1:D[1])
+  {
+    y[p,1] ~ dcat(theta0)
+  }
+
+  # First-order Markov transitions
+  for (p in 1:D[1])
+  {
+    for (t in 2:D[2])
+    {
+      y[p,t] ~ dcat(theta_p[p, y[p,t-1], ])
+    }
+  }
+
+  # Disconnected prior-reference draws
+  theta0_prior[1:K] ~ ddirch(alpha)
+
+  for (s in 1:K)
+  {
+    theta_prior[s,1:K] ~ ddirch(theta0_prior * 1)
+  }
+
+  for (p in 1:D[1])
+  {
+    for (s in 1:K)
+    {
+      theta_p_prior[p,s,1:K] ~ ddirch(theta_prior[s,] * 1)
+    }
+  }
+}

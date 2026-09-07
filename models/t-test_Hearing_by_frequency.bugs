@@ -1,0 +1,56 @@
+data 
+{
+  # Dimensions of participant information and trial-level data
+  Dp <- dim(p_info)
+  Dt <- dim(Y)
+}
+
+model 
+{
+  # Frequency-specific population distributions
+  for (f in 1:n_freq)
+  {
+    delta[f] ~ dt(0, 1, 1)
+    mu[f] ~ dt(0, 1, 1)
+    sigma[f] ~ dt(0, 1, 1)T(0,)
+
+    a[f] <- (delta[f] * sigma[f]) / 2
+    tau[f] <- 1 / (sigma[f] * sigma[f])
+
+    mu_gender[f,1] <- mu[f] - a[f]  # Male
+    mu_gender[f,2] <- mu[f] + a[f]  # Female
+  }
+
+  # Participant-level hearing thresholds
+  for (i in 1:Dp[1])
+  {
+    # Participant-specific precision
+    tau_i[i] ~ dexp(1)
+
+    for (f in 1:n_freq)
+    {
+      mu_i[i,f] ~ dnorm(mu_gender[f, p_info[i,2]], tau[f])
+    }
+  }
+
+  # Trial-level hearing-threshold observations with censoring
+  for (i in 1:Dt[1])
+  {
+    cens[i] ~ dinterval(Y[i,5], BP)
+    Y[i,5] ~ dnorm(mu_i[Y[i,1], Y[i,3]], tau_i[Y[i,1]])
+  }
+
+  # Disconnected prior-reference draws
+  for (f in 1:n_freq)
+  {
+    delta_prior[f] ~ dt(0, 1, 1)
+    mu_prior[f] ~ dt(0, 1, 1)
+    sigma_prior[f] ~ dt(0, 1, 1)T(0,)
+
+    a_prior[f] <- (delta_prior[f] * sigma_prior[f]) / 2
+    tau_prior[f] <- 1 / (sigma_prior[f] * sigma_prior[f])
+
+    mu_gender_prior[f,1] <- mu_prior[f] - a_prior[f]  # Male
+    mu_gender_prior[f,2] <- mu_prior[f] + a_prior[f]  # Female
+  }
+}

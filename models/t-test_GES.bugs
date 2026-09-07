@@ -1,0 +1,37 @@
+model 
+{
+  # Priors
+  delta ~ dt(0, 1, 1)
+  mu ~ dt(0, 1, 1)
+  sigma ~ dt(0, 1, 1)T(0,)
+
+  # Group-mean parameterisation
+  a <- (delta * sigma) / 2
+  tau <- 1 / (sigma * sigma)
+
+  # Female observations
+  for (i in 1:N1)
+  {
+    x[i] ~ dnorm(mu + a, tau)
+  }
+
+  # Male observations
+  for (i in 1:N2)
+  {
+    y[i] ~ dnorm(mu - a, tau)
+  }
+
+  women <- mu + a
+  men <- mu - a
+
+  # Disconnected prior-reference draws
+  delta_prior ~ dt(0, 1, 1)
+  mu_prior ~ dt(0, 1, 1)
+  sigma_prior ~ dt(0, 1, 1)T(0,)
+
+  a_prior <- (delta_prior * sigma_prior) / 2
+  tau_prior <- 1 / (sigma_prior * sigma_prior)
+
+  women_prior <- mu_prior + a_prior
+  men_prior <- mu_prior - a_prior
+}
