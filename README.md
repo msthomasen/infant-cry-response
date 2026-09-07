@@ -3,7 +3,6 @@
 This repository contains data, code, model files, fitted model objects, figures, and supplementary analysis materials for: **No evidence that women are more reactive to infant crying than men: two laboratory studies in non-parents**.
 
 
-
 ### **Overview**
 
 This project examined whether women and men differ in their behavioural responses to infant crying in two laboratory studies with non-parents.
