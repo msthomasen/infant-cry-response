@@ -1,0 +1,672 @@
+---
+title: "00_clean_data"
+output: html_document
+---
+
+```{r setup}
+library(tidyverse)
+library(lubridate)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data")
+output_folder <- file.path(data_path, "cleaned_data")
+dir.create(output_folder, recursive = TRUE, showWarnings = FALSE)
+
+LEFT <- read.csv(file.path(data_path, "hearing_test", "LEFT_ht.csv")) %>%
+  mutate(id = lag(id)) %>%
+  filter(!(id == "")) %>%
+  tibble()
+
+RIGHT <- read.csv(file.path(data_path, "hearing_test", "RIGHT_ht.csv")) %>%
+  mutate(id = lag(id)) %>%
+  filter(!(id == "")) %>%
+  tibble()
+
+
+otree <- read_csv(file.path(data_path, "all_apps_wide_2022-10-06.csv"), show_col_types = FALSE)
+rt <- read_csv(file.path(data_path, "rt.csv"), show_col_types = FALSE)
+roundwise <- read_csv(file.path(data_path, "roundwise.csv"), show_col_types = FALSE)
+matrix_info <- read_csv(file.path(data_path, "matrix_as_numbers.csv"), show_col_types = FALSE)
+second_to_second <- read_csv(file.path(data_path, "second_to_second.csv"), show_col_types = FALSE)
+
+
+
+excluded_ids <- c("CONCISE SEPIA QUETZAL", "TRANQUIL ORANGE FROG", "WISE MAUVE AXOLOTL", "SUPERIOR OLIVE SHRIMP")
+# SUPERIOR OLIVE SHRIMP was excluded as he was 78 years old and the only parent
+#The others were excluded as they seemed to have misunderstood the task
+#NOT EXCLUDE: exclude_ids_age <- c( "SALUTARY JASPER TERMITE", "DELICATE TOPAZ MAGPIE")
+```
+
+## Clean hearing data
+```{r}
+participant_lookup <- otree %>%
+  mutate(across(everything(), as.character)) %>%
+  select(
+    id = survey_followup.1.player.dyad_name,
+    participant.code,
+    session.code,
+    gender = survey_followup.1.player.gender,
+    position = survey_followup.1.player.position,
+    setup = survey_followup.1.player.setup,
+    age = survey_followup.1.player.age
+  ) %>%
+  distinct() %>%
+  filter(!is.na(id), id != "") %>%
+  mutate(
+    setup = ifelse(id == "CRISP EBONY HAMMERHEAD SHARK", "COOP", setup),
+    id = case_when(
+      participant.code == "ii4sef5x" ~ "PROPER ONYXS MANDRILL",
+      participant.code == "1ii8knxv" ~ "MIGHTY RUBY SPIDER",
+      participant.code == "hh1tewfk" ~ "PEPPY INDIGO HEDGEHOG",
+      participant.code == "m5cjghle" ~ "EAGER OLIVE WOLVERINE",
+      session.code == "1uyz49kz" ~ "FRESH OLIVE JACK RUSSEL",
+      participant.code == "9m2nmlpj" ~ "KEEN BLACK CHINCHILLA",
+      participant.code == "zonxc045" ~ "EARNEST LAVA MEERKAT",
+      participant.code == "hifbo46i" ~ "LUCID JASPER BUMBLE BEE",
+      participant.code == "974dg3rd" ~ "SKILLED GREEN PUG",
+      TRUE ~ id
+    ),
+    age = parse_number(age)
+  )
+
+hearing_trials_clean <- LEFT %>%
+  mutate(position = "Left") %>%
+  bind_rows(
+    RIGHT %>%
+      mutate(position = "Right")
+  ) %>%
+  separate(stimulus, into = c("freq_Hz", "ear"), sep = "_") %>%
+  mutate(
+    freq_Hz = parse_number(freq_Hz),
+    ear = toupper(ear)) %>%
+  select(-any_of("X")) %>%
+  arrange(id, position, ear, freq_Hz) %>%
+  inner_join(
+    participant_lookup %>%
+      select(id, participant.code, session.code, position, gender, setup, age),
+    by = c("id", "position")
+  ) %>%
+  relocate(start, id, participant.code, session.code, setup, position, gender, age, ear, freq_Hz, startSequence, response, RT) %>%
+  mutate(
+    excluded = id %in% excluded_ids
+  )
+
+# timing structure from original script
+stimulus_timing <- hearing_trials_clean %>%
+  select(ear, freq_Hz) %>%
+  distinct() %>%
+  arrange(ear, freq_Hz) %>%
+  mutate(
+    delay = c(230, 190, 110, 125, 135, 63,
+              200, 205, 95, 95, 73, 125),
+    duration = rep(c(250, rep(100, 5)), 2),
+    n_beep = rep(c(12, rep(14, 5)), 2)
+  )
+
+amplitude_lookup <- tibble(
+  threshold = seq(1, 14, 1),
+  amplitude = seq(-39, 0, 3)
+)
+
+hearing_trials_clean <- hearing_trials_clean %>%
+  left_join(stimulus_timing, by = c("ear", "freq_Hz")) %>%
+  mutate(
+    normalised_RT = 1 + ((RT - delay) / (duration + 1000)),
+    threshold = floor(normalised_RT),
+    threshold = ifelse(freq_Hz == 200, threshold + 2, threshold),
+    threshold = ifelse(response == "none", NA, threshold),
+    threshold = ifelse(threshold > 14, 14, threshold),
+    threshold = ifelse(threshold < 1, 1, threshold)
+  ) %>%
+  left_join(amplitude_lookup, by = "threshold")
+
+write_csv(hearing_trials_clean, file.path(output_folder, "hearing_trials_clean.csv"))
+
+hearing_clean <- hearing_trials_clean %>%
+  group_by(id, participant.code, session.code, setup, gender, position, age) %>%
+  summarise(
+    n_trials = n(),
+    n_missing_threshold = sum(is.na(threshold)),
+    mean_threshold = mean(threshold, na.rm = TRUE),
+    sd_threshold = sd(threshold, na.rm = TRUE),
+    mean_amplitude = mean(amplitude, na.rm = TRUE),
+    threshold_left_ear = mean(threshold[ear == "LEFT"], na.rm = TRUE),
+    threshold_right_ear = mean(threshold[ear == "RIGHT"], na.rm = TRUE),
+    amplitude_left_ear = mean(amplitude[ear == "LEFT"], na.rm = TRUE),
+    amplitude_right_ear = mean(amplitude[ear == "RIGHT"], na.rm = TRUE),
+    excluded = first(excluded),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    across(
+      c(
+        mean_threshold, sd_threshold, mean_amplitude,
+        threshold_left_ear, threshold_right_ear,
+        amplitude_left_ear, amplitude_right_ear
+      ),
+      ~ ifelse(is.nan(.x), NA, .x)
+    )
+  ) %>%
+  arrange(id, position)
+
+write_csv(hearing_clean, file.path(output_folder, "hearing_clean.csv"))
+```
+
+
+## demographics dataset
+```{r}
+demographics <- otree %>%
+  mutate(across(everything(), as.character)) %>%
+  select(contains("survey_followup."), participant.code, session.code) %>%
+  select(!contains("survey_followup.1.player.q")) %>%
+  rename(
+    gender = survey_followup.1.player.gender,
+    id = survey_followup.1.player.dyad_name,
+    position = survey_followup.1.player.position
+  ) %>%
+  pivot_longer(cols = contains("survey")) %>%
+  separate(col = name, into = c("task", "dump", "round", "player", "variable")) %>%
+  select(-c(dump, player, task, round)) %>%
+  filter(variable != "id") %>%
+  pivot_wider(names_from = variable, values_from = value) %>%
+  unnest(cols = c(role, payoff, age, language, parent, experience, regular, setup, round)) %>%
+  select(-c(round, payoff, role)) %>%
+  mutate(
+    setup = ifelse(id == "CRISP EBONY HAMMERHEAD SHARK", "COOP", setup),
+    id = case_when(
+      participant.code == "ii4sef5x" ~ "PROPER ONYXS MANDRILL",
+      participant.code == "1ii8knxv" ~ "MIGHTY RUBY SPIDER",
+      participant.code == "hh1tewfk" ~ "PEPPY INDIGO HEDGEHOG",
+      participant.code == "m5cjghle" ~ "EAGER OLIVE WOLVERINE",
+      session.code == "1uyz49kz" ~ "FRESH OLIVE JACK RUSSEL",
+      participant.code == "9m2nmlpj" ~ "KEEN BLACK CHINCHILLA",
+      participant.code == "zonxc045" ~ "EARNEST LAVA MEERKAT",
+      participant.code == "hifbo46i" ~ "LUCID JASPER BUMBLE BEE",
+      participant.code == "974dg3rd" ~ "SKILLED GREEN PUG",
+      TRUE ~ id
+    ),
+    age = parse_number(age)
+  ) %>%
+  left_join(
+    hearing_clean %>%
+      select(
+        id, participant.code, position,
+        n_trials, n_missing_threshold,
+        mean_threshold, sd_threshold, mean_amplitude,
+        threshold_left_ear, threshold_right_ear,
+        amplitude_left_ear, amplitude_right_ear
+      ),
+    by = c("id", "participant.code", "position")
+  ) %>%
+  mutate(
+    excluded = id %in% excluded_ids
+  ) %>%
+  distinct() %>%
+  arrange(id, position)
+
+valid_participants <- participant_lookup %>%
+  select(participant.code) %>%
+  distinct()
+
+demographics <- demographics %>%
+  semi_join(valid_participants, by = "participant.code") %>%
+  distinct() %>%
+  arrange(id, position)
+
+write_csv(demographics, file.path(output_folder, "demographics.csv"))
+```
+
+## Dyad mapping dataset
+```{r}
+dyad_info <- demographics %>%
+  filter(setup == "COOP") %>%
+  mutate(position = factor(position, levels = c("Left", "Right"))) %>%
+  select(
+    id, participant.code, gender, position, age,
+    excluded
+  ) %>%
+  distinct() %>%
+  pivot_wider(
+    names_from = position,
+    values_from = c(participant.code, gender, age, excluded),
+    names_sep = "_"
+  ) %>%
+  mutate(
+    valid_mixed_gender_dyad = gender_Left != gender_Right,
+    excluded_dyad = coalesce(excluded_Left, FALSE) | coalesce(excluded_Right, FALSE)
+  ) %>%
+  arrange(id)
+
+write_csv(dyad_info, file.path(output_folder, "dyad_info.csv"))
+```
+
+
+## Sound event dataset (contains more information than gender_buttonpress.csv)
+```{r}
+clean_rt <- rt %>%
+  rename(setup = type) %>% 
+  select(-any_of(c("soundLevel", "volume", "...12"))) %>%
+  separate(startSequence, into = c("date_seq", "time_seq"), sep = " ") %>%
+  separate(start, into = c("date_start", "time_start"), sep = " ") %>%
+  separate(end, into = c("date_end", "time_end"), sep = " ") %>%
+  mutate(
+    start_dt = dmy_hms(paste(date_start, time_start)),
+    end_dt = dmy_hms(paste(date_end, time_end)),
+    sound_start_dt = dmy_hms(paste(date_seq, time_seq)),
+    response_key = case_when(
+      response %in% c("CapsLock", "LeftShift") ~ "Tab",
+      TRUE ~ response
+    ),
+    press_side = case_when(
+      response_key == "Tab" ~ "Left",
+      response_key == "Return" ~ "Right",
+      response_key == "none" ~ "none",
+      TRUE ~ NA_character_
+    ),
+    sound_end_dt = if_else(
+      RT == 0,
+      sound_start_dt + seconds(125),
+      sound_start_dt + milliseconds(RT)
+    )
+  ) %>%
+  group_by(id) %>%
+  arrange(sound_start_dt, .by_group = TRUE) %>%
+  mutate(
+    sound_event_order = row_number(),
+    std_time = as.double(difftime(sound_start_dt, start_dt, units = "secs")),
+    std_stop = as.double(difftime(sound_end_dt, start_dt, units = "secs")),
+    pressed = as.integer(response_key != "none"),
+    no_press = as.integer(response_key == "none")
+  ) %>%
+  ungroup()
+
+position_gender_lookup <- demographics %>%
+  select(id, participant.code, gender, position) %>%
+  distinct()
+
+sound_events <- clean_rt %>%
+  left_join(
+    position_gender_lookup,
+    by = c("id", "press_side" = "position")
+  ) %>%
+  rename(
+    responder_participant_code = participant.code,
+    responder_gender = gender
+  ) %>%
+  mutate(
+    responder_gender = if_else(response_key == "none", "none", responder_gender),
+    woman_pressed = case_when(
+      responder_gender == "Female" ~ 1,
+      responder_gender == "Male" ~ 0,
+      responder_gender == "none" ~ NA_real_,
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  select(
+    id, setup, stimulus, sound_event_order,
+    start_dt, end_dt, sound_start_dt, sound_end_dt,
+    response_key, press_side, responder_participant_code, responder_gender,
+    RT, std_time, std_stop, pressed, no_press, woman_pressed
+  ) %>%
+  arrange(id, sound_event_order)
+
+write_csv(sound_events, file.path(output_folder, "sound_events.csv"))
+
+gender_buttonpress_clean <- sound_events %>%
+  transmute(
+    setup,
+    id,
+    stimulus,
+    response = responder_gender,
+    RT,
+    std_time,
+    std_stop
+  )
+
+write_csv(gender_buttonpress_clean, file.path(output_folder, "gender_buttonpress.csv"))
+```
+
+
+## participant roundwise dataset
+```{r}
+roundwise_base <- roundwise %>%
+  rename(setup = type) %>%
+  left_join(
+    demographics %>%
+      select(id, participant.code, gender, position) %>%
+      distinct(),
+    by = c("id", "participant.code", "gender")
+  )
+
+max_sound_keep <- 3
+
+roundwise_unique <- roundwise_base %>%
+  group_by(setup, id, participant.code, gender, position, round) %>%
+  summarise(
+    secs = first(secs),
+    matrix = first(matrix),
+    correct = first(correct),
+    completed = first(completed),
+    answer = first(answer),
+    success = first(success),
+    stimulus_labels_round = paste(unique(stimulus[!is.na(stimulus)]), collapse = " | "),
+    any_stimulus = any(!is.na(stimulus)),
+    n_rows_collapsed = n(),
+    .groups = "drop"
+  )
+
+sts_round <- second_to_second %>%
+  rename(setup = type) %>%
+  group_by(setup, id, participant.code, gender, position, round) %>%
+  arrange(time, .by_group = TRUE) %>%
+  mutate(
+    sec_in_round = row_number() - 1,
+    sound_on = s_on == 1,
+    new_episode = sound_on & !lag(sound_on, default = FALSE),
+    episode = cumsum(new_episode)
+  ) %>%
+  ungroup()
+
+round_sound_episodes <- sts_round %>%
+  filter(sound_on) %>%
+  group_by(setup, id, participant.code, gender, position, round, episode) %>%
+  summarise(
+    start_sec = min(sec_in_round),
+    end_sec = max(sec_in_round) + 1,
+    duration = end_sec - start_sec,
+    stimulus = paste(unique(stimulus[!is.na(stimulus)]), collapse = " | "),
+    .groups = "drop"
+  ) %>%
+  arrange(setup, id, participant.code, round, episode)
+
+round_exposure <- sts_round %>%
+  group_by(setup, id, participant.code, gender, position, round) %>%
+  summarise(
+    secs_total = n(),
+    secs_sound = sum(sound_on, na.rm = TRUE),
+    sound_prop = mean(sound_on, na.rm = TRUE),
+    n_sound_episodes = sum(sound_on & !lag(sound_on, default = FALSE)),
+    .groups = "drop"
+  )
+
+round_sound_episodes_wide <- round_sound_episodes %>%
+  filter(episode <= max_sound_keep) %>%
+  pivot_wider(
+    id_cols = c(setup, id, participant.code, gender, position, round),
+    names_from = episode,
+    values_from = c(start_sec, end_sec, duration, stimulus),
+    names_glue = "sound{episode}_{.value}"
+  )
+
+# assign each sound event to participant-round using the second in which the sound starts
+sound_event_round_map <- sound_events %>%
+  mutate(event_time_sec = floor(std_time)) %>%
+  left_join(
+    second_to_second %>%
+      rename(setup = type) %>%
+      select(setup, id, participant.code, gender, position, time, round) %>%
+      distinct(),
+    by = c("setup", "id", "event_time_sec" = "time")
+  ) %>%
+  rename(sound_event_in_round = round) %>%
+  left_join(
+    sts_round %>%
+      select(setup, id, participant.code, gender, position, round, time, sec_in_round) %>%
+      distinct(),
+    by = c("setup", "id", "participant.code", "gender", "position",
+           "sound_event_in_round" = "round", "event_time_sec" = "time")
+  ) %>%
+  rename(sound_start_sec_in_round = sec_in_round) %>%
+  mutate(
+    button_press_sec_in_round = if_else(
+      pressed == 1,
+      sound_start_sec_in_round + RT / 1000,
+      NA_real_
+    ),
+    pressed_by = case_when(
+      pressed == 0 ~ "none",
+      responder_participant_code == participant.code ~ "participant",
+      !is.na(responder_participant_code) & responder_participant_code != participant.code ~ "partner",
+      TRUE ~ NA_character_
+    )
+  )
+
+round_button_summary <- sound_event_round_map %>%
+  filter(!is.na(sound_event_in_round)) %>%
+  group_by(setup, id, participant.code, gender, position, round = sound_event_in_round) %>%
+  summarise(
+    any_button_press = any(pressed == 1, na.rm = TRUE),
+    n_button_press_events = sum(pressed == 1, na.rm = TRUE),
+    first_button_press_sec = suppressWarnings(min(button_press_sec_in_round, na.rm = TRUE)),
+    last_button_press_sec = suppressWarnings(max(button_press_sec_in_round, na.rm = TRUE)),
+    participant_pressed_in_round = any(pressed_by == "participant", na.rm = TRUE),
+    partner_pressed_in_round = any(pressed_by == "partner", na.rm = TRUE),
+    n_participant_press_events = sum(pressed_by == "participant", na.rm = TRUE),
+    n_partner_press_events = sum(pressed_by == "partner", na.rm = TRUE),
+    first_button_press_by = pressed_by[which.min(if_else(is.na(button_press_sec_in_round), Inf, button_press_sec_in_round))],
+    .groups = "drop"
+  ) %>%
+  mutate(
+    first_button_press_sec = ifelse(is.infinite(first_button_press_sec), NA, first_button_press_sec),
+    last_button_press_sec = ifelse(is.infinite(last_button_press_sec), NA, last_button_press_sec),
+    any_button_press = as.integer(any_button_press),
+    participant_pressed_in_round = as.integer(participant_pressed_in_round),
+    partner_pressed_in_round = as.integer(partner_pressed_in_round),
+    first_button_press_by = ifelse(n_button_press_events == 0, "none", first_button_press_by)
+  )
+
+round_button_events_wide <- sound_event_round_map %>%
+  filter(!is.na(sound_event_in_round)) %>%
+  group_by(setup, id, participant.code, gender, position, round = sound_event_in_round) %>%
+  arrange(sound_start_sec_in_round, .by_group = TRUE) %>%
+  mutate(sound_event_number_in_round = row_number()) %>%
+  ungroup() %>%
+  filter(sound_event_number_in_round <= max_sound_keep) %>%
+  transmute(
+    setup, id, participant.code, gender, position, round,
+    sound_event_number_in_round,
+    sound_start_sec_in_round,
+    button_press_sec_in_round,
+    pressed,
+    pressed_by,
+    responder_gender,
+    responder_participant_code
+  ) %>%
+  pivot_wider(
+    id_cols = c(setup, id, participant.code, gender, position, round),
+    names_from = sound_event_number_in_round,
+    values_from = c(
+      sound_start_sec_in_round,
+      button_press_sec_in_round,
+      pressed,
+      pressed_by,
+      responder_gender,
+      responder_participant_code
+    ),
+    names_glue = "sound{sound_event_number_in_round}_{.value}"
+  )
+
+roundwise_clean <- roundwise_unique %>%
+  left_join(
+    round_exposure,
+    by = c("setup", "id", "participant.code", "gender", "position", "round")
+  ) %>%
+  left_join(
+    round_sound_episodes_wide,
+    by = c("setup", "id", "participant.code", "gender", "position", "round")
+  ) %>%
+  left_join(
+    round_button_summary,
+    by = c("setup", "id", "participant.code", "gender", "position", "round")
+  ) %>%
+  left_join(
+    round_button_events_wide,
+    by = c("setup", "id", "participant.code", "gender", "position", "round")
+  ) %>%
+  left_join(
+    demographics %>%
+      select(
+        id, participant.code, session.code, gender, position, age,
+        language, parent, experience, regular,
+        n_trials, n_missing_threshold,
+        mean_threshold, sd_threshold, mean_amplitude,
+        threshold_left_ear, threshold_right_ear,
+        amplitude_left_ear, amplitude_right_ear,
+        excluded
+      ),
+    by = c("id", "participant.code", "gender", "position")
+  ) %>%
+  arrange(setup, id, participant.code, round)
+
+write_csv(roundwise_clean, file.path(output_folder, "roundwise_clean.csv"))
+```
+
+
+## Matrix structure dataset
+```{r}
+matrix_info_clean <- matrix_info %>%
+  arrange(participant.code, round)
+
+write_csv(matrix_info_clean, file.path(output_folder, "matrix_info_clean.csv"))
+```
+
+
+## Clean second_to_second data
+```{r}
+second_to_second_clean <- second_to_second %>%
+  rename(setup = type) %>%
+  left_join(
+    demographics %>%
+      select(
+        id, participant.code, session.code, gender, position, age,
+        excluded
+      ),
+    by = c("id", "participant.code", "gender", "position")
+  ) %>%
+  arrange(id, participant.code, time)
+
+write_csv(second_to_second_clean, file.path(output_folder, "second_to_second_clean.csv"))
+```
+
+## GES data
+
+```{r}
+## GES data
+otree[] <- lapply(otree, as.character)
+
+ges_long <- otree %>%
+  select(
+    contains("survey_followup.1.player.q"),
+    survey_followup.1.player.setup,
+    participant.code,
+    session.code,
+    survey_followup.1.player.gender,
+    survey_followup.1.player.dyad_name,
+    survey_followup.1.player.position
+  ) %>%
+  rename(
+    gender = survey_followup.1.player.gender,
+    id = survey_followup.1.player.dyad_name,
+    position = survey_followup.1.player.position,
+    setup = survey_followup.1.player.setup
+  ) %>%
+  pivot_longer(cols = contains("survey_followup.1.player.q")) %>%
+  separate(name, into = c("task", "dump", "round", "player", "variable")) %>%
+  select(-dump, -player, -task, -round) %>%
+  mutate(
+    value = parse_number(value),
+    value = ifelse(variable %in% c("q4", "q9", "q15", "q16", "q25"), -value, value),
+    setup = if_else(id == "CRISP EBONY HAMMERHEAD SHARK", "COOP", setup),
+    id = case_when(
+      participant.code == "ii4sef5x" ~ "PROPER ONYXS MANDRILL",
+      participant.code == "1ii8knxv" ~ "MIGHTY RUBY SPIDER",
+      participant.code == "hh1tewfk" ~ "PEPPY INDIGO HEDGEHOG",
+      participant.code == "m5cjghle" ~ "EAGER OLIVE WOLVERINE",
+      session.code == "1uyz49kz" ~ "FRESH OLIVE JACK RUSSEL",
+      participant.code == "9m2nmlpj" ~ "KEEN BLACK CHINCHILLA",
+      participant.code == "zonxc045" ~ "EARNEST LAVA MEERKAT",
+      participant.code == "hifbo46i" ~ "LUCID JASPER BUMBLE BEE",
+      participant.code == "974dg3rd" ~ "SKILLED GREEN PUG",
+      TRUE ~ id
+    )
+  )
+
+ges_long_clean <- ges_long %>%
+  inner_join(
+    demographics %>%
+      select(id, participant.code, session.code, gender, position, setup, excluded),
+    by = c("id", "participant.code", "session.code", "gender", "position", "setup")
+  ) %>%
+  arrange(setup, id, participant.code, variable)
+
+ges_summary <- ges_long_clean %>%
+  group_by(id, participant.code, session.code, setup, gender, position) %>%
+  summarise(
+    ges_sum = sum(value, na.rm = TRUE),
+    ges_score = mean(value, na.rm = TRUE),
+    ges_sd = sd(value, na.rm = TRUE),
+    n_ges_items = sum(!is.na(value)),
+    excluded = first(excluded),
+    .groups = "drop"
+  ) %>%
+  arrange(setup, id, position)
+
+write_csv(ges_long_clean, file.path(output_folder, "ges_long_clean.csv"))
+write_csv(ges_summary, file.path(output_folder, "ges_summary.csv"))
+```
+
+## Prisoner dilemma data 
+
+```{r}
+prisoner_df <- otree %>%
+  select(
+    survey_followup.1.player.setup,
+    participant.code,
+    session.code,
+    survey_followup.1.player.gender,
+    survey_followup.1.player.dyad_name,
+    survey_followup.1.player.position,
+    age = survey_followup.1.player.age,
+    contains("prisoner"),
+    -contains("role"),
+    -contains("payoff"),
+    -contains("id_in_subsession")
+  ) %>%
+  rename(
+    gender = survey_followup.1.player.gender,
+    id = survey_followup.1.player.dyad_name,
+    position = survey_followup.1.player.position,
+    setup = survey_followup.1.player.setup
+  ) %>%
+  distinct() %>%
+  filter(!is.na(id), id != "") %>%
+  mutate(
+    setup = ifelse(id == "CRISP EBONY HAMMERHEAD SHARK", "COOP", setup),
+    id = case_when(
+      participant.code == "ii4sef5x" ~ "PROPER ONYXS MANDRILL",
+      participant.code == "1ii8knxv" ~ "MIGHTY RUBY SPIDER",
+      participant.code == "hh1tewfk" ~ "PEPPY INDIGO HEDGEHOG",
+      participant.code == "m5cjghle" ~ "EAGER OLIVE WOLVERINE",
+      session.code == "1uyz49kz" ~ "FRESH OLIVE JACK RUSSEL",
+      participant.code == "9m2nmlpj" ~ "KEEN BLACK CHINCHILLA",
+      participant.code == "zonxc045" ~ "EARNEST LAVA MEERKAT",
+      participant.code == "hifbo46i" ~ "LUCID JASPER BUMBLE BEE",
+      participant.code == "974dg3rd" ~ "SKILLED GREEN PUG",
+      TRUE ~ id
+    )) %>% 
+  filter(setup == "COOP") %>% 
+  filter(!id %in% excluded_ids)
+
+prisoner_long <- prisoner_df %>% 
+  pivot_longer(cols = starts_with("prisoner."),
+               names_to = c("round_from_column", ".value"),
+               names_pattern = "^prisoner\\.(\\d+)\\.(?:player|subsession)\\.(.+)$",
+               names_transform = list(round_from_column = as.integer)) %>% 
+  mutate(round_number = as.integer(round_number)) %>% 
+  select(setup, participant.code, session.code, gender, id, position, age, 
+         round_number, id_in_group, decision, pay_off) %>% 
+  arrange(id, participant.code, round_number)
+
+write_csv(prisoner_long, file.path(output_folder, "prisoner_dilemma_clean.csv"))
+```
+
