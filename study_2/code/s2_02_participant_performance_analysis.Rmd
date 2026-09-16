@@ -1,0 +1,184 @@
+---
+title: "s2_02_participant_performance_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_2_path <- file.path(main_path, "study_2")
+figure_path <- file.path(study_2_path, "figures")
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+source(file.path(main_path, "overall_functions.R"))
+```
+
+```{r}
+#analytic sample
+dem_solo_analytic <- demographics %>%
+  filter(
+    setup == "SOLO",
+    !excluded,
+    !participant.code %in% c("l6gxo7po", "n0ndmyka")
+  ) # Two participants excluded due to technical errors
+
+solo_ids <- dem_solo_analytic %>%
+  distinct(id)
+
+solo_rounds <- roundwise_clean %>%
+  filter(!excluded, setup == "SOLO") %>%
+  semi_join(solo_ids, by = "id")
+```
+
+```{r}
+# derive performance and sound variables
+solo_rounds <- solo_rounds %>%
+  mutate(
+    gender = factor(gender, levels = c("Female", "Male")),
+    completed = as.integer(completed),
+    success = as.integer(success),
+    secs = as.numeric(secs),
+    sound1_lower = str_to_lower(coalesce(sound1_stimulus, "")),
+    sound2_lower = str_to_lower(coalesce(sound2_stimulus, "")),
+    sound3_lower = str_to_lower(coalesce(sound3_stimulus, "")),
+    any_cry = as.integer(
+      str_detect(sound1_lower, "cry|cries") |
+        str_detect(sound2_lower, "cry|cries") |
+        str_detect(sound3_lower, "cry|cries")),
+    any_alarm = as.integer(
+      str_detect(sound1_lower, "alarm") |
+        str_detect(sound2_lower, "alarm") |
+        str_detect(sound3_lower, "alarm"))) %>%
+  filter(!(any_cry == 1 & any_alarm == 1))
+
+```
+
+```{r}
+participant_performance <- solo_rounds %>%
+  group_by(id, participant.code, gender) %>%
+  summarise(
+    n_matrices_seen = n(),
+    n_matrices_completed = sum(completed, na.rm = TRUE),
+    n_matrices_correct = sum(success, na.rm = TRUE),
+    mean_round_duration_secs = mean(secs, na.rm = TRUE),
+    .groups = "drop")
+```
+
+```{r}
+performance_variables <- c(
+  "n_matrices_seen",
+  "n_matrices_completed",
+  "n_matrices_correct",
+  "mean_round_duration_secs")
+
+performance_diagnostics_long <- participant_performance %>%
+  select(
+    participant.code,
+    gender,
+    all_of(performance_variables)) %>%
+  pivot_longer(
+    cols = all_of(performance_variables),
+    names_to = "outcome",
+    values_to = "value") %>%
+  mutate(
+    outcome = factor(
+      outcome,
+      levels = performance_variables,
+      labels = c(
+        "Matrices seen",
+        "Matrices answered",
+        "Matrices correct",
+        "Mean round duration")))
+
+p_study2_performance_boxplots <-
+  ggplot(
+    performance_diagnostics_long,
+    aes(x = gender, y = value)) +
+  geom_boxplot(
+    outlier.shape = NA,
+    width = 0.55) +
+  geom_jitter(
+    width = 0.08,
+    height = 0,
+    alpha = 0.65,
+    size = 1.7) +
+  facet_wrap(
+    ~ outcome,
+    scales = "free_y",
+    ncol = 2) +
+  labs(
+    x = "Gender",
+    y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"))
+
+plot_png_path <- file.path(
+  figure_path,
+  "s2_welch_assumption_boxplots.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_study2_performance_boxplots,
+  width = 9,
+  height = 7,
+  dpi = 300)
+
+p_study2_performance_qq <-
+  ggplot(
+    performance_diagnostics_long,
+    aes(sample = value)) +
+  stat_qq(
+    alpha = 0.70,
+    size = 1.6) +
+  stat_qq_line(
+    linewidth = 0.7) +
+  facet_grid(
+    gender ~ outcome,
+    scales = "free") +
+  labs(
+    x = "Theoretical quantiles",
+    y = "Observed quantiles") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"))
+
+plot_png_path <- file.path(
+  figure_path,
+  "s2_welch_assumption_qqplots.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_study2_performance_qq,
+  width = 12,
+  height = 6,
+  dpi = 300)
+```
+
+```{r}
+# Shapiro-Wilk tests by outcome and gender
+shapiro_results <- performance_diagnostics_long %>%
+  group_by(outcome, gender) %>%
+  summarise(
+    W = unname(shapiro.test(value)$statistic),
+    p = shapiro.test(value)$p.value,
+    .groups = "drop")
+
+shapiro_results
+```
+
+
+```{r}
+# Primary Welch t-tests
+t.test(n_matrices_seen ~ gender, data = participant_performance)
+t.test(n_matrices_completed ~ gender, data = participant_performance)
+t.test(n_matrices_correct ~ gender, data = participant_performance)
+t.test(mean_round_duration_secs ~ gender, data = participant_performance)
+```

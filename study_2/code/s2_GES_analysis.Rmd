@@ -1,0 +1,221 @@
+---
+title: "s2_GES_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+library(psych)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_2_path <- file.path(main_path, "study_2")
+results_path <- file.path(study_2_path, "results")
+models_path <- file.path(main_path, "models")
+figure_path <- file.path(study_2_path, "figures")
+
+set.seed(7386)
+
+ges_summary <- read_csv(file.path(data_path, "ges_summary.csv"), show_col_types = FALSE)
+ges_long_clean <- read_csv(file.path(data_path, "ges_long_clean.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
+```
+
+```{r}
+# Restrict to the Study 2 analytic sample
+ges_study <- ges_summary %>%
+  filter(
+    setup == "SOLO",
+    !excluded,
+    !participant.code %in% c("l6gxo7po", "n0ndmyka"))
+```
+
+```{r}
+# GES availability and participant-level descriptives
+
+ges_availability <- ges_study %>%
+  dplyr::select(
+    id,
+    participant.code,
+    gender,
+    ges_score) %>%
+  distinct() %>%
+  mutate(
+    ges_available = !is.na(ges_score))
+
+ges_availability %>%
+  summarise(
+    n_total = n(),
+    n_ges_available = sum(ges_available),
+    prop_ges_available = mean(ges_available),
+    percent_ges_available =
+      100 * mean(ges_available))
+
+ges_availability %>%
+  group_by(gender) %>%
+  summarise(
+    n_total = n(),
+    n_ges_available = sum(ges_available),
+    prop_ges_available = mean(ges_available),
+    percent_ges_available =
+      100 * mean(ges_available),
+    .groups = "drop")
+
+ges_descriptive_sample <- ges_availability %>%
+  filter(ges_available)
+
+ges_descriptive_sample %>%
+  summarise(
+    n_participants = n(),
+    mean_ges = mean(ges_score),
+    sd_ges = sd(ges_score))
+
+ges_descriptive_sample %>%
+  group_by(gender) %>%
+  summarise(
+    n_participants = n(),
+    mean_ges = mean(ges_score),
+    sd_ges = sd(ges_score),
+    .groups = "drop")
+```
+
+```{r}
+# Distribution plots
+ges_descriptive_sample  %>%
+  ggplot(aes(gender, ges_score, fill = gender)) +
+  geom_violin(trim = FALSE, alpha = 0.3) +
+  geom_jitter(width = 0.08, alpha = 0.4) +
+  stat_summary(fun = mean, geom = "point", size = 2) +
+  theme_minimal() +
+  labs(
+    title = "Study 2 GES by gender",
+    x = NULL,
+    y = "GES (mean item score)")
+
+ges_descriptive_sample  %>%
+  ggplot(aes(ges_score, fill = gender)) +
+  geom_density(alpha = 0.4) +
+  theme_minimal() +
+  labs(
+    title = "Study 2 GES density",
+    x = "GES (mean item score)",
+    y = "Density")
+```
+
+```{r}
+# Bayesian t-test: gender differences
+params <- c(
+  "mu", "sigma", "delta", "a", "men", "women",
+  "mu_prior", "sigma_prior", "delta_prior", "a_prior", "men_prior", "women_prior")
+
+ges_ttest_data <- ges_descriptive_sample %>%
+  filter(
+    gender %in% c("Female", "Male"))
+
+data_list <- list(
+  x = ges_ttest_data %>% filter(gender == "Female") %>% pull(ges_score),
+  y = ges_ttest_data %>% filter(gender == "Male") %>% pull(ges_score),
+  N1 = sum(ges_ttest_data$gender == "Female"),
+  N2 = sum(ges_ttest_data$gender == "Male"))
+
+samples_path <- file.path(results_path, "s2_jags_ges_ttest.rds")
+
+if (file.exists(samples_path)) {
+  samples_ges <- readRDS(samples_path)
+} else {
+  samples_ges <- jags.parallel(
+    data = data_list,
+    inits = NULL,
+    parameters.to.save = params,
+    model.file = file.path(models_path, "t-test_GES.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1)
+  saveRDS(samples_ges, samples_path)}
+
+samples_ges
+```
+
+```{r}
+# Posterior summary and BF01
+s_all <- as.matrix(as.mcmc(samples_ges))
+delta_draws <- s_all[, "delta"]
+
+d_post <- density(delta_draws)
+post_at_0 <- approx(
+  d_post$x,
+  d_post$y,
+  xout = 0)$y
+
+prior_at_0 <- dt(0, df = 1)
+
+bf01 <- post_at_0 / prior_at_0
+
+bf01
+1 / bf01
+
+plot_prior_posterior(
+  draws = s_all,
+  posterior_name = "delta",
+  prior_name = "delta_prior",
+  xlab = "delta",
+  vline = 0,
+  title = "Study 2 prior vs posterior: GES gender effect",
+  central_prob = 0.95)
+```
+
+```{r}
+# Posterior group means
+tibble(
+  women = s_all[, "women"],
+  men = s_all[, "men"]) %>%
+  pivot_longer(everything(), names_to = "group", values_to = "mu") %>%
+  ggplot(aes(mu, fill = group)) +
+  geom_density(alpha = 0.4) +
+  theme_minimal() +
+  labs(
+    title = "Study 2 posterior group means for GES",
+    x = "GES mean",
+    y = "Density")
+```
+
+
+## Calculate Cronbach's alpha
+
+```{r}
+ges_items_long <- ges_long_clean %>%
+  filter(!excluded, setup == "SOLO", participant.code != "l6gxo7po", participant.code != "n0ndmyka")
+
+ges_items_long %>% count(variable)
+
+ges_items_long %>%
+  group_by(participant.code) %>%
+  summarise(
+    n_items = n_distinct(variable),
+    n_answered = sum(!is.na(value)),
+    .groups = "drop") %>%
+  count(n_items, n_answered)
+
+ges_items_wide <- ges_items_long %>%
+  dplyr::select(participant.code, variable, value) %>%
+  pivot_wider(names_from = variable, values_from = value) %>%
+  arrange(participant.code)
+
+ges_item_data <- ges_items_wide %>%
+  dplyr::select(starts_with("q")) %>%
+  dplyr::select(order(parse_number(names(.))))
+
+ges_alpha <- psych::alpha(
+  ges_item_data,
+  check.keys = FALSE,
+  warnings = TRUE)
+
+ges_alpha
+```

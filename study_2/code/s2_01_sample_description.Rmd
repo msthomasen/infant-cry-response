@@ -1,0 +1,298 @@
+---
+title: "s2_01_sample_description"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+```
+
+## Full Study 2 sample (before exclusions)
+
+```{r}
+dem_solo_full <- demographics %>%
+  filter(setup == "SOLO")
+
+dem_solo_full %>%
+  summarise(
+    n_participants = n(),
+    n_unique_ids = n_distinct(id),
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE),
+    n_female = sum(gender == "Female", na.rm = TRUE),
+    n_male = sum(gender == "Male", na.rm = TRUE)
+  )
+
+dem_solo_full %>%
+  count(id, name = "n_people_in_id") %>%
+  count(n_people_in_id)
+```
+
+## Analytic Study 2 sample (after exclusions)
+
+```{r}
+dem_solo_analytic <- demographics %>%
+  filter(
+    setup == "SOLO",
+    !excluded,
+    participant.code != "l6gxo7po",
+    participant.code != "n0ndmyka"
+  ) # Two participants excluded due to technical errors
+
+solo_ids <- dem_solo_analytic %>%
+  distinct(id)
+
+
+solo_rounds <- roundwise_clean %>%
+  filter(!excluded, setup == "SOLO") %>%
+  semi_join(solo_ids, by = "id")
+```
+
+```{r}
+dem_solo_analytic %>%
+  summarise(
+    n_participants = n(),
+    n_dyads = n_distinct(id),
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE),
+    n_female = sum(gender == "Female", na.rm = TRUE),
+    n_male = sum(gender == "Male", na.rm = TRUE),
+    language_danish = sum(language == "Danish", na.rm = TRUE),
+    language_other = sum(language == "Other", na.rm = TRUE),
+    is_parent = sum(parent == "Yes", na.rm = TRUE),
+    have_experience = sum(experience == "Yes", na.rm = TRUE),
+    regular_exposure = sum(regular == "Yes", na.rm = TRUE))
+
+dem_solo_analytic %>%
+  group_by(gender) %>%
+  summarise(
+    n_participants = n(),
+    n_unique_ids = n_distinct(id),
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE),
+    language_danish = sum(language == "Danish", na.rm = TRUE),
+    language_other = sum(language == "Other", na.rm = TRUE),
+    is_parent = sum(parent == "Yes", na.rm = TRUE),
+    have_experience = sum(experience == "Yes", na.rm = TRUE),
+    regular_exposure = sum(regular == "Yes", na.rm = TRUE),
+    .groups = "drop"
+  )
+
+
+```
+
+## Derive performance and sound variables
+
+```{r}
+solo_rounds <- solo_rounds %>%
+  mutate(
+    gender = factor(gender, levels = c("Female", "Male")),
+    completed = as.integer(completed),
+    success = as.integer(success),
+    skipped = as.integer(completed == 0),
+    secs = as.numeric(secs),
+    log_secs = log(secs + 1),
+    secs_sound = replace_na(secs_sound, 0),
+    sound_prop = replace_na(sound_prop, 0),
+    n_sound_episodes = replace_na(n_sound_episodes, 0),
+    any_sound = as.integer(replace_na(any_stimulus, FALSE))) %>%
+  mutate(
+    sound1_lower = str_to_lower(coalesce(sound1_stimulus, "")),
+    sound2_lower = str_to_lower(coalesce(sound2_stimulus, "")),
+    sound3_lower = str_to_lower(coalesce(sound3_stimulus, "")),
+    any_cry = as.integer(
+      str_detect(sound1_lower, "cry|cries") |
+        str_detect(sound2_lower, "cry|cries") |
+        str_detect(sound3_lower, "cry|cries")),
+    any_alarm = as.integer(
+      str_detect(sound1_lower, "alarm") |
+        str_detect(sound2_lower, "alarm") |
+        str_detect(sound3_lower, "alarm")),
+    round_sound_type = case_when(
+      any_sound == 0 ~ "none",
+      any_cry == 1 & any_alarm == 0 ~ "cry_only",
+      any_cry == 0 & any_alarm == 1 ~ "alarm_only",
+      any_cry == 1 & any_alarm == 1 ~ "mixed_cry_alarm"),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c("none", "alarm_only", "cry_only", "mixed_cry_alarm")))
+
+solo_rounds %>%
+  count(round_sound_type, sort = TRUE)
+
+solo_rounds <- solo_rounds %>%
+  filter(round_sound_type != "mixed_cry_alarm")
+```
+
+## Sample check
+
+```{r}
+solo_rounds %>%
+  summarise(
+    n_rounds = n(),
+    n_participants = n_distinct(participant.code),
+    n_ids = n_distinct(id))
+
+solo_rounds %>%
+  group_by(participant.code) %>%
+  summarise(n_rounds = n(), .groups = "drop") %>%
+  count(n_rounds)
+```
+
+## Sound exposure descriptives
+
+```{r}
+solo_rounds %>%
+  count(any_sound, sort = TRUE)
+
+solo_rounds %>%
+  count(round_sound_type, sort = TRUE)
+
+solo_rounds %>%
+  filter(round_sound_type %in% c("cry_only", "alarm_only")) %>%
+  count(round_sound_type, gender, sort = TRUE)
+
+solo_rounds %>%
+  count(n_sound_episodes)
+
+solo_rounds %>%
+  summarise(
+    n_rounds = n(),
+    n_rounds_with_any_sound = sum(any_sound, na.rm = TRUE),
+    prop_rounds_with_any_sound = mean(any_sound, na.rm = TRUE),
+    n_rounds_with_more_than_one_sound = sum(n_sound_episodes > 1, na.rm = TRUE),
+    prop_rounds_with_more_than_one_sound = mean(n_sound_episodes > 1, na.rm = TRUE))
+```
+
+## Round-level descriptive checks
+
+```{r}
+solo_rounds %>%
+  summarise(
+    mean_completed = mean(completed, na.rm = TRUE),
+    mean_skipped = mean(skipped, na.rm = TRUE),
+    mean_success = mean(success, na.rm = TRUE),
+    mean_secs = mean(secs, na.rm = TRUE),
+    mean_secs_sound = mean(secs_sound, na.rm = TRUE),
+    mean_sound_prop = mean(sound_prop, na.rm = TRUE))
+
+solo_rounds %>%
+  group_by(gender) %>%
+  summarise(
+    n_rounds = n(),
+    mean_completed = mean(completed, na.rm = TRUE),
+    mean_skipped = mean(skipped, na.rm = TRUE),
+    mean_success = mean(success, na.rm = TRUE),
+    mean_secs = mean(secs, na.rm = TRUE),
+    mean_secs_sound = mean(secs_sound, na.rm = TRUE),
+    mean_sound_prop = mean(sound_prop, na.rm = TRUE),
+    .groups = "drop")
+```
+
+## Participant-level performance descriptives
+
+```{r}
+participant_performance <- solo_rounds %>%
+  group_by(id, participant.code, gender) %>%
+  summarise(
+    n_matrices_seen = n(),
+    n_matrices_completed = sum(completed, na.rm = TRUE),
+    n_matrices_correct = sum(success, na.rm = TRUE),
+    n_matrices_skip = sum(skipped, na.rm = TRUE),
+    mean_round_duration_secs = mean(secs, na.rm = TRUE),
+    n_rounds_with_any_sound = sum(any_sound, na.rm = TRUE),
+    n_rounds_with_more_than_one_sound = sum(n_sound_episodes > 1, na.rm = TRUE),
+    .groups = "drop")
+
+participant_performance %>%
+  summarise(
+    mean_matrices_seen = mean(n_matrices_seen, na.rm = TRUE),
+    sd_matrices_seen = sd(n_matrices_seen, na.rm = TRUE),
+    mean_matrices_completed = mean(n_matrices_completed, na.rm = TRUE),
+    sd_matrices_completed = sd(n_matrices_completed, na.rm = TRUE),
+    mean_matrices_correct = mean(n_matrices_correct, na.rm = TRUE),
+    sd_matrices_correct = sd(n_matrices_correct, na.rm = TRUE),
+    mean_matrices_skip = mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip = sd(n_matrices_skip, na.rm = TRUE),
+    mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
+    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE),
+    mean_rounds_with_any_sound = mean(n_rounds_with_any_sound, na.rm = TRUE),
+    sd_rounds_with_any_sound = sd(n_rounds_with_any_sound, na.rm = TRUE),
+    mean_rounds_with_more_than_one_sound = mean(n_rounds_with_more_than_one_sound, na.rm = TRUE),
+    sd_rounds_with_more_than_one_sound = sd(n_rounds_with_more_than_one_sound, na.rm = TRUE))
+
+participant_performance %>%
+  group_by(gender) %>%
+  summarise(
+    mean_matrices_seen = mean(n_matrices_seen, na.rm = TRUE),
+    sd_matrices_seen = sd(n_matrices_seen, na.rm = TRUE),
+    mean_matrices_completed = mean(n_matrices_completed, na.rm = TRUE),
+    sd_matrices_completed = sd(n_matrices_completed, na.rm = TRUE),
+    mean_matrices_correct = mean(n_matrices_correct, na.rm = TRUE),
+    sd_matrices_correct = sd(n_matrices_correct, na.rm = TRUE),
+    mean_matrices_skip = mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip = sd(n_matrices_skip, na.rm = TRUE),
+    mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
+    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE),
+    mean_rounds_with_any_sound = mean(n_rounds_with_any_sound, na.rm = TRUE),
+    sd_rounds_with_any_sound = sd(n_rounds_with_any_sound, na.rm = TRUE),
+    mean_rounds_with_more_than_one_sound = mean(n_rounds_with_more_than_one_sound, na.rm = TRUE),
+    sd_rounds_with_more_than_one_sound = sd(n_rounds_with_more_than_one_sound, na.rm = TRUE),
+    .groups = "drop")
+```
+
+## Cry, alarm, and no-sound descriptives
+
+```{r}
+solo_sound_condition_rounds <- solo_rounds %>%
+  filter(round_sound_type %in% c("none", "cry_only", "alarm_only"))
+
+study2_soundtype_participant_performance <- solo_sound_condition_rounds %>%
+  group_by(round_sound_type, id, participant.code, gender) %>%
+  summarise(
+    n_rounds_seen = n(),
+    n_rounds_completed = sum(completed, na.rm = TRUE),
+    n_rounds_correct = sum(success, na.rm = TRUE),
+    n_matrices_skip = sum(skipped, na.rm = TRUE),
+    mean_round_duration_secs = mean(secs, na.rm = TRUE),
+    .groups = "drop")
+
+study2_soundtype_participant_performance %>%
+  group_by(round_sound_type) %>%
+  summarise(
+    mean_rounds_seen = mean(n_rounds_seen, na.rm = TRUE),
+    sd_rounds_seen = sd(n_rounds_seen, na.rm = TRUE),
+    mean_rounds_completed = mean(n_rounds_completed, na.rm = TRUE),
+    sd_rounds_completed = sd(n_rounds_completed, na.rm = TRUE),
+    mean_rounds_correct = mean(n_rounds_correct, na.rm = TRUE),
+    sd_rounds_correct = sd(n_rounds_correct, na.rm = TRUE),
+    mean_matrices_skip = mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip = sd(n_matrices_skip, na.rm = TRUE),
+    mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
+    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE),
+    .groups = "drop")
+
+study2_soundtype_participant_performance %>%
+  group_by(round_sound_type, gender) %>%
+  summarise(
+    mean_rounds_seen = mean(n_rounds_seen, na.rm = TRUE),
+    sd_rounds_seen = sd(n_rounds_seen, na.rm = TRUE),
+    mean_rounds_completed = mean(n_rounds_completed, na.rm = TRUE),
+    sd_rounds_completed = sd(n_rounds_completed, na.rm = TRUE),
+    mean_rounds_correct = mean(n_rounds_correct, na.rm = TRUE),
+    sd_rounds_correct = sd(n_rounds_correct, na.rm = TRUE),
+    mean_matrices_skip = mean(n_matrices_skip, na.rm = TRUE),
+    sd_matrices_skip = sd(n_matrices_skip, na.rm = TRUE),
+    mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
+    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE),
+    .groups = "drop")
+```

@@ -1,0 +1,588 @@
+---
+title: "s2_03_sound_effect_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(emmeans)
+library(patchwork)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_2_path <- file.path(main_path, "study_2")
+figure_path <- file.path(study_2_path, "figures")
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+source(file.path(main_path, "overall_functions.R"))
+
+```
+
+```{r}
+#analytic sample
+dem_solo_analytic <- demographics %>%
+  filter(
+    setup == "SOLO",
+    !excluded,
+    !participant.code %in% c("l6gxo7po", "n0ndmyka")
+  ) # Two participants excluded due to technical errors
+
+solo_ids <- dem_solo_analytic %>%
+  distinct(id)
+
+solo_rounds <- roundwise_clean %>%
+  filter(!excluded, setup == "SOLO") %>%
+  semi_join(solo_ids, by = "id")
+```
+
+```{r}
+# Derive duration and sound-condition variables
+solo_rounds <- solo_rounds %>%
+  mutate(
+    gender = factor(gender, levels = c("Female", "Male")),
+    completed = as.integer(completed),
+    secs = as.numeric(secs),
+    log_secs = log(secs + 1),
+    any_sound = as.integer(replace_na(any_stimulus, FALSE)),
+    sound1_lower = str_to_lower(coalesce(sound1_stimulus, "")),
+    sound2_lower = str_to_lower(coalesce(sound2_stimulus, "")),
+    sound3_lower = str_to_lower(coalesce(sound3_stimulus, "")),
+    any_cry = as.integer(
+      str_detect(sound1_lower, "cry|cries") |
+        str_detect(sound2_lower, "cry|cries") |
+        str_detect(sound3_lower, "cry|cries")),
+    any_alarm = as.integer(
+      str_detect(sound1_lower, "alarm") |
+        str_detect(sound2_lower, "alarm") |
+        str_detect(sound3_lower, "alarm")),
+    round_sound_type = case_when(
+      any_sound == 0 ~ "none",
+      any_cry == 1 & any_alarm == 0 ~ "cry_only",
+      any_cry == 0 & any_alarm == 1 ~ "alarm_only",
+      any_cry == 1 & any_alarm == 1 ~ "mixed_cry_alarm"),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "none",
+        "alarm_only",
+        "cry_only",
+        "mixed_cry_alarm"))) %>%
+  filter(round_sound_type != "mixed_cry_alarm") %>%
+  droplevels()
+```
+
+#############
+Duration model fit on just answered rounds
+```{r}
+duration_data <- solo_rounds %>%
+  filter(
+    completed == 1,
+    round_sound_type %in% c("none", "alarm_only", "cry_only"),
+    !is.na(log_secs),
+    !is.na(gender),
+    !is.na(participant.code)) %>%
+  droplevels() %>%
+  mutate(
+    gender = relevel(gender, ref = "Female"),
+    round_sound_type = relevel(
+      round_sound_type,
+      ref = "none"))
+
+duration_dist_df <- duration_data %>%
+  dplyr::select(secs, log_secs) %>%
+  pivot_longer(
+    cols = c(secs, log_secs),
+    names_to = "scale",
+    values_to = "duration") %>%
+  mutate(
+    scale = factor(
+      scale,
+      levels = c("secs", "log_secs"),
+      labels = c(
+        "Raw round duration",
+        "Log-transformed round duration")))
+
+p_duration_transform <- ggplot(
+  duration_dist_df,
+  aes(x = duration)) +
+  geom_histogram(
+    bins = 30,
+    fill = "grey35",
+    colour = "grey35") +
+  facet_wrap(
+    ~ scale,
+    scales = "free_x",
+    ncol = 2) +
+  theme_minimal(base_size = 12) +
+  labs(
+    x = NULL,
+    y = "Count") +
+  theme(
+    strip.text = element_text(size = 11, face = "bold"),
+    axis.title = element_text(size = 11),
+    axis.text = element_text(size = 10),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(20, 25, 20, 25)  )
+
+plot_png_path <- file.path(
+  figure_path,
+  "s2_duration_raw_log_distributions.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_duration_transform,
+  width = 10,
+  height = 5,
+  dpi = 300)
+
+```
+
+```{r}
+duration_model <- lmer(
+  log_secs ~ round_sound_type * gender +
+    (1 | participant.code),
+  data = duration_data,
+  REML = TRUE)
+
+summary(duration_model)
+
+duration_summary <- coef(summary(duration_model))
+
+cbind(
+  Estimate = duration_summary[, "Estimate"],
+  lower_95_CI =
+    duration_summary[, "Estimate"] -
+    qt(0.975, duration_summary[, "df"]) *
+    duration_summary[, "Std. Error"],
+  upper_95_CI =
+    duration_summary[, "Estimate"] +
+    qt(0.975, duration_summary[, "df"]) *
+    duration_summary[, "Std. Error"])
+```
+
+
+```{r}
+duration_emmeans <- emmeans(
+  duration_model,
+  ~ round_sound_type | gender,
+  lmer.df = "satterthwaite")
+
+sound_contrasts <- list(
+  "alarm_only - none"     = c(-1,  1,  0),
+  "cry_only - none"       = c(-1,  0,  1),
+  "alarm_only - cry_only" = c( 0,  1, -1))
+
+duration_sound_contrasts <- contrast(
+  duration_emmeans,
+  method = sound_contrasts)
+
+summary(
+  duration_sound_contrasts,
+  infer = c(TRUE, TRUE),
+  adjust = "holm")
+
+duration_gender_interactions <- contrast(
+  duration_sound_contrasts,
+  method = "pairwise",
+  by = "contrast")
+
+summary(
+  duration_gender_interactions,
+  infer = c(TRUE, TRUE),
+  adjust = "holm",
+  by = NULL)
+
+# Overall sound effect, averaged across gender
+duration_emmeans_overall <- emmeans(
+  duration_model,
+  ~ round_sound_type,
+  weights = "equal",
+  lmer.df = "satterthwaite")
+
+overall_sound_contrast <- contrast(
+  duration_emmeans_overall,
+  method = list(
+    "sound - no sound" = c(-1, 0.5, 0.5)))
+
+summary(
+  overall_sound_contrast,
+  infer = c(TRUE, TRUE))
+```
+
+#####################
+Duration model diagnostics
+
+```{r}
+## Analytic sample and cell sizes
+duration_data %>%
+  count(gender, round_sound_type) %>%
+  arrange(gender, round_sound_type)
+
+duration_data %>%
+  summarise(
+    n_rounds = n(),
+    n_participants = n_distinct(participant.code),
+    min_secs = min(secs, na.rm = TRUE),
+    max_secs = max(secs, na.rm = TRUE),
+    n_zero_secs = sum(secs == 0, na.rm = TRUE),
+    n_negative_secs = sum(secs < 0, na.rm = TRUE))
+
+## Number of observations contributed by each participant
+duration_data %>%
+  count(participant.code, gender, name = "n_rounds") %>%
+  summarise(
+    min_rounds = min(n_rounds),
+    median_rounds = median(n_rounds),
+    mean_rounds = mean(n_rounds),
+    max_rounds = max(n_rounds))
+
+## Model checks
+isSingular(duration_model, tol = 1e-4)
+
+VarCorr(duration_model)
+
+duration_model@optinfo$conv$lme4$messages
+
+fixed_effect_matrix <- getME(duration_model, "X")
+
+c(number_of_columns = ncol(fixed_effect_matrix),
+  matrix_rank = qr(fixed_effect_matrix)$rank)
+```
+
+```{r}
+## Residual diagnostics
+
+duration_diagnostics <- tibble(
+  fitted = fitted(duration_model),
+  residual = resid(duration_model),
+  standardised_residual =
+    resid(duration_model) / sigma(duration_model))
+
+# Panel A: residuals versus fitted values
+p_duration_residuals_fitted <-
+  ggplot(
+    duration_diagnostics,
+    aes(
+      x = fitted,
+      y = standardised_residual)) +
+  geom_point(
+    alpha = 0.45,
+    size = 1.3) +
+  geom_hline(
+    yintercept = 0,
+    linetype = 2) +
+  geom_hline(
+    yintercept = c(-2, 2),
+    linetype = 3) +
+  labs(
+    title = "A.",
+    x = "Fitted log duration",
+    y = "Standardised residual") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold"))
+
+# Panel B: normal Q-Q plot
+p_duration_residual_qq <-
+  ggplot(
+    duration_diagnostics,
+    aes(sample = standardised_residual)) +
+  stat_qq(
+    alpha = 0.50,
+    size = 1.3) +
+  stat_qq_line(
+    linewidth = 0.7) +
+  labs(
+    title = "B.",
+    x = "Theoretical quantiles",
+    y = "Observed quantiles") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold"))
+
+# Panel C: histogram of standardised residuals
+p_duration_residual_histogram <-
+  ggplot(
+    duration_diagnostics,
+    aes(x = standardised_residual)) +
+  geom_histogram(
+    bins = 30,
+    boundary = 0) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 2) +
+  labs(
+    title = "C.",
+    x = "Standardised residual",
+    y = "Count") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold"))
+
+# Combined diagnostic figure
+p_study2_duration_diagnostics <-
+  p_duration_residuals_fitted /
+  ( p_duration_residual_qq +
+      p_duration_residual_histogram) +
+  plot_layout(
+    heights = c(1, 1))
+
+plot_png_path <- file.path(
+  figure_path,
+  "s2_duration_model_diagnostics.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_study2_duration_diagnostics,
+  width = 11,
+  height = 9,
+  dpi = 300)
+```
+
+
+###################
+Figure
+
+```{r}
+# Participant-level mean log-transformed duration within each condition
+duration_participant_log_means <- duration_data %>%
+  group_by(
+    participant.code,
+    gender,
+    round_sound_type) %>%
+  summarise(
+    mean_log_secs = mean(log_secs, na.rm = TRUE),
+    .groups = "drop") %>%
+  mutate(
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c("none", "alarm_only", "cry_only"),
+      labels = c("No sound", "Alarm", "Infant cry")))
+
+# Model-estimated means on the model scale
+duration_emmeans_plot <- 
+  summary(
+    duration_emmeans,
+    infer = c(TRUE, TRUE)) %>%
+  as_tibble() %>%
+  mutate(
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c("none", "alarm_only", "cry_only"),
+      labels = c("No sound", "Alarm", "Infant cry")))
+
+# Pairwise sound contrasts by gender
+duration_effects_plot_data <- 
+  summary(
+    duration_sound_contrasts,
+    infer = c(TRUE, TRUE),
+    adjust = "holm") %>%
+  as_tibble() %>%
+  mutate(
+    contrast = recode(
+      contrast,
+      "alarm_only - none" = "Alarm versus no sound",
+      "cry_only - none" = "Infant cry versus no sound",
+      "alarm_only - cry_only" = "Alarm versus infant cry"),
+    contrast = factor(
+      contrast,
+      levels = c(
+        "Alarm versus infant cry",
+        "Infant cry versus no sound",
+        "Alarm versus no sound")),
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")))
+
+# Female–male differences in the sound contrasts
+duration_interaction_plot_data <- 
+  summary(
+    duration_gender_interactions,
+    infer = c(TRUE, TRUE),
+    adjust = "holm",
+    by = NULL) %>%
+  as_tibble() %>%
+  mutate(
+    sound_comparison = recode(
+      as.character(contrast),
+      "alarm_only - none" = "Alarm versus no sound",
+      "cry_only - none" = "Infant cry versus no sound",
+      "alarm_only - cry_only" = "Alarm versus infant cry"),
+    sound_comparison = factor(
+      sound_comparison,
+      levels = c(
+        "Alarm versus infant cry",
+        "Infant cry versus no sound",
+        "Alarm versus no sound")))
+
+gender_colours <- c(
+  "Female" = "#2A9D8F",
+  "Male" = "#eb8005")
+
+duration_dodge <- position_dodge(width = 0.78)
+
+# Panel A
+p_duration_distribution <- 
+  ggplot(
+    duration_participant_log_means,
+    aes(
+      x = round_sound_type,
+      y = mean_log_secs,
+      fill = gender,
+      colour = gender)) +
+  geom_violin(
+    aes(group = interaction(round_sound_type, gender)),
+    position = duration_dodge,
+    width = 0.70,
+    scale = "width",
+    trim = FALSE,
+    alpha = 0.10,
+    linewidth = 0.55) +
+  geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.07,
+      jitter.height = 0,
+      dodge.width = 0.78),
+    size = 1.7,
+    alpha = 0.40) +
+  geom_errorbar(
+    data = duration_emmeans_plot,
+    aes(
+      x = round_sound_type,
+      ymin = lower.CL,
+      ymax = upper.CL,
+      colour = gender),
+    position = duration_dodge,
+    width = 0.10,
+    linewidth = 0.9,
+    inherit.aes = FALSE) +
+  geom_point(
+    data = duration_emmeans_plot,
+    aes(
+      x = round_sound_type,
+      y = emmean,
+      colour = gender),
+    position = duration_dodge,
+    size = 3.2,
+    inherit.aes = FALSE) +
+  scale_fill_manual(values = gender_colours) +
+  scale_colour_manual(values = gender_colours) +
+  labs(
+    title = "A.",
+    x = NULL,
+    y = "Log-transformed answered-round duration",
+    fill = NULL,
+    colour = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    legend.position = "top",
+    plot.title.position = "plot",
+    plot.title = element_text(face = "bold"))
+
+# Panel B
+p_duration_effects_final <- 
+  ggplot(
+    duration_effects_plot_data,
+    aes(
+      x = estimate,
+      y = contrast,
+      colour = gender)) +
+  geom_vline(
+    xintercept = 0,
+    linetype = "dashed",
+    linewidth = 0.6) +
+  geom_errorbar(
+    aes(
+      xmin = lower.CL,
+      xmax = upper.CL),
+    position = position_dodge(width = 0.45),
+    width = 0,
+    linewidth = 0.8,
+    orientation = "y") +
+  geom_point(
+    position = position_dodge(width = 0.45),
+    size = 3) +
+  scale_colour_manual(values = gender_colours) +
+  labs(
+    title = "B.",
+    x = "Estimated difference in log-transformed round duration",
+    y = NULL,
+    colour = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "top",
+    plot.title.position = "plot",
+    plot.title = element_text(face = "bold"))
+
+# Panel C
+p_duration_interactions <- 
+  ggplot(
+    duration_interaction_plot_data,
+    aes(
+      x = estimate,
+      y = sound_comparison)) +
+  geom_vline(
+    xintercept = 0,
+    linetype = "dashed",
+    linewidth = 0.6) +
+  geom_errorbar(
+    aes(
+      xmin = lower.CL,
+      xmax = upper.CL),
+    width = 0,
+    linewidth = 0.8,
+    orientation = "y") +
+  geom_point(
+    size = 3) +
+  labs(
+    title = "C.",
+    x = "Female–male difference in the sound contrast",
+    y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+        plot.title.position = "plot",
+    plot.title = element_text(face = "bold"))
+
+# Combined figure
+p_duration_full <-
+  p_duration_distribution +
+  (p_duration_effects_final / p_duration_interactions) +
+  plot_layout(
+    widths = c(1.25, 1),
+    guides = "collect") &
+  theme(
+    legend.position = "top")
+
+plot_png_path <- file.path(
+  figure_path,
+  "s2_duration_full_figure.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_duration_full,
+  width = 12,
+  height = 8,
+  dpi = 300)
+
+```
+

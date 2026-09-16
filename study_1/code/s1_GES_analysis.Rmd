@@ -9,15 +9,24 @@ editor_options:
 ```{r setup, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(psych)
+library(R2jags)
+library(coda)
+library(patchwork)
 
 main_path <- getwd()
 data_path <- file.path(main_path, "data/cleaned_data")
 study_1_path <- file.path(main_path, "study_1")
+results_path <- file.path(study_1_path, "results")
+models_path <- file.path(main_path, "models")
+figure_path <- file.path(study_1_path, "figures")
 
 set.seed(7386)
 
 ges_summary <- read_csv(file.path(data_path, "ges_summary.csv"), show_col_types = FALSE)
 ges_long_clean <- read_csv(file.path(data_path, "ges_long_clean.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
+
+source(file.path(main_path, "overall_functions.R"))
 ```
 
 ```{r}
@@ -217,3 +226,376 @@ ges_alpha <- psych::alpha(
 
 ges_alpha
 ```
+
+## GES and button-press behaviour
+```{r}
+# One valid GES score per participant
+ges_buttonpress_people <- ges_study %>%
+  filter(
+    gender %in% c("Female", "Male"),
+    !is.na(ges_score)) %>%
+  dplyr::select(
+    id,
+    participant.code,
+    gender,
+    ges_score) %>%
+  distinct()
+
+# Keep only dyads with valid GES scores for both participants
+complete_ges_dyads <- ges_buttonpress_people %>%
+  count(id) %>%
+  filter(n == 2) %>%
+  pull(id)
+
+ges_buttonpress_people <- ges_buttonpress_people %>%
+  filter(id %in% complete_ges_dyads) %>%
+  mutate(
+    ges_z = as.numeric(scale(ges_score)))
+
+# Put female and male scores on the same dyad row
+ges_dyad_scores <- ges_buttonpress_people %>%
+  dplyr::select(id, gender, ges_z) %>%
+  pivot_wider(
+    names_from = gender,
+    values_from = ges_z) %>%
+  filter(
+    !is.na(Female),
+    !is.na(Male)) %>%
+  arrange(id) %>%
+  mutate(
+    dyad_ID = row_number())
+
+print(ges_dyad_scores, n = 50)
+```
+
+```{r}
+ges_dyad_scores %>%
+  mutate(
+    ges_difference_female_male =
+      Female - Male) %>%
+  summarise(
+    n_dyads = n(),
+    mean_difference =
+      mean(ges_difference_female_male),
+    sd_difference =
+      sd(ges_difference_female_male),
+    min_difference =
+      min(ges_difference_female_male),
+    max_difference =
+      max(ges_difference_female_male))
+```
+
+```{r}
+ges_buttonpress_events <- sound_events %>%
+  filter(setup == "COOP") %>%
+  inner_join(
+    ges_dyad_scores %>%
+      dplyr::select(id, dyad_ID),
+    by = "id") %>%
+  arrange(id, sound_event_order) %>%
+  mutate(
+    response = case_when(
+      responder_gender == "none"   ~ 1L,
+      responder_gender == "Male"   ~ 2L,
+      responder_gender == "Female" ~ 3L,
+      TRUE ~ NA_integer_)) %>%
+  filter(!is.na(response))
+
+# Number of included dyads
+n_distinct(ges_buttonpress_events$id)
+
+# Number of events per dyad
+ges_buttonpress_events %>%
+  count(id) %>%
+  count(n)
+
+# Overall response counts
+ges_buttonpress_events %>%
+  count(responder_gender)
+
+# Response counts within dyads
+print((ges_buttonpress_events %>%
+  count(id, responder_gender) %>%
+  arrange(id, responder_gender)), n = 80)
+```
+
+### JAGS
+```{r}
+data_list_ges_buttonpress <- list(
+  N = nrow(ges_buttonpress_events),
+  D = nrow(ges_dyad_scores),
+
+  y = as.integer(
+    ges_buttonpress_events$response),
+
+  dyad = as.integer(
+    ges_buttonpress_events$dyad_ID),
+
+  x_male = as.numeric(
+    ges_dyad_scores$Male),
+
+  x_female = as.numeric(
+    ges_dyad_scores$Female))
+
+params_ges_buttonpress <- c(
+  "alpha_male",
+  "alpha_female",
+  "beta_own",
+  "beta_partner",
+  "beta_relative",
+  "sigma_press",
+  "sigma_gender",
+  "beta_own_prior",
+  "beta_partner_prior",
+  "beta_relative_prior")
+```
+
+```{r}
+ges_buttonpress_samples_path <- file.path(
+  results_path,
+  "s1_jags_ges_buttonpress.rds")
+
+if (file.exists(ges_buttonpress_samples_path)) {
+
+  samples_ges_buttonpress <-
+    readRDS(ges_buttonpress_samples_path)
+
+} else {
+
+  samples_ges_buttonpress <- jags.parallel(
+    data = data_list_ges_buttonpress,
+    inits = NULL,
+    parameters.to.save =
+      params_ges_buttonpress,
+    model.file = file.path(
+      models_path,
+      "s1_buttonpress_GES_hearing.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1)
+
+  saveRDS(
+    samples_ges_buttonpress,
+    ges_buttonpress_samples_path)}
+
+samples_ges_buttonpress
+```
+
+```{r}
+ges_buttonpress_summary <-
+  samples_ges_buttonpress$BUGSoutput$summary[
+    c(
+      "beta_own",
+      "beta_partner",
+      "beta_relative",
+      "sigma_press",
+      "sigma_gender"),]
+
+ges_buttonpress_summary
+```
+
+```{r}
+# Posterior probabilities
+mcmc_ges <- as.mcmc(samples_ges_buttonpress)
+ges_buttonpress_draws <- as.matrix(mcmc_ges)
+
+pp_ges_own <-
+  mean(ges_buttonpress_draws[, "beta_own"] < 0)
+
+pp_ges_partner <-
+  mean(ges_buttonpress_draws[, "beta_partner"] < 0)
+
+pp_ges_relative <-
+  mean(ges_buttonpress_draws[, "beta_relative"] < 0)
+
+c(own = pp_ges_own,
+  partner = pp_ges_partner,
+  relative = pp_ges_relative)
+
+# Bayes factors for point-null effects at zero
+
+# Own GES effect
+d_post_ges_own <-
+  density(ges_buttonpress_draws[, "beta_own"])
+
+d_prior_ges_own <-
+  density(ges_buttonpress_draws[, "beta_own_prior"])
+
+post_at_0_ges_own <- approx(
+  d_post_ges_own$x,
+  d_post_ges_own$y,
+  xout = 0)$y
+
+prior_at_0_ges_own <- approx(
+  d_prior_ges_own$x,
+  d_prior_ges_own$y,
+  xout = 0)$y
+
+bf01_ges_own <-
+  post_at_0_ges_own /
+  prior_at_0_ges_own
+
+
+# Partner GES effect
+d_post_ges_partner <-
+  density(ges_buttonpress_draws[, "beta_partner"])
+
+d_prior_ges_partner <-
+  density(ges_buttonpress_draws[, "beta_partner_prior"])
+
+post_at_0_ges_partner <- approx(
+  d_post_ges_partner$x,
+  d_post_ges_partner$y,
+  xout = 0)$y
+
+prior_at_0_ges_partner <- approx(
+  d_prior_ges_partner$x,
+  d_prior_ges_partner$y,
+  xout = 0)$y
+
+bf01_ges_partner <-
+  post_at_0_ges_partner /
+  prior_at_0_ges_partner
+
+
+# Relative within-dyad GES effect
+d_post_ges_relative <-
+  density(ges_buttonpress_draws[, "beta_relative"])
+
+d_prior_ges_relative <-
+  density(ges_buttonpress_draws[, "beta_relative_prior"])
+
+post_at_0_ges_relative <- approx(
+  d_post_ges_relative$x,
+  d_post_ges_relative$y,
+  xout = 0)$y
+
+prior_at_0_ges_relative <- approx(
+  d_prior_ges_relative$x,
+  d_prior_ges_relative$y,
+  xout = 0)$y
+
+bf01_ges_relative <-
+  post_at_0_ges_relative /
+  prior_at_0_ges_relative
+
+
+c(own = bf01_ges_own,
+  partner = bf01_ges_partner,
+  relative = bf01_ges_relative)
+```
+
+# Model diagnostics
+```{r}
+# Traceplots
+plot_png_path <- file.path(
+  figure_path,
+  "s1_ges_buttonpress_traceplots.png")
+
+if (!file.exists(plot_png_path)) {
+
+  mcmc_list_ges <- as.mcmc(samples_ges_buttonpress)
+
+  trace_df_ges <- purrr::map2_dfr(
+    mcmc_list_ges,
+    seq_along(mcmc_list_ges),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y))) %>%
+    dplyr::select(
+      iteration,
+      chain,
+      alpha_male,
+      alpha_female,
+      beta_own,
+      beta_partner,
+      beta_relative,
+      sigma_press,
+      sigma_gender) %>%
+    pivot_longer(
+      cols = -c(iteration, chain),
+      names_to = "parameter",
+      values_to = "value")
+
+  p_trace_ges <- ggplot(
+    trace_df_ges,
+    aes(
+      x = iteration,
+      y = value,
+      colour = chain)) +
+    geom_line(
+      alpha = 0.6,
+      linewidth = 0.25) +
+    facet_wrap(
+      ~ parameter,
+      scales = "free_y",
+      ncol = 2) +
+    theme_minimal() +
+    labs(
+      title = "Traceplots: GES and button-press model",
+      x = "Iteration",
+      y = "Value",
+      colour = "Chain")
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_ges,
+    width = 9,
+    height = 10,
+    dpi = 300)
+
+} else {
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path)}
+```
+
+```{r}
+ges_buttonpress_draws <-
+  as.matrix(as.mcmc(samples_ges_buttonpress))
+
+plot_ges_own <- plot_prior_posterior(
+  draws = ges_buttonpress_draws,
+  posterior_name = "beta_own",
+  prior_name = "beta_own_prior",
+  xlab = "Own GES effect",
+  vline = 0,
+  central_prob = 0.99)
+
+plot_ges_partner <- plot_prior_posterior(
+  draws = ges_buttonpress_draws,
+  posterior_name = "beta_partner",
+  prior_name = "beta_partner_prior",
+  xlab = "Partner GES effect",
+  vline = 0,
+  central_prob = 0.99)
+
+plot_ges_relative <- plot_prior_posterior(
+  draws = ges_buttonpress_draws,
+  posterior_name = "beta_relative",
+  prior_name = "beta_relative_prior",
+  xlab = "Relative within-dyad GES effect",
+  vline = 0,
+  central_prob = 0.99)
+
+p_ges_prior_post <-
+  plot_ges_own /
+  plot_ges_partner /
+  plot_ges_relative
+
+plot_png_path <- file.path(
+  figure_path,
+  "s1_ges_buttonpress_prior_posterior.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_ges_prior_post,
+  width = 9,
+  height = 8,
+  dpi = 300
+)
+```
+

@@ -1047,7 +1047,7 @@ p_no_press_duration_means <-
     width = 0.70,
     scale = "width",
     trim = FALSE,
-    alpha = 0.20,
+    alpha = 0.10,
     linewidth = 0.55
   ) +
   geom_point(
@@ -1128,7 +1128,7 @@ p_no_press_duration_contrasts <- ggplot(
       xmax = upper.CL
     ),
     position = position_dodge(width = 0.45),
-    width = 0.12,
+    width = 0,
     linewidth = 0.9,
     orientation = "y"
   ) +

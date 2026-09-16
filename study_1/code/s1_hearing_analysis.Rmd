@@ -10,12 +10,14 @@ editor_options:
 library(tidyverse)
 library(R2jags)
 library(coda)
+library(patchwork)
 
 main_path <- getwd()
 data_path <- file.path(main_path, "data/cleaned_data")
 study_1_path <- file.path(main_path, "study_1")
 results_path <- file.path(study_1_path, "results")
 models_path <- file.path(main_path, "models")
+figure_path <- file.path(study_1_path, "figures")
 
 bp <- 15
 set.seed(7386)
@@ -23,6 +25,7 @@ set.seed(7386)
 demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
 hearing_trials_clean <- read_csv(file.path(data_path, "hearing_trials_clean.csv"), show_col_types = FALSE)
 hearing_clean <- read_csv(file.path(data_path, "hearing_clean.csv"), show_col_types = FALSE)
+sound_events <- read_csv(file.path(data_path, "sound_events.csv"), show_col_types = FALSE)
 
 source(file.path(main_path, "overall_functions.R"))
 ```
@@ -55,9 +58,7 @@ hearing_availability <- dem_analytic %>%
       dplyr::select(
         id,
         participant.code,
-        mean_threshold,
-        mean_amplitude,
-        n_missing_threshold
+        mean_threshold
       ) %>%
       distinct() %>%
       mutate(hearing_test_available = TRUE),
@@ -100,30 +101,17 @@ hearing_availability %>%
 hearing_descriptive_sample <- hearing_availability %>%
   filter(
     hearing_test_available,
-    !is.na(mean_threshold),
-    !is.na(mean_amplitude)
-  )
+    !is.na(mean_threshold))
 
 # Hearing descriptives: overall
 hearing_descriptive_sample %>%
   summarise(
     n_participants = n(),
 
-    mean_hearing_threshold =
+    mean_auditory_discomfort_threshold =
       mean(mean_threshold, na.rm = TRUE),
     sd_threshold =
-      sd(mean_threshold, na.rm = TRUE),
-
-    mean_hearing_amplitude =
-      mean(mean_amplitude, na.rm = TRUE),
-    sd_amplitude =
-      sd(mean_amplitude, na.rm = TRUE),
-
-    mean_missing_threshold =
-      mean(n_missing_threshold, na.rm = TRUE),
-    sd_missing_threshold =
-      sd(n_missing_threshold, na.rm = TRUE)
-  )
+      sd(mean_threshold, na.rm = TRUE))
 
 # Hearing descriptives: by gender
 hearing_descriptive_sample %>%
@@ -131,23 +119,12 @@ hearing_descriptive_sample %>%
   summarise(
     n_participants = n(),
 
-    mean_hearing_threshold =
+    mean_auditory_discomfort_threshold =
       mean(mean_threshold, na.rm = TRUE),
     sd_threshold =
       sd(mean_threshold, na.rm = TRUE),
 
-    mean_hearing_amplitude =
-      mean(mean_amplitude, na.rm = TRUE),
-    sd_amplitude =
-      sd(mean_amplitude, na.rm = TRUE),
-
-    mean_missing_threshold =
-      mean(n_missing_threshold, na.rm = TRUE),
-    sd_missing_threshold =
-      sd(n_missing_threshold, na.rm = TRUE),
-
-    .groups = "drop"
-  )
+    .groups = "drop")
 ```
 
 ```{r}
@@ -344,9 +321,9 @@ plot_prior_posterior(
   draws = s_all,
   posterior_name = "delta",
   prior_name = "delta_prior",
-  xlab = "Standardised female − male threshold difference",
+  xlab = "Standardised female − male auditory discomfort threshold difference",
   vline = 0,
-  title = "Study 1 prior vs posterior: overall hearing gender effect",
+  title = "Study 1 prior vs posterior: overall auditory discomfort threshold gender effect",
   central_prob = 0.95
 )
 ```
@@ -405,8 +382,8 @@ posterior_delta %>%
   geom_density() +
   geom_vline(xintercept = 0, linetype = 3) +
   theme_minimal() +
-  labs(title = "Study 1 frequency-specific gender effects",
-       x = "female-male threshold difference",
+  labs(title = "Study 1 frequency-specific gender differences in auditory discomfort threshold",
+       x = "female-male auditory discomfort threshold difference",
        colour = "Frequency (Hz)")
 ```
 
@@ -462,8 +439,8 @@ p_hearing_prior_post_freq <-
       freq_Hz = function(x) paste0(x, " Hz"))) +
   theme_minimal(base_size = 12) +
   labs(
-    title = "Study 1 prior vs posterior: hearing gender effect by frequency",
-    x = "Standardised female − male threshold difference",
+    title = "Study 1 prior vs posterior: auditory discomfort threshold gender effect by frequency",
+    x = "Standardised female − male auditory discomfort threshold difference",
     y = "Density",
     colour = NULL,
     fill = NULL) +
@@ -473,3 +450,443 @@ p_hearing_prior_post_freq <-
 
 p_hearing_prior_post_freq
 ```
+
+
+## Auditory discomfort threshold and button-press behaviour
+```{r}
+# Participant-specific latent hearing threshold parameters
+mu_i_cols <- grep(
+  "^mu_i\\[",
+  colnames(s_all),
+  value = TRUE)
+
+hearing_latent_scores <- tibble(
+  parameter = mu_i_cols,
+  ID = parse_number(mu_i_cols),
+  latent_discomfort_threshold = map_dbl(
+    mu_i_cols,
+    ~ mean(s_all[, .x])))
+
+print(hearing_latent_scores, n =85)
+```
+
+```{r}
+hearing_person_lookup <- hearing_trials_model %>%
+  distinct(
+    id,
+    participant.code,
+    position,
+    gender) %>%
+  unite(
+    "person_id",
+    c(id, position),
+    remove = FALSE) %>%
+  left_join(
+    participants_all %>%
+      dplyr::select(person_id, ID),
+    by = "person_id") %>%
+  distinct(
+    ID,
+    id,
+    participant.code,
+    gender)
+```
+
+```{r}
+hearing_buttonpress_people <- hearing_person_lookup %>%
+  inner_join(
+    hearing_latent_scores,
+    by = "ID") %>%
+  mutate(
+    auditory_discomfort_threshold = latent_discomfort_threshold)
+```
+
+```{r}
+complete_hearing_dyads <- hearing_buttonpress_people %>%
+  filter(
+    gender %in% c("Female", "Male"),
+    !is.na(auditory_discomfort_threshold)) %>%
+  count(id) %>%
+  filter(n == 2) %>%
+  pull(id)
+
+hearing_buttonpress_people <- hearing_buttonpress_people %>%
+  filter(id %in% complete_hearing_dyads) %>%
+  mutate(
+    auditory_discomfort_threshold_z =
+      as.numeric(scale(auditory_discomfort_threshold)))
+
+hearing_buttonpress_people %>%
+  arrange(ID) %>%
+  dplyr::select(
+    ID,
+    id,
+    participant.code,
+    gender,
+    latent_discomfort_threshold,
+    auditory_discomfort_threshold
+  ) %>%
+  print(n = Inf)
+
+hearing_buttonpress_people %>%
+  left_join(
+    hearing_participants %>%
+      dplyr::select(
+        id,
+        participant.code,
+        mean_threshold
+      ),
+    by = c("id", "participant.code")
+  ) %>%
+  dplyr::select(
+    ID,
+    participant.code,
+    gender,
+    mean_threshold,
+    latent_discomfort_threshold,
+    auditory_discomfort_threshold
+  ) %>%
+  arrange(mean_threshold) %>%
+  print(n = Inf)
+```
+
+```{r}
+hearing_dyad_scores <- hearing_buttonpress_people %>%
+  dplyr::select(
+    id,
+    gender,
+    auditory_discomfort_threshold_z) %>%
+  pivot_wider(
+    names_from = gender,
+    values_from = auditory_discomfort_threshold_z) %>%
+  filter(
+    !is.na(Female),
+    !is.na(Male)) %>%
+  arrange(id) %>%
+  mutate(
+    dyad_ID = row_number())
+
+print(hearing_dyad_scores, n =50)
+```
+
+```{r}
+hearing_dyad_scores %>%
+  mutate(
+    threshold_difference_female_male =
+      Female - Male) %>%
+  summarise(
+    n_dyads = n(),
+    mean_difference =
+      mean(threshold_difference_female_male),
+    sd_difference =
+      sd(threshold_difference_female_male),
+    min_difference =
+      min(threshold_difference_female_male),
+    max_difference =
+      max(threshold_difference_female_male))
+```
+
+```{r}
+hearing_buttonpress_events <- sound_events %>%
+  filter(setup == "COOP") %>%
+  inner_join(
+    hearing_dyad_scores %>%
+      dplyr::select(id, dyad_ID),
+    by = "id") %>%
+  arrange(id, sound_event_order) %>%
+  mutate(
+    response = case_when(
+      responder_gender == "none"   ~ 1L,
+      responder_gender == "Male"   ~ 2L,
+      responder_gender == "Female" ~ 3L,
+      TRUE ~ NA_integer_)) %>%
+  filter(!is.na(response))
+
+n_distinct(hearing_buttonpress_events$id)
+
+hearing_buttonpress_events %>%
+  count(id) %>%
+  count(n)
+
+hearing_buttonpress_events %>%
+  count(responder_gender)
+```
+
+```{r}
+data_list_hearing_buttonpress <- list(
+  N = nrow(hearing_buttonpress_events),
+  D = nrow(hearing_dyad_scores),
+
+  y = as.integer(
+    hearing_buttonpress_events$response),
+
+  dyad = as.integer(
+    hearing_buttonpress_events$dyad_ID),
+
+  x_male = as.numeric(
+    hearing_dyad_scores$Male),
+
+  x_female = as.numeric(
+    hearing_dyad_scores$Female))
+
+params_hearing_buttonpress <- c(
+  "alpha_male",
+  "alpha_female",
+  "beta_own",
+  "beta_partner",
+  "beta_relative",
+  "sigma_press",
+  "sigma_gender",
+  "beta_own_prior",
+  "beta_partner_prior",
+  "beta_relative_prior")
+
+hearing_buttonpress_samples_path <- file.path(
+  results_path,
+  "s1_jags_hearing_buttonpress.rds")
+
+if (file.exists(hearing_buttonpress_samples_path)) {
+
+  samples_hearing_buttonpress <-
+    readRDS(hearing_buttonpress_samples_path)
+
+} else {
+
+  samples_hearing_buttonpress <- jags.parallel(
+    data = data_list_hearing_buttonpress,
+    inits = NULL,
+    parameters.to.save =
+      params_hearing_buttonpress,
+    model.file = file.path(
+      models_path,
+      "s1_buttonpress_GES_hearing.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1)
+
+  saveRDS(
+    samples_hearing_buttonpress,
+    hearing_buttonpress_samples_path)}
+
+samples_hearing_buttonpress
+```
+
+```{r}
+hearing_buttonpress_summary <-
+  samples_hearing_buttonpress$BUGSoutput$summary[
+    c(
+      "beta_own",
+      "beta_partner",
+      "beta_relative",
+      "sigma_press",
+      "sigma_gender"),]
+
+hearing_buttonpress_summary
+```
+
+```{r}
+# Posterior probabilities
+mcmc_hearing <- as.mcmc(samples_hearing_buttonpress)
+hearing_buttonpress_draws <- as.matrix(mcmc_hearing)
+
+pp_hearing_own <-
+  mean(hearing_buttonpress_draws[, "beta_own"] < 0)
+
+pp_hearing_partner <-
+  mean(hearing_buttonpress_draws[, "beta_partner"] < 0)
+
+pp_hearing_relative <-
+  mean(hearing_buttonpress_draws[, "beta_relative"] < 0)
+
+c(own = pp_hearing_own,
+  partner = pp_hearing_partner,
+  relative = pp_hearing_relative)
+
+# Bayes factors for point-null effects at zero
+
+# Own auditory discomfort-threshold effect
+d_post_hearing_own <-
+  density(hearing_buttonpress_draws[, "beta_own"])
+
+d_prior_hearing_own <-
+  density(hearing_buttonpress_draws[, "beta_own_prior"])
+
+post_at_0_hearing_own <- approx(
+  d_post_hearing_own$x,
+  d_post_hearing_own$y,
+  xout = 0)$y
+
+prior_at_0_hearing_own <- approx(
+  d_prior_hearing_own$x,
+  d_prior_hearing_own$y,
+  xout = 0)$y
+
+bf01_hearing_own <-
+  post_at_0_hearing_own /
+  prior_at_0_hearing_own
+
+
+# Partner auditory discomfort-threshold effect
+d_post_hearing_partner <-
+  density(hearing_buttonpress_draws[, "beta_partner"])
+
+d_prior_hearing_partner <-
+  density(hearing_buttonpress_draws[, "beta_partner_prior"])
+
+post_at_0_hearing_partner <- approx(
+  d_post_hearing_partner$x,
+  d_post_hearing_partner$y,
+  xout = 0)$y
+
+prior_at_0_hearing_partner <- approx(
+  d_prior_hearing_partner$x,
+  d_prior_hearing_partner$y,
+  xout = 0)$y
+
+bf01_hearing_partner <-
+  post_at_0_hearing_partner /
+  prior_at_0_hearing_partner
+
+
+# Relative within-dyad auditory discomfort-threshold effect
+d_post_hearing_relative <-
+  density(hearing_buttonpress_draws[, "beta_relative"])
+
+d_prior_hearing_relative <-
+  density(hearing_buttonpress_draws[, "beta_relative_prior"])
+
+post_at_0_hearing_relative <- approx(
+  d_post_hearing_relative$x,
+  d_post_hearing_relative$y,
+  xout = 0)$y
+
+prior_at_0_hearing_relative <- approx(
+  d_prior_hearing_relative$x,
+  d_prior_hearing_relative$y,
+  xout = 0)$y
+
+bf01_hearing_relative <-
+  post_at_0_hearing_relative /
+  prior_at_0_hearing_relative
+
+
+c(own = bf01_hearing_own,
+  partner = bf01_hearing_partner,
+  relative = bf01_hearing_relative)
+```
+
+
+## model diagnostics
+```{r}
+# Traceplots
+plot_png_path <- file.path(
+  figure_path,
+  "s1_auditory_discomfort_buttonpress_traceplots.png")
+
+if (!file.exists(plot_png_path)) {
+
+  mcmc_list_hearing_bp <-
+    as.mcmc(samples_hearing_buttonpress)
+
+  trace_df_hearing_bp <- purrr::map2_dfr(
+    mcmc_list_hearing_bp,
+    seq_along(mcmc_list_hearing_bp),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y))) %>%
+    dplyr::select(
+      iteration,
+      chain,
+      alpha_male,
+      alpha_female,
+      beta_own,
+      beta_partner,
+      beta_relative,
+      sigma_press,
+      sigma_gender) %>%
+    pivot_longer(
+      cols = -c(iteration, chain),
+      names_to = "parameter",
+      values_to = "value")
+
+  p_trace_hearing_bp <- ggplot(
+    trace_df_hearing_bp,
+    aes(
+      x = iteration,
+      y = value,
+      colour = chain)) +
+    geom_line(
+      alpha = 0.6,
+      linewidth = 0.25) +
+    facet_wrap(
+      ~ parameter,
+      scales = "free_y",
+      ncol = 2) +
+    theme_minimal() +
+    labs(
+      title = "Traceplots: auditory discomfort threshold and button-press model",
+      x = "Iteration",
+      y = "Value",
+      colour = "Chain")
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_hearing_bp,
+    width = 9,
+    height = 10,
+    dpi = 300)
+
+} else {
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path)}
+```
+
+```{r}
+hearing_buttonpress_draws <-
+  as.matrix(as.mcmc(samples_hearing_buttonpress))
+
+plot_hearing_own <- plot_prior_posterior(
+  draws = hearing_buttonpress_draws,
+  posterior_name = "beta_own",
+  prior_name = "beta_own_prior",
+  xlab = "Own auditory discomfort threshold effect",
+  vline = 0,
+  central_prob = 0.99)
+
+plot_hearing_partner <- plot_prior_posterior(
+  draws = hearing_buttonpress_draws,
+  posterior_name = "beta_partner",
+  prior_name = "beta_partner_prior",
+  xlab = "Partner auditory discomfort threshold effect",
+  vline = 0,
+  central_prob = 0.99)
+
+plot_hearing_relative <- plot_prior_posterior(
+  draws = hearing_buttonpress_draws,
+  posterior_name = "beta_relative",
+  prior_name = "beta_relative_prior",
+  xlab = "Relative within-dyad auditory discomfort threshold effect",
+  vline = 0,
+  central_prob = 0.99)
+
+p_hearing_buttonpress_prior_post <-
+  plot_hearing_own /
+  plot_hearing_partner /
+  plot_hearing_relative
+
+plot_png_path <- file.path(
+  figure_path,
+  "s1_auditory_discomfort_buttonpress_prior_posterior.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_hearing_buttonpress_prior_post,
+  width = 9,
+  height = 8,
+  dpi = 300)
+```
+

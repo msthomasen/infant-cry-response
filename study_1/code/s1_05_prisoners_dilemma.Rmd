@@ -619,20 +619,16 @@ s_pd <- as.matrix(mcmc_pd)
 
 ```{r}
 p_total_positive <- mean(
-  s_pd[, "beta_total"] > 0
-)
+  s_pd[, "beta_total"] > 0)
 
 p_total_negative <- mean(
-  s_pd[, "beta_total"] < 0
-)
+  s_pd[, "beta_total"] < 0)
 
 p_relative_positive <- mean(
-  s_pd[, "beta_relative"] > 0
-)
+  s_pd[, "beta_relative"] > 0)
 
 p_relative_negative <- mean(
-  s_pd[, "beta_relative"] < 0
-)
+  s_pd[, "beta_relative"] < 0)
 
 p_total_positive
 p_total_negative
@@ -646,22 +642,18 @@ p_relative_negative
 prior_density_zero <- dnorm(
   0,
   mean = 0,
-  sd = 0.25
-)
+  sd = 0.25)
 
 posterior_density_at_zero <- function(draws) {
 
   dens <- density(
     draws,
-    n = 2^15
-  )
+    n = 2^15)
 
   approx(
     x = dens$x,
     y = dens$y,
-    xout = 0
-  )$y
-}
+    xout = 0)$y}
 
 posterior_density_total_zero <-
   posterior_density_at_zero(

@@ -1,0 +1,76 @@
+model {
+
+  for (i in 1:N) {
+
+    y[i] ~ dcat(p[i, 1:3])
+
+    # Reference state: no press
+    eta_none[i] <- 0
+
+    # Male press versus no press
+    eta_male[i] <-
+      alpha_male +
+      u_press[dyad[i]] +
+      u_gender[dyad[i]] +
+      beta_own * x_male[dyad[i]] +
+      beta_partner * x_female[dyad[i]]
+
+    # Female press versus no press
+    eta_female[i] <-
+      alpha_female +
+      u_press[dyad[i]] -
+      u_gender[dyad[i]] +
+      beta_own * x_female[dyad[i]] +
+      beta_partner * x_male[dyad[i]]
+
+    # Convert logits to probabilities
+    denom[i] <-
+      1 +
+      exp(eta_male[i]) +
+      exp(eta_female[i])
+
+    p[i, 1] <- 1 / denom[i]
+    p[i, 2] <- exp(eta_male[i]) / denom[i]
+    p[i, 3] <- exp(eta_female[i]) / denom[i]
+  }
+
+
+
+  # Non-centred dyad-level random effects
+  for (d in 1:D) {
+
+    z_press[d] ~ dnorm(0, 1)
+    z_gender[d] ~ dnorm(0, 1)
+
+    u_press[d] <-
+      z_press[d] * sigma_press
+
+    u_gender[d] <-
+      z_gender[d] * sigma_gender
+  }
+
+  # Dyad-level SDs
+  sigma_press ~ dnorm(0, 1) T(0,)
+  sigma_gender ~ dnorm(0, 1) T(0,)
+
+
+  # Population-level intercepts
+  alpha_male ~ dnorm(0, 0.25)
+  alpha_female ~ dnorm(0, 0.25)
+
+
+  beta_own ~ dnorm(0, 1)
+  beta_partner ~ dnorm(0, 1)
+
+  # Derived within-dyad effect
+  beta_relative <-
+    beta_own - beta_partner
+    
+  # Disconnected prior draws for prior-posterior checks
+  beta_own_prior ~ dnorm(0, 1)
+  beta_partner_prior ~ dnorm(0, 1)
+  
+  beta_relative_prior <-
+    beta_own_prior - beta_partner_prior
+
+}
