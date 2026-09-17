@@ -14,7 +14,7 @@ library(coda)
 main_path <- getwd()
 data_path <- file.path(main_path, "data/cleaned_data")
 study_2_path <- file.path(main_path, "study_2")
-results_path <- file.path(study_2_path, "results")
+results_path <- file.path(main_path, "results")
 models_path <- file.path(main_path, "models")
 figure_path <- file.path(study_2_path, "figures")
 
