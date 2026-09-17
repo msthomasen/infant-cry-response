@@ -1,8 +1,8 @@
 # **No evidence that women are more reactive to infant crying than men: two laboratory studies in non-parents**
 
-This repository contains data, code, model files, fitted model objects, figures, and supplementary analysis materials for: **No evidence that women are more reactive to infant crying than men: two laboratory studies in non-parents**.
+This repository contains data, code, models, figures, and supplementary analysis materials for: **No evidence that women are more reactive to infant crying than men: two laboratory studies in non-parents**.
 
-
+Large fitted Bayesian model objects are hosted separately on Zenodo because several exceed GitHub's file-size limits. See **Model files and saved results** and **Usage** below for download instructions.
 
 ### **Overview**
 
@@ -56,6 +56,9 @@ The cleaned datasets are:
 00_clean_data.Rmd
 overall_functions.R
 README.md
+
+results/
+└── README.md
 
 data/
 ├── all_apps_wide_2022-10-06.csv
@@ -113,52 +116,35 @@ study_1/
 │   ├── s1_07_prior_sensitivity_testing.Rmd
 │   ├── s1_GES_analysis.Rmd
 │   └── s1_hearing_analysis.Rmd
-├── figures/
-│   ├── s1_auditory_discomfort_buttonpress_prior_posterior.png
-│   ├── s1_auditory_discomfort_buttonpress_traceplots.png
-│   ├── s1_buttonpress_beta_bernoulli_prior_posterior.png
-│   ├── s1_buttonpress_beta_bernoulli_traceplots.png
-│   ├── s1_buttonpress_dyad_gender_bias.png
-│   ├── s1_buttonpress_markov_dyad_persistence.png
-│   ├── s1_buttonpress_markov_network.png
-│   ├── s1_buttonpress_markov_selected_dyads.png
-│   ├── s1_buttonpress_markov_traceplots.png
-│   ├── s1_buttonpress_markov_transition_densities.png
-│   ├── s1_ges_buttonpress_prior_posterior.png
-│   ├── s1_ges_buttonpress_traceplots.png
-│   ├── s1_no_press_difference_boxplots.png
-│   ├── s1_no_press_difference_qqplots.png
-│   ├── s1_no_press_duration_model_diagnostics.png
-│   ├── s1_no_press_duration_raw_log_distributions.png
-│   ├── s1_no_press_duration_results.png
-│   ├── s1_prisoners_dilemma_cooperation_two_panel.png
-│   ├── s1_prisoners_dilemma_round1_logistic_traceplots.png
-│   ├── s1_prisoners_dilemma_round1_prior_posterior.png
-│   ├── s1_task_performance_difference_boxplots.png
-│   ├── s1_task_performance_difference_qqplots.png
-│   └── prior_sensitivity/
-│       ├── s1_prior_sens_beta_bernoulli_prior_posterior.png
-│       ├── s1_prior_sens_markov_alpha_prior_posterior.png
-│       ├── s1_prior_sens_markov_dyad_prior_posterior.png
-│       ├── s1_prior_sens_markov_pool_heatmap.png
-│       └── s1_prior_sens_markov_pool_prior_posterior.png
-└── results/
-    ├── s1_jags_buttonpress_hierarchical_bernoulli.rds
-    ├── s1_jags_buttonpress_markov_hierarchical.rds
-    ├── s1_jags_ges_buttonpress.rds
-    ├── s1_jags_hearing_buttonpress.rds
-    ├── s1_jags_hearing_ttest_by_freq.rds
-    ├── s1_jags_hearing_ttest_overall.rds
-    ├── s1_jags_prisoners_dilemma_round1_logistic.rds
+└── figures/
+    ├── s1_auditory_discomfort_buttonpress_prior_posterior.png
+    ├── s1_auditory_discomfort_buttonpress_traceplots.png
+    ├── s1_buttonpress_beta_bernoulli_prior_posterior.png
+    ├── s1_buttonpress_beta_bernoulli_traceplots.png
+    ├── s1_buttonpress_dyad_gender_bias.png
+    ├── s1_buttonpress_markov_dyad_persistence.png
+    ├── s1_buttonpress_markov_network.png
+    ├── s1_buttonpress_markov_selected_dyads.png
+    ├── s1_buttonpress_markov_traceplots.png
+    ├── s1_buttonpress_markov_transition_densities.png
+    ├── s1_ges_buttonpress_prior_posterior.png
+    ├── s1_ges_buttonpress_traceplots.png
+    ├── s1_no_press_difference_boxplots.png
+    ├── s1_no_press_difference_qqplots.png
+    ├── s1_no_press_duration_model_diagnostics.png
+    ├── s1_no_press_duration_raw_log_distributions.png
+    ├── s1_no_press_duration_results.png
+    ├── s1_prisoners_dilemma_cooperation_two_panel.png
+    ├── s1_prisoners_dilemma_round1_logistic_traceplots.png
+    ├── s1_prisoners_dilemma_round1_prior_posterior.png
+    ├── s1_task_performance_difference_boxplots.png
+    ├── s1_task_performance_difference_qqplots.png
     └── prior_sensitivity/
-        ├── s1_prior_sens_beta_bernoulli_beta22.rds
-        ├── s1_prior_sens_beta_bernoulli_nu20.rds
-        ├── s1_prior_sens_beta_bernoulli_original.rds
-        ├── s1_prior_sens_hier_markov_alpha0_5.rds
-        ├── s1_prior_sens_hier_markov_alpha2.rds
-        ├── s1_prior_sens_hier_markov_mult1.rds
-        ├── s1_prior_sens_hier_markov_mult10.rds
-        └── s1_prior_sens_hier_markov_mult3.rds
+        ├── s1_prior_sens_beta_bernoulli_prior_posterior.png
+        ├── s1_prior_sens_markov_alpha_prior_posterior.png
+        ├── s1_prior_sens_markov_dyad_prior_posterior.png
+        ├── s1_prior_sens_markov_pool_heatmap.png
+        └── s1_prior_sens_markov_pool_prior_posterior.png
 
 study_2/
 ├── code/
@@ -167,16 +153,13 @@ study_2/
 │   ├── s2_03_sound_effect_analysis.Rmd
 │   ├── s2_GES_analysis.Rmd
 │   └── s2_hearing_analysis.Rmd
-├── figures/
-│   ├── s2_duration_full_figure.png
-│   ├── s2_duration_model_diagnostics.png
-│   ├── s2_duration_raw_log_distributions.png
-│   ├── s2_welch_assumption_boxplots.png
-│   └── s2_welch_assumption_qqplots.png
-└── results/
-    ├── s2_jags_ges_ttest.rds
-    ├── s2_jags_hearing_ttest_by_freq.rds
-    └── s2_jags_hearing_ttest_overall.rds
+└── figures/
+    ├── s2_duration_full_figure.png
+    ├── s2_duration_model_diagnostics.png
+    ├── s2_duration_raw_log_distributions.png
+    ├── s2_welch_assumption_boxplots.png
+    └── s2_welch_assumption_qqplots.png
+
 ```
 
 ### **Study 1: Dyadic button-press task**
@@ -268,7 +251,7 @@ GES scores and auditory discomfort thresholds were also examined.
 
 
 
-1. There was no clear evidence of gender differences in the number of matrices seen or answered, or in participants' mean round duration. Male participants solved more matrices than female participants.
+1. There was no clear evidence of gender differences in the number of matrices seen or answered, or in participants' mean round duration. Male participants correctly solved more matrices than female participants.
 2. Sound exposure, both infant cries and alarm sounds, was associated with longer answered-round durations relative to no-sound rounds, but there was no evidence that the effects of infant cries or alarm sounds on round duration differed by gender.
 3. Together with the results of Study 1, these results do not support the hypothesis that women are more reactive than men to infant crying in these laboratory tasks.
 
@@ -310,7 +293,34 @@ Bayesian models were fitted using Just Another Gibbs Sampler (JAGS) through the 
 
 
 
-Previously fitted Bayesian model objects are supplied as .rds files in the corresponding study\_1/results/ and study\_2/results/ folders. The analysis scripts first check for these saved objects and load them when available. If a required fitted object is not present, the corresponding JAGS model is fitted and the results are saved automatically.
+Previously fitted Bayesian model objects are hosted separately on Zenodo because several exceed GitHub's file-size limits. Downloaded all .rds files from XXX and place them directly in the repository-level results/ folder.  The analysis scripts first check for these saved objects and load them when available. If a required fitted object is not present, the corresponding JAGS model is fitted and the results are saved to results/.
+
+
+### Zenodo model files
+After downloading, the results/ folder should contain:
+```text
+results/
+    ├── s1_jags_buttonpress_hierarchical_bernoulli.rds
+    ├── s1_jags_buttonpress_markov_hierarchical.rds
+    ├── s1_jags_ges_buttonpress.rds
+    ├── s1_jags_hearing_buttonpress.rds
+    ├── s1_jags_hearing_ttest_by_freq.rds
+    ├── s1_jags_hearing_ttest_overall.rds
+    ├── s1_jags_prisoners_dilemma_round1_logistic.rds
+    ├── s1_prior_sens_beta_bernoulli_beta22.rds
+    ├── s1_prior_sens_beta_bernoulli_nu20.rds
+    ├── s1_prior_sens_beta_bernoulli_original.rds
+    ├── s1_prior_sens_hier_markov_alpha0_5.rds
+    ├── s1_prior_sens_hier_markov_alpha2.rds
+    ├── s1_prior_sens_hier_markov_mult1.rds
+    ├── s1_prior_sens_hier_markov_mult10.rds
+    ├── s1_prior_sens_hier_markov_mult3.rds
+    ├── s2_jags_ges_ttest.rds
+    ├── s2_jags_hearing_ttest_by_freq.rds
+    └── s2_jags_hearing_ttest_overall.rds
+
+```
+
 
 
 
@@ -351,16 +361,13 @@ R packages used across the analysis pipeline are:
 
 
 1. Clone or download this repository
-2. Set the R working directory to the repository root
-3. *Optional*: Run 00\_clean\_data.Rmd to reconstruct the files in data/cleaned\_data/
-4. Run the Study 1 scripts from study\_1/code. The numbered scripts (s1\_01 to s1\_07) should be run in numerical order. *s1\_GES\_analysis.Rmd* and *s1\_hearing\_analysis.Rmd* can be run independently at any point.
-5. Run the Study 2 scripts from study\_2/code. The numbered scripts (s2\_01 to s2\_03) should be run in numerical order. *s2\_GES\_analysis.Rmd* and *s2\_hearing\_analysis.Rmd* can be run independently at any point.
+2. Download all .rds files from Zenodo and place them in directly into this repository-level results/ folder.
+3. Set the R working directory to the repository root.
+4. *Optional*: Run 00\_clean\_data.Rmd to reconstruct the files in data/cleaned\_data/
+5. Run the Study 1 scripts from study\_1/code. The numbered scripts (s1\_01 to s1\_07) should be run in numerical order. *s1\_GES\_analysis.Rmd* and *s1\_hearing\_analysis.Rmd* can be run independently at any point.
+6. Run the Study 2 scripts from study\_2/code. The numbered scripts (s2\_01 to s2\_03) should be run in numerical order. *s2\_GES\_analysis.Rmd* and *s2\_hearing\_analysis.Rmd* can be run independently at any point.
 
-
-
-The supplied .rds files contain the Bayesian model fits used for the reported analyses. Therefore, it is not necessary to refit the JAGS models to reproduce the reported summaries and figures. If the saved fitted objects are removed or unavailable, the relevant scripts will refit the models from the supplied data and .bugs specifications.
 
 
 
 **Note:** JAGS model fitting can be time consuming, particularly for the hierarchical button-press models and prior-sensitivity analyses.
-
