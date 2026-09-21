@@ -58,107 +58,107 @@ overall_functions.R
 README.md
 
 results/
-└── README.md
+   └── README.md
 
 data/
-├── all_apps_wide_2022-10-06.csv
-├── roundwise.csv
-├── rt.csv
-├── second_to_second.csv
-├── hearing_test/
-│   ├── LEFT_ht.csv
-│   └── RIGHT_ht.csv
-└── cleaned_data/
-    ├── demographics.csv
-    ├── dyad_info.csv
-    ├── ges_long_clean.csv
-    ├── ges_summary.csv
-    ├── hearing_clean.csv
-    ├── hearing_trials_clean.csv
-    ├── prisoner_dilemma_clean.csv
-    ├── roundwise_clean.csv
-    └── sound_events.csv
+   ├── all_apps_wide_2022-10-06.csv
+   ├── roundwise.csv
+   ├── rt.csv
+   ├── second_to_second.csv
+   ├── hearing_test/
+   │   ├── LEFT_ht.csv
+   │   └── RIGHT_ht.csv
+   └── cleaned_data/
+       ├── demographics.csv
+       ├── dyad_info.csv
+       ├── ges_long_clean.csv
+       ├── ges_summary.csv
+       ├── hearing_clean.csv
+       ├── hearing_trials_clean.csv
+       ├── prisoner_dilemma_clean.csv
+       ├── roundwise_clean.csv
+       └── sound_events.csv
 
 models/
-├── s1_Hierarchy_Bernoulli.bugs
-├── s1_Markov_hierarchical.bugs
-├── s1_buttonpress_GES_hearing.bugs
-├── s1_prisoners_dilemma_log_reg.bugs
-├── t-test_GES.bugs
-├── t-test_Hearing.bugs
-├── t-test_Hearing_by_frequency.bugs
-└── prior_sensitivity_test/
-    ├── s1_hier_beta_bernoulli_beta22.bugs
-    ├── s1_hier_beta_bernoulli_nu20.bugs
-    ├── s1_hier_beta_bernoulli_original.bugs
-    ├── s1_hier_markov_mult1.bugs
-    ├── s1_hier_markov_mult10.bugs
-    └── s1_hier_markov_mult3.bugs
+   ├── s1_Hierarchy_Bernoulli.bugs
+   ├── s1_Markov_hierarchical.bugs
+   ├── s1_buttonpress_GES_hearing.bugs
+   ├── s1_prisoners_dilemma_log_reg.bugs
+   ├── t-test_GES.bugs
+   ├── t-test_Hearing.bugs
+   ├── t-test_Hearing_by_frequency.bugs
+   └── prior_sensitivity_test/
+       ├── s1_hier_beta_bernoulli_beta22.bugs
+       ├── s1_hier_beta_bernoulli_nu20.bugs
+       ├── s1_hier_beta_bernoulli_original.bugs
+       ├── s1_hier_markov_mult1.bugs
+       ├── s1_hier_markov_mult10.bugs
+       └── s1_hier_markov_mult3.bugs
 
 stimuli/
-├── Alarm_1.wav
-├── Alarm_2.wav
-├── Alarm_3.wav
-├── Alarm_4.wav
-├── Cries_1.wav
-├── Cries_2.wav
-├── Cries_3.wav
-└── Cries_4.wav
+   ├── Alarm_1.wav
+   ├── Alarm_2.wav
+   ├── Alarm_3.wav
+   ├── Alarm_4.wav
+   ├── Cries_1.wav
+   ├── Cries_2.wav
+   ├── Cries_3.wav
+   └── Cries_4.wav
 
 study_1/
-├── code/
-│   ├── s1_01_sample_description.Rmd
-│   ├── s1_02_descriptive_results.Rmd
-│   ├── s1_03_buttonpress_bernoulli.Rmd
-│   ├── s1_04_buttonpress_markov.Rmd
-│   ├── s1_05_prisoners_dilemma.Rmd
-│   ├── s1_06_no_press_dyads_analysis.Rmd
-│   ├── s1_07_prior_sensitivity_testing.Rmd
-│   ├── s1_GES_analysis.Rmd
-│   └── s1_hearing_analysis.Rmd
-└── figures/
-    ├── s1_auditory_discomfort_buttonpress_prior_posterior.png
-    ├── s1_auditory_discomfort_buttonpress_traceplots.png
-    ├── s1_buttonpress_beta_bernoulli_prior_posterior.png
-    ├── s1_buttonpress_beta_bernoulli_traceplots.png
-    ├── s1_buttonpress_dyad_gender_bias.png
-    ├── s1_buttonpress_markov_dyad_persistence.png
-    ├── s1_buttonpress_markov_network.png
-    ├── s1_buttonpress_markov_selected_dyads.png
-    ├── s1_buttonpress_markov_traceplots.png
-    ├── s1_buttonpress_markov_transition_densities.png
-    ├── s1_ges_buttonpress_prior_posterior.png
-    ├── s1_ges_buttonpress_traceplots.png
-    ├── s1_no_press_difference_boxplots.png
-    ├── s1_no_press_difference_qqplots.png
-    ├── s1_no_press_duration_model_diagnostics.png
-    ├── s1_no_press_duration_raw_log_distributions.png
-    ├── s1_no_press_duration_results.png
-    ├── s1_prisoners_dilemma_cooperation_two_panel.png
-    ├── s1_prisoners_dilemma_round1_logistic_traceplots.png
-    ├── s1_prisoners_dilemma_round1_prior_posterior.png
-    ├── s1_task_performance_difference_boxplots.png
-    ├── s1_task_performance_difference_qqplots.png
-    └── prior_sensitivity/
-        ├── s1_prior_sens_beta_bernoulli_prior_posterior.png
-        ├── s1_prior_sens_markov_alpha_prior_posterior.png
-        ├── s1_prior_sens_markov_dyad_prior_posterior.png
-        ├── s1_prior_sens_markov_pool_heatmap.png
-        └── s1_prior_sens_markov_pool_prior_posterior.png
+   ├── code/
+   │   ├── s1_01_sample_description.Rmd
+   │   ├── s1_02_descriptive_results.Rmd
+   │   ├── s1_03_buttonpress_bernoulli.Rmd
+   │   ├── s1_04_buttonpress_markov.Rmd
+   │   ├── s1_05_prisoners_dilemma.Rmd
+   │   ├── s1_06_no_press_dyads_analysis.Rmd
+   │   ├── s1_07_prior_sensitivity_testing.Rmd
+   │   ├── s1_GES_analysis.Rmd
+   │   └── s1_hearing_analysis.Rmd
+   └── figures/
+       ├── s1_auditory_discomfort_buttonpress_prior_posterior.png
+       ├── s1_auditory_discomfort_buttonpress_traceplots.png
+       ├── s1_buttonpress_beta_bernoulli_prior_posterior.png
+       ├── s1_buttonpress_beta_bernoulli_traceplots.png
+       ├── s1_buttonpress_dyad_gender_bias.png
+       ├── s1_buttonpress_markov_dyad_persistence.png
+       ├── s1_buttonpress_markov_network.png
+       ├── s1_buttonpress_markov_selected_dyads.png
+       ├── s1_buttonpress_markov_traceplots.png
+       ├── s1_buttonpress_markov_transition_densities.png
+       ├── s1_ges_buttonpress_prior_posterior.png
+       ├── s1_ges_buttonpress_traceplots.png
+       ├── s1_no_press_difference_boxplots.png
+       ├── s1_no_press_difference_qqplots.png
+       ├── s1_no_press_duration_model_diagnostics.png
+       ├── s1_no_press_duration_raw_log_distributions.png
+       ├── s1_no_press_duration_results.png
+       ├── s1_prisoners_dilemma_cooperation_two_panel.png
+       ├── s1_prisoners_dilemma_round1_logistic_traceplots.png
+       ├── s1_prisoners_dilemma_round1_prior_posterior.png
+       ├── s1_task_performance_difference_boxplots.png
+       ├── s1_task_performance_difference_qqplots.png
+       └── prior_sensitivity/
+           ├── s1_prior_sens_beta_bernoulli_prior_posterior.png
+           ├── s1_prior_sens_markov_alpha_prior_posterior.png
+           ├── s1_prior_sens_markov_dyad_prior_posterior.png
+           ├── s1_prior_sens_markov_pool_heatmap.png
+           └── s1_prior_sens_markov_pool_prior_posterior.png
 
 study_2/
-├── code/
-│   ├── s2_01_sample_description.Rmd
-│   ├── s2_02_participant_performance_analysis.Rmd
-│   ├── s2_03_sound_effect_analysis.Rmd
-│   ├── s2_GES_analysis.Rmd
-│   └── s2_hearing_analysis.Rmd
-└── figures/
-    ├── s2_duration_full_figure.png
-    ├── s2_duration_model_diagnostics.png
-    ├── s2_duration_raw_log_distributions.png
-    ├── s2_welch_assumption_boxplots.png
-    └── s2_welch_assumption_qqplots.png
+   ├── code/
+   │   ├── s2_01_sample_description.Rmd
+   │   ├── s2_02_participant_performance_analysis.Rmd
+   │   ├── s2_03_sound_effect_analysis.Rmd
+   │   ├── s2_GES_analysis.Rmd
+   │   └── s2_hearing_analysis.Rmd
+   └── figures/
+       ├── s2_duration_full_figure.png
+       ├── s2_duration_model_diagnostics.png
+       ├── s2_duration_raw_log_distributions.png
+       ├── s2_welch_assumption_boxplots.png
+       └── s2_welch_assumption_qqplots.png
 
 ```
 
