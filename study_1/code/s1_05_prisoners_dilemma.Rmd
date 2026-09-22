@@ -630,10 +630,22 @@ p_relative_positive <- mean(
 p_relative_negative <- mean(
   s_pd[, "beta_relative"] < 0)
 
-p_total_positive
-p_total_negative
-p_relative_positive
-p_relative_negative
+er_total_negative <-
+  p_total_negative / p_total_positive
+
+er_relative_negative <-
+  p_relative_negative / p_relative_positive
+
+tibble(
+  effect = c(
+    "Total dyad press count",
+    "Relative press count"),
+  posterior_probability_negative = c(
+    p_total_negative,
+    p_relative_negative),
+  evidence_ratio_negative_vs_positive = c(
+    er_total_negative,
+    er_relative_negative))
 ```
 
 ```{r}

@@ -396,7 +396,7 @@ ges_buttonpress_summary
 ```
 
 ```{r}
-# Posterior probabilities
+# Posterior probabilities and evidence ratios
 mcmc_ges <- as.mcmc(samples_ges_buttonpress)
 ges_buttonpress_draws <- as.matrix(mcmc_ges)
 
@@ -409,9 +409,25 @@ pp_ges_partner <-
 pp_ges_relative <-
   mean(ges_buttonpress_draws[, "beta_relative"] < 0)
 
-c(own = pp_ges_own,
-  partner = pp_ges_partner,
-  relative = pp_ges_relative)
+er_ges_own <-
+  pp_ges_own / (1 - pp_ges_own)
+
+er_ges_partner <-
+  pp_ges_partner / (1 - pp_ges_partner)
+
+er_ges_relative <-
+  pp_ges_relative / (1 - pp_ges_relative)
+
+tibble(
+  effect = c("own", "partner", "relative"),
+  posterior_probability_negative = c(
+    pp_ges_own,
+    pp_ges_partner,
+    pp_ges_relative),
+  evidence_ratio_negative_vs_positive = c(
+    er_ges_own,
+    er_ges_partner,
+    er_ges_relative))
 
 # Bayes factors for point-null effects at zero
 

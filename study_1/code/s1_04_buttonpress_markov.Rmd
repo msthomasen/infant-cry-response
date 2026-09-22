@@ -141,7 +141,15 @@ persistence_differences <- tibble(
       ~ mean(.x > 0)),
     posterior_probability_negative = map_dbl(
       difference,
-      ~ mean(.x < 0))) %>%
+      ~ mean(.x < 0)),
+    posterior_probability_direction = case_when(
+      mean_difference < 0 ~ posterior_probability_negative,
+      mean_difference > 0 ~ posterior_probability_positive,
+      TRUE ~ 0.5
+    ),
+    evidence_ratio = posterior_probability_direction /
+      (1 - posterior_probability_direction)
+  ) %>%
   dplyr::select(-difference)
 
 persistence_differences %>%

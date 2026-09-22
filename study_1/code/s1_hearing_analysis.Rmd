@@ -686,7 +686,7 @@ hearing_buttonpress_summary
 ```
 
 ```{r}
-# Posterior probabilities
+# Posterior probabilities and evidence ratios
 mcmc_hearing <- as.mcmc(samples_hearing_buttonpress)
 hearing_buttonpress_draws <- as.matrix(mcmc_hearing)
 
@@ -699,9 +699,25 @@ pp_hearing_partner <-
 pp_hearing_relative <-
   mean(hearing_buttonpress_draws[, "beta_relative"] < 0)
 
-c(own = pp_hearing_own,
-  partner = pp_hearing_partner,
-  relative = pp_hearing_relative)
+er_hearing_own <-
+  pp_hearing_own / (1 - pp_hearing_own)
+
+er_hearing_partner <-
+  pp_hearing_partner / (1 - pp_hearing_partner)
+
+er_hearing_relative <-
+  pp_hearing_relative / (1 - pp_hearing_relative)
+
+tibble(
+  effect = c("own", "partner", "relative"),
+  posterior_probability_negative = c(
+    pp_hearing_own,
+    pp_hearing_partner,
+    pp_hearing_relative),
+  evidence_ratio_negative_vs_positive = c(
+    er_hearing_own,
+    er_hearing_partner,
+    er_hearing_relative))
 
 # Bayes factors for point-null effects at zero
 
