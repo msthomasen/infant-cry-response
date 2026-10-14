@@ -293,7 +293,7 @@ Bayesian models were fitted using Just Another Gibbs Sampler (JAGS) through the 
 
 
 
-Previously fitted Bayesian model objects are hosted separately on Zenodo because several exceed GitHub's file-size limits. Downloaded all .rds files from https://shorturl.at/uBRAb and place them directly in the repository-level results/ folder.  The analysis scripts first check for these saved objects and load them when available. If a required fitted object is not present, the corresponding JAGS model is fitted and the results are saved to results/.
+Previously fitted Bayesian model objects are hosted separately on Zenodo because several exceed GitHub's file-size limits. Downloaded all .rds files from https://doi.org/10.5281/zenodo.22797752 and place them directly in the repository-level results/ folder.  The analysis scripts first check for these saved objects and load them when available. If a required fitted object is not present, the corresponding JAGS model is fitted and the results are saved to results/.
 
 
 ### Zenodo model files
@@ -361,7 +361,7 @@ R packages used across the analysis pipeline are:
 
 
 1. Clone or download this repository
-2. Download all .rds files from Zenodo (https://shorturl.at/uBRAb) and place them in directly into this repository-level results/ folder.
+2. Download all .rds files from Zenodo (https://doi.org/10.5281/zenodo.22797752) and place them in directly into this repository-level results/ folder.
 3. Set the R working directory to the repository root.
 4. *Optional*: Run 00\_clean\_data.Rmd to reconstruct the files in data/cleaned\_data/
 5. Run the Study 1 scripts from study\_1/code. The numbered scripts (s1\_01 to s1\_07) should be run in numerical order. *s1\_GES\_analysis.Rmd* and *s1\_hearing\_analysis.Rmd* can be run independently at any point.
