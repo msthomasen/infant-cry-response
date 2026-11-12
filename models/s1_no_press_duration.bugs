@@ -1,0 +1,77 @@
+model {
+
+# Priors
+  b0 ~ dnorm(3.5, 1)
+
+  b_gender ~ dnorm(0, 4)
+  b_cry ~ dnorm(0, 4)
+  b_cry_gender ~ dnorm(0, 4)
+
+# Random effects
+  sigma_participant ~ dnorm(0, 1) T(0,)
+  tau_participant <- pow(sigma_participant, -2)
+
+  for (j in 1:J) {
+    u_participant[j] ~ dnorm(0, tau_participant)
+  }
+
+  sigma_dyad ~ dnorm(0, 1) T(0,)
+  tau_dyad <- pow(sigma_dyad, -2)
+
+  for (k in 1:K) {
+    u_dyad[k] ~ dnorm(0, tau_dyad)
+  }
+
+  sigma ~ dnorm(0, 1) T(0,)
+  tau <- pow(sigma, -2)
+
+# Likelihood
+  for (i in 1:N) {
+
+    mu[i] <-
+      b0 +
+      b_gender * gender[i] +
+      b_cry * cry[i] +
+      b_cry_gender * cry[i] * gender[i] +
+      u_participant[participant[i]] +
+      u_dyad[dyad[i]]
+
+    y[i] ~ dnorm(mu[i], tau)
+
+    y_rep[i] ~ dnorm(mu[i], tau)
+
+    fit_obs_i[i] <- pow(y[i] - mu[i], 2) * tau
+    fit_rep_i[i] <- pow(y_rep[i] - mu[i], 2) * tau
+  }
+
+  fit_obs <- sum(fit_obs_i[])
+  fit_rep <- sum(fit_rep_i[])
+  ppc_greater <- step(fit_rep - fit_obs)
+
+# Condition means
+  mean_none_female <- b0
+  mean_cry_female <- b0 + b_cry
+
+  mean_none_male <- b0 + b_gender
+  mean_cry_male <-
+    b0 + b_gender + b_cry + b_cry_gender
+
+# Cry versus no-sound contrasts
+  cry_vs_none_female <- b_cry
+  cry_vs_none_male <- b_cry + b_cry_gender
+
+# Female minus male difference in cry effect
+  gender_diff_cry <- -b_cry_gender
+
+# Disconnected prior-reference draws
+  b_gender_prior ~ dnorm(0, 4)
+  b_cry_prior ~ dnorm(0, 4)
+  b_cry_gender_prior ~ dnorm(0, 4)
+
+  cry_vs_none_female_prior <- b_cry_prior
+  cry_vs_none_male_prior <-
+    b_cry_prior + b_cry_gender_prior
+
+  gender_diff_cry_prior <-
+    -b_cry_gender_prior
+}

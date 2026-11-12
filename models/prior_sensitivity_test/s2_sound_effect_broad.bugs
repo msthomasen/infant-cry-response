@@ -1,0 +1,169 @@
+##s2_sound_effect_broad.bugs
+
+model {
+
+
+# Priors: population-level effects
+
+  # Female participant in the no-sound condition
+  b0 ~ dnorm(3.5, 1)
+
+  # Male - Female difference in the no-sound condition
+  b_gender ~ dnorm(0, 1)
+
+  # Sound effects among female participants
+  # 1 = none, 2 = alarm, 3 = cry
+  b_sound[1] <- 0
+  b_sound[2] ~ dnorm(0, 1)
+  b_sound[3] ~ dnorm(0, 1)
+
+  # Sound-by-gender interactions
+  b_sound_gender[1] <- 0
+  b_sound_gender[2] ~ dnorm(0, 1)
+  b_sound_gender[3] ~ dnorm(0, 1)
+
+
+# Participant random intercept
+
+  sigma_participant ~ dnorm(0, 1) T(0,)
+  tau_participant <- pow(sigma_participant, -2)
+
+  for (j in 1:J) {
+    u[j] ~ dnorm(0, tau_participant)
+  }
+
+  
+# Residual variation
+
+  sigma ~ dnorm(0, 1) T(0,)
+  tau <- pow(sigma, -2)
+
+
+# Likelihood and posterior predictive check
+
+  for (i in 1:N) {
+  
+    mu[i] <-
+      b0 +
+      b_gender * gender[i] +
+      b_sound[sound[i]] +
+      b_sound_gender[sound[i]] * gender[i] +
+      u[participant[i]]
+  
+    # Observed outcome
+    y[i] ~ dnorm(mu[i], tau)
+  
+    # Replicated outcome from the fitted model
+    y_rep[i] ~ dnorm(mu[i], tau)
+  
+    # Discrepancy statistics
+    resid_obs_sq[i] <- pow(y[i] - mu[i], 2)
+    resid_rep_sq[i] <- pow(y_rep[i] - mu[i], 2)
+  }
+  
+  fit_obs <- sum(resid_obs_sq[])
+  fit_rep <- sum(resid_rep_sq[])
+  
+
+# Indicator used to calculate posterior predictive p-value
+  ppc_greater <- step(fit_rep - fit_obs)
+
+
+# Population-level condition means
+# log(seconds + 1) scale
+
+  mean_none_female <- b0
+  mean_alarm_female <- b0 + b_sound[2]
+  mean_cry_female <- b0 + b_sound[3]
+
+  mean_none_male <- b0 + b_gender
+  mean_alarm_male <- b0 + b_gender +
+    b_sound[2] + b_sound_gender[2]
+  mean_cry_male <- b0 + b_gender +
+    b_sound[3] + b_sound_gender[3]
+
+
+# Within-gender sound contrasts
+
+  # Female
+  alarm_vs_none_female <- b_sound[2]
+  cry_vs_none_female <- b_sound[3]
+  alarm_vs_cry_female <- b_sound[2] - b_sound[3]
+
+  # Male
+  alarm_vs_none_male <-
+    b_sound[2] + b_sound_gender[2]
+
+  cry_vs_none_male <-
+    b_sound[3] + b_sound_gender[3]
+
+  alarm_vs_cry_male <-
+    (b_sound[2] + b_sound_gender[2]) -
+    (b_sound[3] + b_sound_gender[3])
+
+
+# Gender differences in sound effects
+  # Female - Male
+
+  gender_diff_alarm <-
+    alarm_vs_none_female -
+    alarm_vs_none_male
+
+  gender_diff_cry <-
+    cry_vs_none_female -
+    cry_vs_none_male
+
+  gender_diff_alarm_vs_cry <-
+    alarm_vs_cry_female -
+    alarm_vs_cry_male
+
+
+# Disconnected prior-reference draws
+
+  b_gender_prior ~ dnorm(0, 1)
+
+  b_sound_prior[1] <- 0
+  b_sound_prior[2] ~ dnorm(0, 1)
+  b_sound_prior[3] ~ dnorm(0, 1)
+
+  b_sound_gender_prior[1] <- 0
+  b_sound_gender_prior[2] ~ dnorm(0, 1)
+  b_sound_gender_prior[3] ~ dnorm(0, 1)
+
+
+# Prior-reference contrasts
+
+  alarm_vs_none_female_prior <-
+    b_sound_prior[2]
+
+  cry_vs_none_female_prior <-
+    b_sound_prior[3]
+
+  alarm_vs_cry_female_prior <-
+    b_sound_prior[2] -
+    b_sound_prior[3]
+
+  alarm_vs_none_male_prior <-
+    b_sound_prior[2] +
+    b_sound_gender_prior[2]
+
+  cry_vs_none_male_prior <-
+    b_sound_prior[3] +
+    b_sound_gender_prior[3]
+
+  alarm_vs_cry_male_prior <-
+    (b_sound_prior[2] + b_sound_gender_prior[2]) -
+    (b_sound_prior[3] + b_sound_gender_prior[3])
+
+  gender_diff_alarm_prior <-
+    alarm_vs_none_female_prior -
+    alarm_vs_none_male_prior
+
+  gender_diff_cry_prior <-
+    cry_vs_none_female_prior -
+    cry_vs_none_male_prior
+
+  gender_diff_alarm_vs_cry_prior <-
+    alarm_vs_cry_female_prior -
+    alarm_vs_cry_male_prior
+}

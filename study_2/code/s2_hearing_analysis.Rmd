@@ -284,25 +284,114 @@ samples_all
 ```
 
 ```{r}
+plot_png_path <- file.path(figure_path, "s2_hearing_overall_traceplots.png")
+
+if (!file.exists(plot_png_path)) {
+
+  mcmc_list_hearing <- as.mcmc(samples_all)
+
+  trace_df_hearing <- purrr::map2_dfr(
+    mcmc_list_hearing,
+    seq_along(mcmc_list_hearing),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y))) %>%
+    dplyr::select(
+      iteration,
+      chain,
+      mu,
+      delta,
+      sigma,
+      `mu_gender[1]`,
+      `mu_gender[2]`) %>%
+    pivot_longer(
+      cols = -c(iteration, chain),
+      names_to = "parameter",
+      values_to = "value") %>%
+    mutate(
+      parameter = factor(
+        parameter,
+        levels = c(
+          "mu",
+          "delta",
+          "sigma",
+          "mu_gender[1]",
+          "mu_gender[2]"),
+        labels = c(
+          "Overall mean",
+          "Female-male standardised difference",
+          "SD",
+          "Male mean",
+          "Female mean")))
+
+  p_trace_hearing <- ggplot(
+    trace_df_hearing,
+    aes(
+      x = iteration,
+      y = value,
+      colour = chain)) +
+    geom_line(
+      alpha = 0.6,
+      linewidth = 0.25) +
+    facet_wrap(
+      ~ parameter,
+      scales = "free_y",
+      ncol = 2) +
+    theme_minimal() +
+    labs(
+      x = "Iteration",
+      y = "Value",
+      colour = "Chain")
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_hearing,
+    width = 9,
+    height = 8,
+    dpi = 300)
+
+} else {
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path)
+}
+```
+
+
+```{r}
 # Bayes factor for overall gender effect
-s_all <- as.matrix(as.mcmc(samples_all))
-delta_draws_all <- s_all[, "delta"]
+s_hearing <- as.matrix(as.mcmc(samples_all))
+delta_draws_all <- s_hearing[, "delta"]
 
 d_post <- density(delta_draws_all)
-post_at_0 <- approx(d_post$x, d_post$y, xout = 0)$y
+post_at_0 <- approx(
+  d_post$x,
+  d_post$y,
+  xout = 0)$y
+
 prior_at_0 <- dt(0, df = 1)
 
 bf01_all <- post_at_0 / prior_at_0
 bf01_all
 
-plot_prior_posterior(
-  draws = s_all,
+p_hearing_overall_prior_post <- plot_prior_posterior(
+  draws = s_hearing,
   posterior_name = "delta",
   prior_name = "delta_prior",
-  xlab = "Standardised female − male threshold difference",
+  xlab = "Standardised female-male auditory discomfort threshold difference",
   vline = 0,
-  title = "Study 2 prior vs posterior: overall hearing gender effect",
-  central_prob = 0.95)
+  central_prob = 0.99)
+
+plot_png_path <- file.path(figure_path, "s2_hearing_overall_prior_posterior.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_hearing_overall_prior_post,
+  width = 8,
+  height = 6,
+  dpi = 300)
 ```
 
 ```{r}

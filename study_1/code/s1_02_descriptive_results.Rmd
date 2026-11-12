@@ -53,10 +53,8 @@ dyad_press_summary <- sound_analytic %>%
     prop_female_given_press = if_else(
       n_press > 0,
       n_female / n_press,
-      NA_real_
-    ),
-    .groups = "drop"
-  )
+      NA_real_),
+    .groups = "drop")
 
 dyad_press_descriptives_full <- dyad_press_summary %>%
   summarise(
@@ -73,8 +71,7 @@ dyad_press_descriptives_full <- dyad_press_summary %>%
     sd_no_press_events = sd(n_none, na.rm = TRUE),
 
     n_no_press_dyads = sum(n_press == 0, na.rm = TRUE),
-    prop_no_press_dyads = mean(n_press == 0, na.rm = TRUE)
-  )
+    prop_no_press_dyads = mean(n_press == 0, na.rm = TRUE))
 
 dyad_press_descriptives_full
 
@@ -93,8 +90,7 @@ dyad_press_descriptives_excluded_no_press <- dyad_press_summary_pressing_dyads %
     sd_male_presses = sd(n_male, na.rm = TRUE),
 
     mean_no_press_events = mean(n_none, na.rm = TRUE),
-    sd_no_press_events = sd(n_none, na.rm = TRUE)
-  )
+    sd_no_press_events = sd(n_none, na.rm = TRUE))
 
 dyad_press_descriptives_excluded_no_press
 
@@ -113,8 +109,7 @@ study1_participant_performance <- roundwise_analytic %>%
     mean_round_duration_secs = mean(secs, na.rm = TRUE),
     n_rounds_with_any_sound = sum(any_stimulus, na.rm = TRUE),
     n_rounds_with_more_than_one_sound = sum(n_sound_episodes > 1, na.rm = TRUE),
-    .groups = "drop"
-  )
+    .groups = "drop")
 
 study1_participant_performance %>%
   summarise(
@@ -134,8 +129,7 @@ study1_participant_performance %>%
     sd_rounds_with_more_than_one_sound = sd(n_rounds_with_more_than_one_sound, na.rm = TRUE),
 
     mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
-    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE)
-  )
+    sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE))
 
 study1_participant_performance %>%
   group_by(gender) %>%
@@ -157,8 +151,7 @@ study1_participant_performance %>%
 
     mean_round_duration_s = mean(mean_round_duration_secs, na.rm = TRUE),
     sd_round_duration_secs = sd(mean_round_duration_secs, na.rm = TRUE),
-    .groups = "drop"
-  )
+    .groups = "drop")
 ```
 
 ```{r}
@@ -169,16 +162,13 @@ study1_performance_wide <- study1_participant_performance %>%
     gender,
     n_matrices_seen,
     n_matrices_completed,
-    n_matrices_correct
-  ) %>%
+    n_matrices_correct) %>%
   pivot_wider(
     names_from = gender,
     values_from = c(
       n_matrices_seen,
       n_matrices_completed,
-      n_matrices_correct
-    )
-  )
+      n_matrices_correct))
 
 study1_difference_scores <- study1_performance_wide %>%
   transmute(
@@ -188,15 +178,13 @@ study1_difference_scores <- study1_performance_wide %>%
     matrices_answered_diff =
       n_matrices_completed_Female - n_matrices_completed_Male,
     matrices_correct_diff =
-      n_matrices_correct_Female - n_matrices_correct_Male
-  )
+      n_matrices_correct_Female - n_matrices_correct_Male)
 
 study1_difference_scores_long <- study1_difference_scores %>%
   pivot_longer(
     cols = -id,
     names_to = "outcome",
-    values_to = "difference"
-  )
+    values_to = "difference")
 ```
 
 ```{r}
@@ -209,124 +197,99 @@ study1_difference_scores_long <-
       levels = c(
         "matrices_seen_diff",
         "matrices_answered_diff",
-        "matrices_correct_diff"
-      ),
+        "matrices_correct_diff"),
       labels = c(
         "Matrices seen",
         "Matrices answered",
-        "Matrices correct"
-      )
-    )
-  )
+        "Matrices correct")))
 
 p_study1_difference_boxplots <-
   ggplot(
     study1_difference_scores_long,
     aes(
       x = "",
-      y = difference
-    )
-  ) +
+      y = difference)) +
   geom_hline(
     yintercept = 0,
     linetype = 2,
-    linewidth = 0.6
-  ) +
+    linewidth = 0.6) +
   geom_boxplot(
     width = 0.45,
-    outlier.shape = NA
-  ) +
+    outlier.shape = NA) +
   geom_jitter(
     width = 0.08,
     height = 0,
     alpha = 0.65,
-    size = 1.8
-  ) +
+    size = 1.8) +
   facet_wrap(
     ~ outcome,
     scales = "free_y",
-    nrow = 1
-  ) +
+    nrow = 1) +
   labs(
     x = NULL,
-    y = "Female − male difference"
-  ) +
+    y = "Female − male difference") +
   theme_minimal(base_size = 12) +
   theme(
     panel.grid.minor = element_blank(),
     strip.text = element_text(face = "bold"),
     axis.text.x = element_blank(),
-    axis.ticks.x = element_blank()
-  )
+    axis.ticks.x = element_blank())
 
 plot_png_path <- file.path(
   figure_path,
-  "s1_task_performance_difference_boxplots.png"
-)
+  "s1_task_performance_difference_boxplots.png")
 
 show_or_save_ggplot(
   plot_png_path = plot_png_path,
   plot_object = p_study1_difference_boxplots,
   width = 9,
   height = 4,
-  dpi = 300
-)
+  dpi = 300)
 
 p_study1_difference_qq <-
   ggplot(
     study1_difference_scores_long,
-    aes(sample = difference)
-  ) +
+    aes(sample = difference)) +
   stat_qq(
     alpha = 0.70,
-    size = 1.6
-  ) +
+    size = 1.6) +
   stat_qq_line(
-    linewidth = 0.7
-  ) +
+    linewidth = 0.7) +
   facet_wrap(
     ~ outcome,
     scales = "free",
-    nrow = 1
-  ) +
+    nrow = 1) +
   labs(
     x = "Theoretical quantiles",
-    y = "Observed quantiles"
-  ) +
+    y = "Observed quantiles") +
   theme_minimal(base_size = 12) +
   theme(
     panel.grid.minor = element_blank(),
-    strip.text = element_text(face = "bold")
-  )
+    strip.text = element_text(face = "bold"))
 
 plot_png_path <- file.path(
   figure_path,
-  "s1_task_performance_difference_qqplots.png"
-)
+  "s1_task_performance_difference_qqplots.png")
 
 show_or_save_ggplot(
   plot_png_path = plot_png_path,
   plot_object = p_study1_difference_qq,
   width = 9,
   height = 4,
-  dpi = 300
-)
+  dpi = 300)
 ```
 
 ```{r}
 # Shapiro-Wilk tests of within-dyad difference scores
 
 shapiro.test(
-  study1_difference_scores$matrices_seen_diff
-)
+  study1_difference_scores$matrices_seen_diff)
 
 shapiro.test(
-  study1_difference_scores$matrices_answered_diff
-)
+  study1_difference_scores$matrices_answered_diff)
 
 shapiro.test(
-  study1_difference_scores$matrices_correct_diff
-)
+  study1_difference_scores$matrices_correct_diff)
 ```
 
 ```{r}
@@ -335,19 +298,16 @@ shapiro.test(
 t.test(
   study1_performance_wide$n_matrices_seen_Female,
   study1_performance_wide$n_matrices_seen_Male,
-  paired = TRUE
-)
+  paired = TRUE)
 
 t.test(
   study1_performance_wide$n_matrices_completed_Female,
   study1_performance_wide$n_matrices_completed_Male,
-  paired = TRUE
-)
+  paired = TRUE)
 
 t.test(
   study1_performance_wide$n_matrices_correct_Female,
   study1_performance_wide$n_matrices_correct_Male,
-  paired = TRUE
-)
+  paired = TRUE)
 ```
 

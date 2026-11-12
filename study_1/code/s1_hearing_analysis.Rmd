@@ -50,24 +50,20 @@ hearing_availability <- dem_analytic %>%
     id,
     participant.code,
     gender,
-    age
-  ) %>%
+    age) %>%
   distinct() %>%
   left_join(
     hearing_participants %>%
       dplyr::select(
         id,
         participant.code,
-        mean_threshold
-      ) %>%
+        mean_threshold) %>%
       distinct() %>%
       mutate(hearing_test_available = TRUE),
-    by = c("id", "participant.code")
-  ) %>%
+    by = c("id", "participant.code")) %>%
   mutate(
     hearing_test_available =
-      replace_na(hearing_test_available, FALSE)
-  )
+      replace_na(hearing_test_available, FALSE))
 
 # Hearing-test availability: overall
 hearing_availability %>%
@@ -78,8 +74,7 @@ hearing_availability %>%
     prop_hearing_test_available =
       mean(hearing_test_available),
     percent_hearing_test_available =
-      100 * mean(hearing_test_available)
-  )
+      100 * mean(hearing_test_available))
 
 # Hearing-test availability: by gender
 hearing_availability %>%
@@ -92,8 +87,7 @@ hearing_availability %>%
       mean(hearing_test_available),
     percent_hearing_test_available =
       100 * mean(hearing_test_available),
-    .groups = "drop"
-  )
+    .groups = "drop")
 ```
 
 ```{r}
@@ -133,16 +127,14 @@ valid_hearing_participants <- hearing_availability %>%
   filter(hearing_test_available) %>%
   dplyr::select(
     id,
-    participant.code
-  ) %>%
+    participant.code) %>%
   distinct()
 
 # Trial-level data for the full hearing-test sample
 hearing_trials_model <- hearing_trials_analytic %>%
   semi_join(
     valid_hearing_participants,
-    by = c("id", "participant.code")
-  )
+    by = c("id", "participant.code"))
 ```
 
 
@@ -153,8 +145,7 @@ hearing_trials_model %>%
   summarise(
     trials_total = n(),
     trials_censored = sum(censored),
-    prop_censored = mean(censored)
-  )
+    prop_censored = mean(censored))
 
 hearing_trials_model %>%
   mutate(censored = is.na(threshold)) %>%
@@ -163,8 +154,7 @@ hearing_trials_model %>%
     trials_total = n(),
     trials_censored = sum(censored),
     prop_censored = mean(censored),
-    .groups = "drop"
-  )
+    .groups = "drop")
 
 hearing_trials_model %>%
   mutate(censored = is.na(threshold)) %>%
@@ -193,8 +183,7 @@ hearing_trials_model %>%
   summarise(
     mean_threshold = mean(threshold),
     se = sd(threshold) / sqrt(n()),
-    .groups = "drop"
-  ) %>%
+    .groups = "drop") %>%
   ggplot(aes(freq_Hz, mean_threshold, colour = ear)) +
   geom_line() +
   geom_point() +
@@ -205,8 +194,7 @@ hearing_trials_model %>%
   labs(
     title = "Study 1: mean threshold by frequency and gender",
     x = "Frequency (Hz)",
-    y = "Mean threshold"
-  )
+    y = "Mean threshold")
 
 hearing_trials_model %>%
   filter(!is.na(threshold)) %>%
@@ -242,22 +230,19 @@ Y_all <- hearing_trials_model %>%
   left_join(frequencies, by = "freq_Hz") %>%
   mutate(
     gender = ifelse(gender == "Male", 1L, 2L),
-    ear = ifelse(ear == "LEFT", 1L, 2L)
-  ) %>%
+    ear = ifelse(ear == "LEFT", 1L, 2L)) %>%
   transmute(
     ID = as.integer(ID),
     gender = as.integer(gender),
     freq_ID = as.integer(freq_ID),
     ear = as.integer(ear),
-    threshold = as.numeric(threshold)
-  ) %>%
+    threshold = as.numeric(threshold)) %>%
   arrange(ID, freq_ID, ear)
 
 p_info <- participants_all %>%
   transmute(
     ID = as.integer(ID),
-    gender = as.integer(ifelse(gender == "Male", 1L, 2L))
-  ) %>%
+    gender = as.integer(ifelse(gender == "Male", 1L, 2L))) %>%
   arrange(ID)
 
 # Missing trial thresholds indicate no response within the tested range and are treated as censored at the upper boundary BP = 15
@@ -273,16 +258,14 @@ data_list_all <- list(
   cens = cens,
   BP = bp,
   p_info = p_info_mat,
-  n_freq = n_freq
-)
+  n_freq = n_freq)
 ```
 
 ```{r}
 # Overall hearing model
 params <- c(
   "mu", "delta", "a", "sigma", "mu_gender", "mu_i",
-  "mu_prior", "delta_prior", "sigma_prior", "a_prior", "mu_gender_prior"
-)
+  "mu_prior", "delta_prior", "sigma_prior", "a_prior", "mu_gender_prior")
 
 samples_path <- file.path(results_path, "s1_jags_hearing_ttest_overall.rds")
 
@@ -297,8 +280,7 @@ if (file.exists(samples_path)) {
     n.chains = 12,
     n.iter = 25000,
     n.burnin = 5000,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_all, samples_path)
 }
 
@@ -324,8 +306,7 @@ plot_prior_posterior(
   xlab = "Standardised female − male auditory discomfort threshold difference",
   vline = 0,
   title = "Study 1 prior vs posterior: overall auditory discomfort threshold gender effect",
-  central_prob = 0.95
-)
+  central_prob = 0.95)
 ```
 
 ```{r}
@@ -353,14 +334,12 @@ if (file.exists(samples_path_indf)) {
     inits = NULL,
     parameters.to.save = c(
       "mu", "delta", "a", "sigma",
-      "mu_prior", "delta_prior", "sigma_prior", "a_prior", "mu_gender_prior"
-    ),
+      "mu_prior", "delta_prior", "sigma_prior", "a_prior", "mu_gender_prior"),
     model.file = file.path(models_path, "t-test_Hearing_by_frequency.bugs"),
     n.chains = 12,
     n.iter = 25000,
     n.burnin = 5000,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_all_indf, samples_path_indf)
 }
 
@@ -524,8 +503,7 @@ hearing_buttonpress_people %>%
     participant.code,
     gender,
     latent_discomfort_threshold,
-    auditory_discomfort_threshold
-  ) %>%
+    auditory_discomfort_threshold) %>%
   print(n = Inf)
 
 hearing_buttonpress_people %>%
@@ -534,18 +512,15 @@ hearing_buttonpress_people %>%
       dplyr::select(
         id,
         participant.code,
-        mean_threshold
-      ),
-    by = c("id", "participant.code")
-  ) %>%
+        mean_threshold),
+    by = c("id", "participant.code")) %>%
   dplyr::select(
     ID,
     participant.code,
     gender,
     mean_threshold,
     latent_discomfort_threshold,
-    auditory_discomfort_threshold
-  ) %>%
+    auditory_discomfort_threshold) %>%
   arrange(mean_threshold) %>%
   print(n = Inf)
 ```
@@ -843,7 +818,6 @@ if (!file.exists(plot_png_path)) {
       ncol = 2) +
     theme_minimal() +
     labs(
-      title = "Traceplots: auditory discomfort threshold and button-press model",
       x = "Iteration",
       y = "Value",
       colour = "Chain")

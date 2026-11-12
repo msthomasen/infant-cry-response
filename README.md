@@ -84,6 +84,9 @@ models/
    ├── s1_Markov_hierarchical.bugs
    ├── s1_buttonpress_GES_hearing.bugs
    ├── s1_prisoners_dilemma_log_reg.bugs
+   ├── s1_no_press_duration.bugs
+   ├── s2_sound_effect.bugs
+   ├── s2_sound_effect_simulation.bugs
    ├── t-test_GES.bugs
    ├── t-test_Hearing.bugs
    ├── t-test_Hearing_by_frequency.bugs
@@ -93,7 +96,9 @@ models/
        ├── s1_hier_beta_bernoulli_original.bugs
        ├── s1_hier_markov_mult1.bugs
        ├── s1_hier_markov_mult10.bugs
-       └── s1_hier_markov_mult3.bugs
+       ├── s1_hier_markov_mult3.bugs
+       ├── s2_sound_effect_broad.bugs
+       └── s2_sound_effect_narrow.bugs
 
 stimuli/
    ├── Alarm_1.wav
@@ -131,9 +136,10 @@ study_1/
        ├── s1_ges_buttonpress_traceplots.png
        ├── s1_no_press_difference_boxplots.png
        ├── s1_no_press_difference_qqplots.png
-       ├── s1_no_press_duration_model_diagnostics.png
+       ├── s1_no_press_duration_bayesian_traceplots.png
+       ├── s1_no_press_duration_gender_difference_prior_posterior.png
        ├── s1_no_press_duration_raw_log_distributions.png
-       ├── s1_no_press_duration_results.png
+       ├── s1_no_press_duration_results_bayesian.png
        ├── s1_prisoners_dilemma_cooperation_two_panel.png
        ├── s1_prisoners_dilemma_round1_logistic_traceplots.png
        ├── s1_prisoners_dilemma_round1_prior_posterior.png
@@ -151,15 +157,27 @@ study_2/
    │   ├── s2_01_sample_description.Rmd
    │   ├── s2_02_participant_performance_analysis.Rmd
    │   ├── s2_03_sound_effect_analysis.Rmd
+   │   ├── s2_04_prior_sensitivity_analysis.Rmd
+   │   ├── s2_05_simulation_sensitivity_analysis.Rmd
    │   ├── s2_GES_analysis.Rmd
    │   └── s2_hearing_analysis.Rmd
    └── figures/
-       ├── s2_duration_full_figure.png
-       ├── s2_duration_model_diagnostics.png
+       ├── s2_duration_bayesian_traceplots.png
+       ├── s2_duration_full_figure_bayesian.png
+       ├── s2_duration_gender_difference_prior_posterior.png
+       ├── s2_duration_prior_posterior.png
        ├── s2_duration_raw_log_distributions.png
+       ├── s2_GES_prior_posterior.png
+       ├── s2_GES_traceplots.png
+       ├── s2_hearing_overall_prior_posterior.png
+       ├── s2_hearing_overall_traceplots.png
        ├── s2_welch_assumption_boxplots.png
-       └── s2_welch_assumption_qqplots.png
-
+       ├── s2_welch_assumption_qqplots.png
+       ├── prior_sensitivity/
+       │   ├── s2_prior_sensitivity_prior_posterior.png
+       │   └── s2_prior_sensitivity_prior_posterior_gender_diff.png
+       └── simulation_sensitivity/
+           └── s2_simulation_sensitivity_cry_gender_difference.png
 ```
 
 ### **Study 1: Dyadic button-press task**
@@ -180,7 +198,7 @@ The primary analyses examined whether button presses were more likely to be made
 2. Button-press behaviour varied substantially across dyads. Sequential analyses showed persistence in responding, such that no-press, a male-press, and a female-press were each most likely to be followed by the same response.
 3. Prior-sensitivity analyses indicated that the conclusions from both the hierarchical Beta-Bernoulli and first-order Markov models were robust to the alternative prior and pooling specifications examined.
 4. Additional analyses of initial cooperation in the Prisoner's Dilemma showed that earlier button-press behaviour was not clearly associated with initial decisions made in the Prisoner's Dilemma.
-5. A subgroup of 11 dyads in which neither participant pressed the button at either of the eight infant-cry events was examined exploratorily. Within these dyads, the female and male participants did not differ in overall task performance, however answered round durations were longer during infant-cry than no-sound rounds for both female and male participants, with no evidence that this effect differed by gender.
+5. A subgroup of 11 dyads in which neither participant pressed the button during any of the eight infant-cry events was examined exploratorily. Within these dyads, the female and male participants did not differ in overall task performance, however answered-round durations were longer during infant-cry than no-sound rounds for both female and male participants, with no evidence that this effect differed by gender.
 6. GES scores were not clearly associated with button-press behaviour. Lower individual auditory discomfort thresholds were associated with greater likelihood of pressing rather than not pressing, although relative within-dyad threshold differences did not clearly predict which participant pressed the button.
 
 
@@ -194,7 +212,7 @@ The primary analyses examined whether button presses were more likely to be made
 * **s1\_03\_buttonpress\_bernoulli.Rmd**: hierarchical Beta-Bernoulli model of responder gender conditional on a button press, Bayes factor calculation, model diagnostics, dyad-level estimates, and prior-posterior visualisations.
 * **s1\_04\_buttonpress\_markov.Rmd**: hierarchical first-order Markov model of successive no-press, male-press, and female-press state, population- and dyad-level transition summaries, persistence comparisons, model diagnostics, and visualisations.
 * **s1\_05\_prisoners\_dilemma.Rmd**: descriptive analysis of cooperation in the repeated Prisoner's Dilemma and Bayesian logistic modelling of whether earlier button-press behaviour predicted initial cooperation.
-* **s1\_06\_no\_press\_dyads\_analysis.Rmd**: analysis of dyads in which neither participant pressed during any sound event, including participant-level task-performance comparisons and a mixed-effects model of answered-round duration during infant-cry versus no-sound rounds.
+* **s1\_06\_no\_press\_dyads\_analysis.Rmd**: analysis of dyads in which neither participant pressed during any sound event, including participant-level task-performance comparisons and a Bayesian mixed-effects model of answered-round duration during infant-cry versus no-sound rounds.
 * **s1\_07\_prior\_sensitivity\_testing.Rmd**: sensitivity analyses for the hierarchical Beta-Bernoulli and hierarchical first-order Markov models under alternative population-level priors and pooling specifications.
 * **s1\_GES\_analysis.Rmd**: Study 1 Gender Essentialism Scale descriptives, paired gender comparison, assumption assessment, internal consistency analysis, and Bayesian modelling of associations between GES scores and button-press behaviour.
 * **s1\_hearing\_analysis.Rmd**: Study 1 auditory discomfort test descriptives, Bayesian analyses of overall and frequency-specific gender differences in auditory discomfort thresholds, and Bayesian modelling of associations between auditory discomfort thresholds and button-press behaviour.
@@ -219,7 +237,7 @@ Participant-level task-performance differences between female and male participa
 
 
 
-For the subset of dyads in which neither participant pressed the button, answered-round duration was analysed using a **linear mixed-effects model** fitted to log-transformed round duration. The model included sound condition, gender, and their interaction, with random intercepts for both participants and dyads. Estimated marginal means and contrasts were obtained using emmeans.
+For the subset of dyads in which neither participant pressed the button, answered-round duration was analysed using a **Bayesian mixed-effects model** fitted to log-transformed round duration. The model included sound condition, gender, and their interaction, with random intercepts for both participants and dyads. Posterior contrasts compared infant-cry with no-sound rounds separately for female and male participants, and assessed whether the effect of infant crying differed by gender.
 
 
 
@@ -263,7 +281,9 @@ GES scores and auditory discomfort thresholds were also examined.
 
 * **s2\_01\_sample\_description.Rmd**: Study 2 sample characteristics, exclusions, sound-exposure descriptives, and participant-level task-performance summaries.
 * **s2\_02\_participant\_performance\_analysis.Rmd**: participant-level gender comparisons of matrices seen, answered, and correctly solved and mean round duration, together with boxplots, Q-Q plots, and Shapiro-Wilk assumption checks.
-* **s2\_03\_sound\_effect\_analysis.Rmd**: linear mixed-effects analysis of answered-round duration across no-sound, alarm, and infant-cry rounds, estimated marginal means and contrasts, model diagnostics, and visualisations.
+* **s2\_03\_sound\_effect\_analysis.Rmd**: Bayesian mixed-effects analysis of answered-round duration across no-sound, alarm, and infant-cry rounds, posterior contrasts, model diagnostics, and visualisations.
+* **s2\_04\_prior\_sensitivity\_analysis.Rmd**: prior-sensitivity analyses for the Bayesian answered-round duration model using narrower and broader fixed-effect prior specifications.
+* **s2\_05\_simulation\_sensitivity\_analysis.Rmd**: simulation-based sensitivity analysis assessing the probability of detecting female-male differences in the effect of infant crying under the observed Study 2 design.
 * **s2\_GES\_analysis.Rmd**: Study 2 GES descriptives, Bayesian gender comparison, prior-posterior assessment, and internal-consistency analysis.
 * **s2\_hearing\_analysis.Rmd**: Study 2 auditory discomfort test descriptives and Bayesian analyses of overall and frequency-specific gender differences in auditory discomfort thresholds.
 
@@ -277,8 +297,7 @@ Overall gender differences in Study 2 task performance were examined using **Wel
 
 
 
-Sound effects on answered-round duration were analysed using a **linear mixed-effects model** fitted to log-transformed round duration. Fixed effects included sound condition, gender, and their interaction, with a random intercept for participant. Estimated marginal means were used to compare alarm versus no sound, infant cry versus no sound, and alarm versus infant cry within each gender, as well as to assess whether these contrasts differed between female and male participants. Confidence intervals were Bonferroni adjusted, and planned contrast *p*-values were Holm adjusted.
-
+Sound effects on answered-round duration were analysed using a **Bayesian mixed-effects model** fitted to log-transformed round duration. Fixed effects included sound condition, gender, and their interaction, with a random intercept for participant. Posterior contrasts compared alarm versus no-sound, infant-cry versus no-sound, and alarm versus infant-cry separately for female and male participants, as well as the corresponding female–male differences in these sound effects. Prior-sensitivity analyses assessed robustness to alternative fixed-effect prior widths, and a simulation-based sensitivity analysis assessed the probability of detecting female–male differences in the infant-cry effect given the observed Study 2 design.
 
 
 Study 2 GES scores were compared between female and male participants using a **Bayesian independent-groups t-test**. Auditory discomfort thresholds were analysed using the same Bayesian approach as in Study 1.
@@ -289,11 +308,11 @@ Study 2 GES scores were compared between female and male participants using a **
 
 
 
-Bayesian models were fitted using Just Another Gibbs Sampler (JAGS) through the R2jags package. The .bugs files in models/ contain the JAGS model specifications used for the main analyses, while models/prior\_sensitivity\_test/ contains the alternative model specifications used in the Study 1 prior-sensitivity analyses.
+Bayesian models were fitted using Just Another Gibbs Sampler (JAGS) through the R2jags package. The .bugs files in models/ contain the JAGS model specifications used for the main analyses, while models/prior\_sensitivity\_test/ contains the alternative model specifications used in the Study 1 and Study 2 prior-sensitivity analyses.
 
 
 
-Previously fitted Bayesian model objects are hosted separately on Zenodo because several exceed GitHub's file-size limits. Downloaded all .rds files from https://doi.org/10.5281/zenodo.22797752 and place them directly in the repository-level results/ folder.  The analysis scripts first check for these saved objects and load them when available. If a required fitted object is not present, the corresponding JAGS model is fitted and the results are saved to results/.
+Previously fitted Bayesian model objects are hosted separately on Zenodo because several exceed GitHub's file-size limits. Download all .rds files from https://doi.org/10.5281/zenodo.24159348 and place them directly in the repository-level results/ folder.  The analysis scripts first check for these saved objects and load them when available. If a required fitted object is not present, the corresponding JAGS model is fitted and the results are saved to results/.
 
 
 ### Zenodo model files
@@ -315,9 +334,21 @@ results/
     ├── s1_prior_sens_hier_markov_mult1.rds
     ├── s1_prior_sens_hier_markov_mult10.rds
     ├── s1_prior_sens_hier_markov_mult3.rds
+    ├── s2_jags_duration_sound_gender.rds
     ├── s2_jags_ges_ttest.rds
     ├── s2_jags_hearing_ttest_by_freq.rds
-    └── s2_jags_hearing_ttest_overall.rds
+    ├── s2_jags_hearing_ttest_overall.rds
+    ├── s2_prior_sens_sound_effect_broad.rds
+    ├── s2_prior_sens_sound_effect_narrow.rds
+    ├── s2_simulation_sensitivity_delta_0_00.rds
+    ├── s2_simulation_sensitivity_delta_0_05.rds
+    ├── s2_simulation_sensitivity_delta_0_10.rds
+    ├── s2_simulation_sensitivity_delta_0_15.rds
+    ├── s2_simulation_sensitivity_delta_0_20.rds
+    ├── s2_simulation_sensitivity_delta_0_21.rds
+    ├── s2_simulation_sensitivity_delta_0_22.rds
+    ├── s2_simulation_sensitivity_delta_0_25.rds
+    └── s2_simulation_sensitivity_delta_0_30.rds
 
 ```
 
@@ -342,9 +373,6 @@ R packages used across the analysis pipeline are:
 * lubridate
 * R2jags
 * coda
-* lme4
-* lmerTest
-* emmeans
 * psych
 * igraph
 * ggraph
@@ -361,11 +389,11 @@ R packages used across the analysis pipeline are:
 
 
 1. Clone or download this repository
-2. Download all .rds files from Zenodo (https://doi.org/10.5281/zenodo.22797752) and place them in directly into this repository-level results/ folder.
+2. Download all .rds files from Zenodo (https://shorturl.at/uBRAb) and place them directly in this repository-level results/ folder.
 3. Set the R working directory to the repository root.
 4. *Optional*: Run 00\_clean\_data.Rmd to reconstruct the files in data/cleaned\_data/
 5. Run the Study 1 scripts from study\_1/code. The numbered scripts (s1\_01 to s1\_07) should be run in numerical order. *s1\_GES\_analysis.Rmd* and *s1\_hearing\_analysis.Rmd* can be run independently at any point.
-6. Run the Study 2 scripts from study\_2/code. The numbered scripts (s2\_01 to s2\_03) should be run in numerical order. *s2\_GES\_analysis.Rmd* and *s2\_hearing\_analysis.Rmd* can be run independently at any point.
+6. Run the Study 2 scripts from study\_2/code. The numbered scripts (s2\_01 to s2\_05) should be run in numerical order. *s2\_GES\_analysis.Rmd* and *s2\_hearing\_analysis.Rmd* can be run independently at any point.
 
 
 

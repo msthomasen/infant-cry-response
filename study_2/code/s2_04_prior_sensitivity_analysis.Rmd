@@ -1,0 +1,558 @@
+---
+title: "s2_04_prior_sensitivity_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+library(patchwork)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_2_path <- file.path(main_path, "study_2")
+results_path <- file.path(main_path, "results")
+models_path <- file.path(main_path, "models")
+prior_models_path <- file.path(main_path, "models/prior_sensitivity_test")
+prior_figure_path <- file.path(study_2_path, "figures/prior_sensitivity")
+
+dir.create(prior_figure_path, recursive = TRUE, showWarnings = FALSE)
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+source(file.path(main_path, "overall_functions.R"))
+
+```
+
+
+```{r}
+#analytic sample
+dem_solo_analytic <- demographics %>%
+  filter(
+    setup == "SOLO",
+    !excluded,
+    !participant.code %in% c("l6gxo7po", "n0ndmyka")) # Two participants excluded due to technical errors
+
+solo_ids <- dem_solo_analytic %>%
+  distinct(id)
+
+solo_rounds <- roundwise_clean %>%
+  filter(!excluded, setup == "SOLO") %>%
+  semi_join(solo_ids, by = "id")
+```
+
+```{r}
+# Derive duration and sound-condition variables
+solo_rounds <- solo_rounds %>%
+  mutate(
+    gender = factor(gender, levels = c("Female", "Male")),
+    completed = as.integer(completed),
+    secs = as.numeric(secs),
+    log_secs = log(secs + 1),
+    any_sound = as.integer(replace_na(any_stimulus, FALSE)),
+    sound1_lower = str_to_lower(coalesce(sound1_stimulus, "")),
+    sound2_lower = str_to_lower(coalesce(sound2_stimulus, "")),
+    sound3_lower = str_to_lower(coalesce(sound3_stimulus, "")),
+    any_cry = as.integer(
+      str_detect(sound1_lower, "cry|cries") |
+        str_detect(sound2_lower, "cry|cries") |
+        str_detect(sound3_lower, "cry|cries")),
+    any_alarm = as.integer(
+      str_detect(sound1_lower, "alarm") |
+        str_detect(sound2_lower, "alarm") |
+        str_detect(sound3_lower, "alarm")),
+    round_sound_type = case_when(
+      any_sound == 0 ~ "none",
+      any_cry == 1 & any_alarm == 0 ~ "cry_only",
+      any_cry == 0 & any_alarm == 1 ~ "alarm_only",
+      any_cry == 1 & any_alarm == 1 ~ "mixed_cry_alarm"),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "none",
+        "alarm_only",
+        "cry_only",
+        "mixed_cry_alarm"))) %>%
+  filter(round_sound_type != "mixed_cry_alarm") %>%
+  droplevels()
+```
+
+
+```{r}
+duration_df <- solo_rounds %>%
+  filter(
+    completed == 1,
+    round_sound_type %in% c("none", "alarm_only", "cry_only"),
+    !is.na(log_secs),
+    !is.na(gender),
+    !is.na(participant.code)) %>%
+  droplevels() %>%
+  mutate(
+    gender = relevel(gender, ref = "Female"),
+    round_sound_type = relevel(
+      round_sound_type,
+      ref = "none"))
+
+duration_model_df <- duration_df %>%
+  mutate(
+    gender_num = if_else(gender == "Male", 1L, 0L),
+    sound_num = case_when(
+      round_sound_type == "none" ~ 1L,
+      round_sound_type == "alarm_only" ~ 2L,
+      round_sound_type == "cry_only" ~ 3L),
+    participant_id = as.integer(factor(participant.code)))
+```
+
+```{r}
+data_list_duration <- list(
+  N = nrow(duration_model_df),
+  J = n_distinct(duration_model_df$participant_id),
+  y = as.numeric(duration_model_df$log_secs),
+  gender = as.integer(duration_model_df$gender_num),
+  sound = as.integer(duration_model_df$sound_num),
+  participant = as.integer(duration_model_df$participant_id))
+
+params_duration <- c(
+  # Basic coefficients
+  "b0",
+  "b_gender",
+  "b_sound",
+  "b_sound_gender",
+
+  # Variance components
+  "sigma_participant",
+  "sigma",
+
+  # Condition means
+  "mean_none_female",
+  "mean_alarm_female",
+  "mean_cry_female",
+  "mean_none_male",
+  "mean_alarm_male",
+  "mean_cry_male",
+
+  # Within-gender contrasts
+  "alarm_vs_none_female",
+  "cry_vs_none_female",
+  "alarm_vs_cry_female",
+  "alarm_vs_none_male",
+  "cry_vs_none_male",
+  "alarm_vs_cry_male",
+
+  # Gender differences in sound contrasts
+  "gender_diff_alarm",
+  "gender_diff_cry",
+  "gender_diff_alarm_vs_cry",
+
+  # Prior-reference draws
+  "b_gender_prior",
+  "b_sound_prior",
+  "b_sound_gender_prior",
+
+  # Prior-reference contrasts
+  "alarm_vs_none_female_prior",
+  "cry_vs_none_female_prior",
+  "alarm_vs_cry_female_prior",
+  "alarm_vs_none_male_prior",
+  "cry_vs_none_male_prior",
+  "alarm_vs_cry_male_prior",
+  "gender_diff_alarm_prior",
+  "gender_diff_cry_prior",
+  "gender_diff_alarm_vs_cry_prior",
+  
+  # Posterior predictive check
+  "fit_obs",
+  "fit_rep",
+  "ppc_greater")
+```
+
+```{r}
+samples_primary <- readRDS(file.path(results_path, "s2_jags_duration_sound_gender.rds"))
+```
+
+```{r}
+# Narrow prior sensitivity model 
+samples_path_narrow <- file.path(results_path, "s2_prior_sens_sound_effect_narrow.rds")
+
+if (file.exists(samples_path_narrow)) {
+
+  samples_narrow <-
+    readRDS(samples_path_narrow)
+
+} else {
+
+  samples_narrow <- jags.parallel(
+    data = data_list_duration,
+    inits = NULL,
+    parameters.to.save = params_duration,
+    model.file = file.path(
+      prior_models_path,
+      "s2_sound_effect_narrow.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1)
+
+  saveRDS(
+    samples_narrow,
+    samples_path_narrow)
+}
+```
+
+```{r}
+# Broad prior sensitivity model 
+samples_path_broad <- file.path(results_path, "s2_prior_sens_sound_effect_broad.rds")
+
+if (file.exists(samples_path_broad)) {
+
+  samples_broad <-
+    readRDS(samples_path_broad)
+
+} else {
+
+  samples_broad <- jags.parallel(
+    data = data_list_duration,
+    inits = NULL,
+    parameters.to.save = params_duration,
+    model.file = file.path(
+      prior_models_path,
+      "s2_sound_effect_broad.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1)
+
+  saveRDS(
+    samples_broad,
+    samples_path_broad)
+}
+```
+
+```{r}
+samples_narrow
+samples_broad
+```
+
+
+### convergence check
+```{r}
+extract_sensitivity_convergence <- function(samples, prior_label) {
+
+  samples$BUGSoutput$summary %>%
+    as.data.frame() %>%
+    rownames_to_column("parameter") %>%
+    filter(
+      parameter %in% c(
+        "b_gender",
+        "b_sound[2]",
+        "b_sound[3]",
+        "b_sound_gender[2]",
+        "b_sound_gender[3]",
+        "gender_diff_alarm",
+        "gender_diff_cry",
+        "gender_diff_alarm_vs_cry",
+        "sigma_participant",
+        "sigma")) %>%
+    mutate(prior = prior_label)
+}
+
+sensitivity_convergence <- bind_rows(
+  extract_sensitivity_convergence(
+    samples_narrow,
+    "N(0, 0.25²)"),
+  extract_sensitivity_convergence(
+    samples_primary,
+    "N(0, 0.50²)"),
+  extract_sensitivity_convergence(
+    samples_broad,
+    "N(0, 1.00²)"))
+
+sensitivity_convergence %>%
+  group_by(prior) %>%
+  summarise(
+    max_Rhat = max(Rhat),
+    min_ESS = min(n.eff),
+    .groups = "drop") %>%
+  mutate(max_Rhat = sprintf("%.4f", max_Rhat))
+```
+
+```{r}
+sensitivity_parameters <- c(
+  "b_gender",
+  "b_sound[2]",
+  "b_sound[3]",
+  "b_sound_gender[2]",
+  "b_sound_gender[3]",
+  "gender_diff_alarm",
+  "gender_diff_cry",
+  "gender_diff_alarm_vs_cry")
+
+prior_sensitivity_results <- bind_rows(
+
+  samples_narrow$BUGSoutput$summary %>%
+    as.data.frame() %>%
+    rownames_to_column("parameter") %>%
+    filter(parameter %in% sensitivity_parameters) %>%
+    transmute(
+      parameter,
+      prior = "N(0, 0.25²)",
+      mean,
+      lower = `2.5%`,
+      upper = `97.5%`),
+
+  samples_primary$BUGSoutput$summary %>%
+    as.data.frame() %>%
+    rownames_to_column("parameter") %>%
+    filter(parameter %in% sensitivity_parameters) %>%
+    transmute(
+      parameter,
+      prior = "N(0, 0.50²)",
+      mean,
+      lower = `2.5%`,
+      upper = `97.5%`),
+
+  samples_broad$BUGSoutput$summary %>%
+    as.data.frame() %>%
+    rownames_to_column("parameter") %>%
+    filter(parameter %in% sensitivity_parameters) %>%
+    transmute(
+      parameter,
+      prior = "N(0, 1.00²)",
+      mean,
+      lower = `2.5%`,
+      upper = `97.5%`)) %>%
+  mutate(
+    effect = recode(
+      parameter,
+      "b_gender" = "Male versus female",
+      "b_sound[2]" = "Alarm versus no sound",
+      "b_sound[3]" = "Infant cry versus no sound",
+      "b_sound_gender[2]" = "Alarm × male",
+      "b_sound_gender[3]" = "Infant cry × male",
+      "gender_diff_alarm" =
+        "Female-male difference: alarm versus no sound",
+      "gender_diff_cry" =
+        "Female-male difference: infant cry versus no sound",
+      "gender_diff_alarm_vs_cry" =
+        "Female-male difference: alarm versus infant cry"),
+    prior = factor(
+      prior,
+      levels = c(
+        "N(0, 0.25²)",
+        "N(0, 0.50²)",
+        "N(0, 1.00²)"))) %>%
+  dplyr::select(
+    effect,
+    prior,
+    mean,
+    lower,
+    upper)
+
+prior_sensitivity_results
+```
+
+
+```{r}
+p_prior_sensitivity <- prior_sensitivity_results %>%
+  filter(
+    effect %in% c(
+      "Female-male difference: alarm versus no sound",
+      "Female-male difference: infant cry versus no sound",
+      "Female-male difference: alarm versus infant cry")) %>%
+  ggplot(
+    aes(
+      x = mean,
+      y = prior)) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 2) +
+  geom_errorbar(
+    aes(
+      xmin = lower,
+      xmax = upper),
+    width = 0.15,
+    orientation = "y") +
+  geom_point(
+    size = 2) +
+  facet_wrap(
+    ~ effect,
+    scales = "free_x",
+    ncol = 1) +
+  theme_minimal() +
+  labs(
+    x = "Female-male difference in sound effect",
+    y = "Fixed-effect prior")
+
+plot_png_path <- file.path(
+  prior_figure_path,
+  "s2_prior_sensitivity_prior_posterior_gender_diff.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_prior_sensitivity,
+  width = 11,
+  height = 8,
+  dpi = 300)
+```
+
+```{r}
+draws_narrow <- as.matrix(as.mcmc(samples_narrow))
+draws_primary <- as.matrix(as.mcmc(samples_primary))
+draws_broad <- as.matrix(as.mcmc(samples_broad))
+
+prior_post_sensitivity_df <- bind_rows(
+
+  # Alarm gender difference
+  tibble(
+    value = draws_narrow[, "gender_diff_alarm"],
+    source = "Posterior",
+    prior = "N(0, 0.25²)",
+    contrast = "Alarm versus no sound"),
+  tibble(
+    value = draws_narrow[, "gender_diff_alarm_prior"],
+    source = "Prior",
+    prior = "N(0, 0.25²)",
+    contrast = "Alarm versus no sound"),
+
+  tibble(
+    value = draws_primary[, "gender_diff_alarm"],
+    source = "Posterior",
+    prior = "N(0, 0.50²)",
+    contrast = "Alarm versus no sound"),
+  tibble(
+    value = draws_primary[, "gender_diff_alarm_prior"],
+    source = "Prior",
+    prior = "N(0, 0.50²)",
+    contrast = "Alarm versus no sound"),
+
+  tibble(
+    value = draws_broad[, "gender_diff_alarm"],
+    source = "Posterior",
+    prior = "N(0, 1.00²)",
+    contrast = "Alarm versus no sound"),
+  tibble(
+    value = draws_broad[, "gender_diff_alarm_prior"],
+    source = "Prior",
+    prior = "N(0, 1.00²)",
+    contrast = "Alarm versus no sound"),
+
+  # Cry gender difference
+  tibble(
+    value = draws_narrow[, "gender_diff_cry"],
+    source = "Posterior",
+    prior = "N(0, 0.25²)",
+    contrast = "Infant cry versus no sound"),
+  tibble(
+    value = draws_narrow[, "gender_diff_cry_prior"],
+    source = "Prior",
+    prior = "N(0, 0.25²)",
+    contrast = "Infant cry versus no sound"),
+
+  tibble(
+    value = draws_primary[, "gender_diff_cry"],
+    source = "Posterior",
+    prior = "N(0, 0.50²)",
+    contrast = "Infant cry versus no sound"),
+  tibble(
+    value = draws_primary[, "gender_diff_cry_prior"],
+    source = "Prior",
+    prior = "N(0, 0.50²)",
+    contrast = "Infant cry versus no sound"),
+
+  tibble(
+    value = draws_broad[, "gender_diff_cry"],
+    source = "Posterior",
+    prior = "N(0, 1.00²)",
+    contrast = "Infant cry versus no sound"),
+  tibble(
+    value = draws_broad[, "gender_diff_cry_prior"],
+    source = "Prior",
+    prior = "N(0, 1.00²)",
+    contrast = "Infant cry versus no sound"),
+
+  # Alarm versus cry gender difference
+  tibble(
+    value = draws_narrow[, "gender_diff_alarm_vs_cry"],
+    source = "Posterior",
+    prior = "N(0, 0.25²)",
+    contrast = "Alarm versus infant cry"),
+  tibble(
+    value = draws_narrow[, "gender_diff_alarm_vs_cry_prior"],
+    source = "Prior",
+    prior = "N(0, 0.25²)",
+    contrast = "Alarm versus infant cry"),
+
+  tibble(
+    value = draws_primary[, "gender_diff_alarm_vs_cry"],
+    source = "Posterior",
+    prior = "N(0, 0.50²)",
+    contrast = "Alarm versus infant cry"),
+  tibble(
+    value = draws_primary[, "gender_diff_alarm_vs_cry_prior"],
+    source = "Prior",
+    prior = "N(0, 0.50²)",
+    contrast = "Alarm versus infant cry"),
+
+  tibble(
+    value = draws_broad[, "gender_diff_alarm_vs_cry"],
+    source = "Posterior",
+    prior = "N(0, 1.00²)",
+    contrast = "Alarm versus infant cry"),
+  tibble(
+    value = draws_broad[, "gender_diff_alarm_vs_cry_prior"],
+    source = "Prior",
+    prior = "N(0, 1.00²)",
+    contrast = "Alarm versus infant cry")) %>%
+  mutate(
+    prior = factor(
+      prior,
+      levels = c(
+        "N(0, 0.25²)",
+        "N(0, 0.50²)",
+        "N(0, 1.00²)")),
+    source = factor(
+      source,
+      levels = c("Prior", "Posterior")))
+```
+
+```{r}
+p_prior_post_sensitivity <- ggplot(
+  prior_post_sensitivity_df,
+  aes(
+    x = value,
+    fill = source,
+    colour = source)) +
+  geom_density(
+    alpha = 0.25,
+    linewidth = 0.6) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 3) +
+  facet_grid(
+    contrast ~ prior,
+    scales = "free_y") +
+  theme_minimal() +
+  labs(
+    x = "Female-male difference in sound effect",
+    y = "Density",
+    fill = NULL,
+    colour = NULL) +
+  theme(
+    panel.grid.minor = element_blank())
+
+plot_png_path <- file.path(
+  prior_figure_path,
+  "s2_prior_sensitivity_prior_posterior.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_prior_post_sensitivity,
+  width = 11,
+  height = 8,
+  dpi = 300)
+```
+

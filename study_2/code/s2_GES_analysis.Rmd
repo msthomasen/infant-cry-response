@@ -144,11 +144,89 @@ samples_ges
 ```
 
 ```{r}
+plot_png_path <- file.path(figure_path, "s2_GES_traceplots.png")
+
+if (!file.exists(plot_png_path)) {
+
+  mcmc_list_ges <- as.mcmc(samples_ges)
+
+  trace_df_ges <- purrr::map2_dfr(
+    mcmc_list_ges,
+    seq_along(mcmc_list_ges),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y))) %>%
+    dplyr::select(
+      iteration,
+      chain,
+      mu,
+      sigma,
+      delta,
+      women,
+      men) %>%
+    pivot_longer(
+      cols = -c(iteration, chain),
+      names_to = "parameter",
+      values_to = "value") %>%
+    mutate(
+      parameter = factor(
+        parameter,
+        levels = c(
+          "mu",
+          "sigma",
+          "delta",
+          "women",
+          "men"),
+        labels = c(
+          "Overall mean",
+          "SD",
+          "Female-male standardised difference",
+          "Female mean",
+          "Male mean")))
+
+  p_trace_ges <- ggplot(
+    trace_df_ges,
+    aes(
+      x = iteration,
+      y = value,
+      colour = chain)) +
+    geom_line(
+      alpha = 0.6,
+      linewidth = 0.25) +
+    facet_wrap(
+      ~ parameter,
+      scales = "free_y",
+      ncol = 2) +
+    theme_minimal() +
+    labs(
+      x = "Iteration",
+      y = "Value",
+      colour = "Chain")
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_ges,
+    width = 9,
+    height = 8,
+    dpi = 300)
+
+} else {
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path)
+}
+```
+
+
+```{r}
 # Posterior summary and BF01
-s_all <- as.matrix(as.mcmc(samples_ges))
-delta_draws <- s_all[, "delta"]
+s_ges <- as.matrix(as.mcmc(samples_ges))
+delta_draws <- s_ges[, "delta"]
 
 d_post <- density(delta_draws)
+
 post_at_0 <- approx(
   d_post$x,
   d_post$y,
@@ -161,14 +239,22 @@ bf01 <- post_at_0 / prior_at_0
 bf01
 1 / bf01
 
-plot_prior_posterior(
-  draws = s_all,
+p_ges_prior_post <- plot_prior_posterior(
+  draws = s_ges,
   posterior_name = "delta",
   prior_name = "delta_prior",
-  xlab = "delta",
+  xlab = "Standardised female-male GES difference",
   vline = 0,
-  title = "Study 2 prior vs posterior: GES gender effect",
-  central_prob = 0.95)
+  central_prob = 0.99)
+
+plot_png_path <- file.path(figure_path, "s2_GES_prior_posterior.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_ges_prior_post,
+  width = 8,
+  height = 6,
+  dpi = 300)
 ```
 
 ```{r}

@@ -1,0 +1,43 @@
+model {
+
+  # Priors
+  b0 ~ dnorm(3.5, 1)
+
+  b_gender ~ dnorm(0, 4)
+
+  b_sound[1] <- 0
+  b_sound[2] ~ dnorm(0, 4)
+  b_sound[3] ~ dnorm(0, 4)
+
+  b_sound_gender[1] <- 0
+  b_sound_gender[2] ~ dnorm(0, 4)
+  b_sound_gender[3] ~ dnorm(0, 4)
+
+  # Participant random intercept
+  sigma_participant ~ dnorm(0, 1) T(0,)
+  tau_participant <- pow(sigma_participant, -2)
+
+  for (j in 1:J) {
+    u[j] ~ dnorm(0, tau_participant)
+  }
+
+  # Residual variation
+  sigma ~ dnorm(0, 1) T(0,)
+  tau <- pow(sigma, -2)
+
+  # Likelihood
+  for (i in 1:N) {
+
+    mu[i] <-
+      b0 +
+      b_gender * gender[i] +
+      b_sound[sound[i]] +
+      b_sound_gender[sound[i]] * gender[i] +
+      u[participant[i]]
+
+    y[i] ~ dnorm(mu[i], tau)
+  }
+
+  # Target gender difference
+  gender_diff_cry <- -b_sound_gender[3]
+}

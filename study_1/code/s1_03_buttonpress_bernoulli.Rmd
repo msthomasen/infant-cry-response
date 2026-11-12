@@ -51,9 +51,7 @@ simple_press <- sound_analytic %>%
       responder_gender == "Female" ~ 1,
       responder_gender == "Male" ~ 0,
       responder_gender == "none" ~ NA_real_,
-      TRUE ~ NA_real_
-    )
-  ) %>%
+      TRUE ~ NA_real_)) %>%
   group_by(id) %>%
   filter(any(!is.na(y))) %>%
   arrange(sound_event_order, .by_group = TRUE) %>%
@@ -66,8 +64,7 @@ simple_press %>%
     n_events = n(),
     n_presses = sum(!is.na(y)),
     n_female_presses = sum(y == 1, na.rm = TRUE),
-    n_male_presses = sum(y == 0, na.rm = TRUE)
-  )
+    n_male_presses = sum(y == 0, na.rm = TRUE))
 
 y_wide <- simple_press %>%
   dplyr::select(id, event_number, y) %>%
@@ -92,8 +89,7 @@ storage.mode(y_mat) <- "numeric"
 
 data_list_hier <- list(
   N = nrow(y_mat),
-  y = y_mat
-)
+  y = y_mat)
 
 params_hier <- c(
   "mu", "nu", "alpha", "beta", "p", "pop_p",
@@ -112,8 +108,7 @@ if (file.exists(samples_path_hier)) {
     n.chains = 12,
     n.iter = 25000,
     n.burnin = 5000,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_hier, samples_path_hier)
 }
 
@@ -140,8 +135,7 @@ tibble(mu = mu_draws) %>%
   labs(
     title = paste0("Posterior for population mean female press probability (BF01 ≈ ", round(bf01_hier, 2), ")"),
     x = "mu",
-    y = "Density"
-  )
+    y = "Density")
 
 p_summary <- samples_hier$BUGSoutput$summary %>%
   as.data.frame() %>%
@@ -149,14 +143,12 @@ p_summary <- samples_hier$BUGSoutput$summary %>%
   filter(str_detect(parameter, "^p\\[")) %>%
   mutate(
     dyad_index = str_extract(parameter, "\\d+") %>%
-      as.integer()
-  ) %>%
+      as.integer()) %>%
   transmute(
     dyad_index,
     mean = mean,
     lower = `2.5%`,
-    upper = `97.5%`
-  )
+    upper = `97.5%`)
 
 dyad_lookup <- y_wide %>%
   arrange(id) %>%
@@ -179,9 +171,7 @@ if (!file.exists(plot_png_path)) {
       rownames_to_column("iteration") %>%
       mutate(
         iteration = as.integer(iteration),
-        chain = paste0("chain_", .y)
-      )
-  ) %>%
+        chain = paste0("chain_", .y))) %>%
     dplyr::select(iteration, chain, mu, nu, pop_p) %>%
     group_by(chain) %>%
     slice(seq(1, n(), by = 20)) %>%
@@ -189,27 +179,23 @@ if (!file.exists(plot_png_path)) {
     pivot_longer(
       cols = c(mu, nu, pop_p),
       names_to = "parameter",
-      values_to = "value"
-    )
+      values_to = "value")
 
   p_trace_bb <- ggplot(trace_df_bb, aes(x = iteration, y = value, colour = chain)) +
     geom_line(alpha = 0.6, linewidth = 0.25) +
     facet_wrap(~ parameter, scales = "free_y", ncol = 1) +
     theme_minimal() +
     labs(
-      title = "Traceplots: hierarchical Beta-Bernoulli",
       x = "Iteration",
       y = "Value",
-      colour = "Chain"
-    )
+      colour = "Chain")
 
   show_or_save_ggplot(
     plot_png_path = plot_png_path,
     plot_object = p_trace_bb,
     width = 8,
     height = 8,
-    dpi = 300
-  )
+    dpi = 300)
 } else {
   show_or_save_ggplot(plot_png_path = plot_png_path)
 }
@@ -232,19 +218,16 @@ if (!file.exists(plot_png_path)) {
     "rect",
     xmin = 0.005, xmax = 0.495,
     ymin = 0, ymax = max(plot_df_press_only$plot_id) + 1,
-    alpha = 0.15, fill = "#eb8005"
-  ) +
+    alpha = 0.15, fill = "#eb8005") +
   annotate(
     "rect",
     xmin = 0.505, xmax = 0.995,
     ymin = 0, ymax = max(plot_df_press_only$plot_id) + 1,
-    alpha = 0.15, fill = "#2A9D8F"
-  ) +
+    alpha = 0.15, fill = "#2A9D8F") +
   geom_vline(xintercept = 0.5, linetype = 2, colour = "red", linewidth = 0.5) +
   geom_errorbar(
     aes(xmin = lower, xmax = upper),
-    width = 0.15, linewidth = 0.4, orientation = "y"
-  ) +
+    width = 0.15, linewidth = 0.4, orientation = "y") +
   geom_point(size = 1.7) +
   annotate(
     "text",
@@ -252,36 +235,31 @@ if (!file.exists(plot_png_path)) {
     y = Inf,
     label = "Male-dominant",
     vjust = -0.8,
-    size = 3.5
-  ) +
+    size = 3.5) +
   annotate(
     "text",
     x = 0.75,
     y = Inf,
     label = "Female-dominant",
     vjust = -0.8,
-    size = 3.5
-  ) +
+    size = 3.5) +
   coord_cartesian(clip = "off") +
   theme_minimal() +
   labs(
     x = "Estimated female press probability",
-    y = "Dyad (ordered by probability estimate)"
-  ) +
+    y = "Dyad (ordered by probability estimate)") +
   theme(
     axis.title = element_text(size = 10),
     axis.text = element_text(size = 8),
     panel.grid.minor = element_blank(),
-    plot.margin = margin(t = 20, r = 10, b = 10, l = 10)
-  )
+    plot.margin = margin(t = 20, r = 10, b = 10, l = 10))
 
   show_or_save_ggplot(
     plot_png_path = plot_png_path,
     plot_object = p_dyad_bias,
     width = 8,
     height = 6,
-    dpi = 300
-  )
+    dpi = 300)
 } else {
   show_or_save_ggplot(plot_png_path = plot_png_path)
 }
@@ -294,16 +272,13 @@ plot_bb_mu <- plot_prior_posterior(
   prior_name = "mu_prior",
   xlab = "Population-level female press probability",
   vline = 0.5,
-  central_prob = 0.99
-) +
+  central_prob = 0.99) +
   scale_x_continuous(
     limits = c(0, 1),
     breaks = seq(0, 1, by = 0.25),
-    expand = expansion(mult = c(0.01, 0.01))
-  ) +
+    expand = expansion(mult = c(0.01, 0.01))) +
   theme(
-    plot.margin = margin(8, 12, 8, 12)
-  )
+    plot.margin = margin(8, 12, 8, 12))
 
 plot_bb_pop <- plot_prior_posterior(
   draws = s_hier,
@@ -311,16 +286,13 @@ plot_bb_pop <- plot_prior_posterior(
   prior_name = "pop_p_prior",
   xlab = "Population distribution of dyad-level female press probabilities",
   vline = 0.5,
-  central_prob = 0.99
-) +
+  central_prob = 0.99) +
   scale_x_continuous(
     limits = c(0, 1),
     breaks = seq(0, 1, by = 0.25),
-    expand = expansion(mult = c(0.01, 0.01))
-  ) +
+    expand = expansion(mult = c(0.01, 0.01))) +
   theme(
-    plot.margin = margin(8, 12, 8, 12)
-  )
+    plot.margin = margin(8, 12, 8, 12))
 
 p_bb_prior_post <-
   (plot_bb_mu / plot_bb_pop) +
@@ -330,16 +302,12 @@ p_bb_prior_post <-
         t = 20,
         r = 35,
         b = 25,
-        l = 35
-      )
-    )
-  )
+        l = 35)))
 
 show_or_save_ggplot(
   plot_png_path = plot_png_path,
   plot_object = p_bb_prior_post,
   width = 9,
   height = 6,
-  dpi = 300
-)
+  dpi = 300)
 ```

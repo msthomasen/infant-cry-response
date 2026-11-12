@@ -24,8 +24,7 @@ dem_solo_analytic <- demographics %>%
   filter(
     setup == "SOLO",
     !excluded,
-    !participant.code %in% c("l6gxo7po", "n0ndmyka")
-  ) # Two participants excluded due to technical errors
+    !participant.code %in% c("l6gxo7po", "n0ndmyka")) # Two participants excluded due to technical errors
 
 solo_ids <- dem_solo_analytic %>%
   distinct(id)

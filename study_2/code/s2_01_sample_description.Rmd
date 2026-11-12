@@ -29,8 +29,7 @@ dem_solo_full %>%
     mean_age = mean(age, na.rm = TRUE),
     sd_age = sd(age, na.rm = TRUE),
     n_female = sum(gender == "Female", na.rm = TRUE),
-    n_male = sum(gender == "Male", na.rm = TRUE)
-  )
+    n_male = sum(gender == "Male", na.rm = TRUE))
 
 dem_solo_full %>%
   count(id, name = "n_people_in_id") %>%
@@ -45,8 +44,7 @@ dem_solo_analytic <- demographics %>%
     setup == "SOLO",
     !excluded,
     participant.code != "l6gxo7po",
-    participant.code != "n0ndmyka"
-  ) # Two participants excluded due to technical errors
+    participant.code != "n0ndmyka") # Two participants excluded due to technical errors
 
 solo_ids <- dem_solo_analytic %>%
   distinct(id)
@@ -84,10 +82,7 @@ dem_solo_analytic %>%
     is_parent = sum(parent == "Yes", na.rm = TRUE),
     have_experience = sum(experience == "Yes", na.rm = TRUE),
     regular_exposure = sum(regular == "Yes", na.rm = TRUE),
-    .groups = "drop"
-  )
-
-
+    .groups = "drop")
 ```
 
 ## Derive performance and sound variables

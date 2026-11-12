@@ -43,12 +43,10 @@ ges_availability <- ges_study %>%
     id,
     participant.code,
     gender,
-    ges_score
-  ) %>%
+    ges_score) %>%
   distinct() %>%
   mutate(
-    ges_available = !is.na(ges_score)
-  )
+    ges_available = !is.na(ges_score))
 
 # GES availability: overall
 ges_availability %>%
@@ -57,8 +55,7 @@ ges_availability %>%
     n_ges_available = sum(ges_available),
     prop_ges_available = mean(ges_available),
     percent_ges_available =
-      100 * mean(ges_available)
-  )
+      100 * mean(ges_available))
 
 # GES availability: by gender
 ges_availability %>%
@@ -69,8 +66,7 @@ ges_availability %>%
     prop_ges_available = mean(ges_available),
     percent_ges_available =
       100 * mean(ges_available),
-    .groups = "drop"
-  )
+    .groups = "drop")
 
 # Participants with valid GES scores
 ges_descriptive_sample <- ges_availability %>%
@@ -81,8 +77,7 @@ ges_descriptive_sample %>%
   summarise(
     n_participants = n(),
     ges_mean = mean(ges_score),
-    ges_sd = sd(ges_score)
-  )
+    ges_sd = sd(ges_score))
 
 # GES descriptives: by gender
 ges_descriptive_sample %>%
@@ -91,8 +86,7 @@ ges_descriptive_sample %>%
     n_participants = n(),
     ges_mean = mean(ges_score),
     ges_sd = sd(ges_score),
-    .groups = "drop"
-  )
+    .groups = "drop")
 ```
 
 ```{r}
@@ -106,8 +100,7 @@ ges_descriptive_sample  %>%
   labs(
     title = "Study 1 GES by gender",
     x = NULL,
-    y = "GES (mean item score)"
-  )
+    y = "GES (mean item score)")
 ```
 ## Paired gender comparison
 ```{r}
@@ -551,7 +544,6 @@ if (!file.exists(plot_png_path)) {
       ncol = 2) +
     theme_minimal() +
     labs(
-      title = "Traceplots: GES and button-press model",
       x = "Iteration",
       y = "Value",
       colour = "Chain")
@@ -611,7 +603,6 @@ show_or_save_ggplot(
   plot_object = p_ges_prior_post,
   width = 9,
   height = 8,
-  dpi = 300
-)
+  dpi = 300)
 ```
 

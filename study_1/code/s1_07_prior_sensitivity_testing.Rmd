@@ -47,8 +47,7 @@ bb_data <- sound_analytic %>%
   mutate(press_number = row_number()) %>%
   ungroup() %>%
   mutate(
-    y = ifelse(responder_gender == "Female", 1, 0)
-  ) %>%
+    y = ifelse(responder_gender == "Female", 1, 0)) %>%
   dplyr::select(id, press_number, y)
 
 bb_wide <- bb_data %>%
@@ -72,9 +71,7 @@ markov_data <- sound_analytic %>%
     response = case_when(
       responder_gender == "none" ~ 1,
       responder_gender == "Male" ~ 2,
-      responder_gender == "Female" ~ 3
-    )
-  ) %>%
+      responder_gender == "Female" ~ 3)) %>%
   dplyr::select(id, event_number, response)
 
 markov_wide <- markov_data %>%
@@ -93,8 +90,7 @@ storage.mode(markov_mat) <- "numeric"
 ```{r}
 data_list_bb <- list(
   N = nrow(bb_mat),
-  y = bb_mat
-)
+  y = bb_mat)
 
 params_bb <- c("mu", "nu", "pop_p", "p", "mu_prior", "nu_prior", "pop_p_prior", "p_prior")
 
@@ -109,8 +105,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_beta_bernoulli_original.r
     n.chains = 12,
     n.iter = 20000,
     n.burnin = 5000,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_bb_orig, file.path(results_path, "s1_prior_sens_beta_bernoulli_original.rds"))
 }
 
@@ -126,8 +121,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_beta_bernoulli_beta22.rds
     n.chains = 12,
     n.iter = 20000,
     n.burnin = 5000,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_bb_beta22, file.path(results_path, "s1_prior_sens_beta_bernoulli_beta22.rds"))
 }
 
@@ -143,8 +137,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_beta_bernoulli_nu20.rds")
     n.chains = 12,
     n.iter = 20000,
     n.burnin = 5000,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_bb_nu20, file.path(results_path, "s1_prior_sens_beta_bernoulli_nu20.rds"))
 }
 ```
@@ -154,22 +147,18 @@ if (file.exists(file.path(results_path, "s1_prior_sens_beta_bernoulli_nu20.rds")
 table_bb_summary <- bind_rows(
   extract_summary(samples_bb_orig, "original", c("mu", "nu")),
   extract_summary(samples_bb_beta22, "beta22", c("mu", "nu")),
-  extract_summary(samples_bb_nu20, "nu20", c("mu", "nu"))
-)
+  extract_summary(samples_bb_nu20, "nu20", c("mu", "nu")))
 
 table_bb_dic <- tibble(
   model = c("original", "beta22", "nu20"),
   dic = c(
     samples_bb_orig$BUGSoutput$DIC,
     samples_bb_beta22$BUGSoutput$DIC,
-    samples_bb_nu20$BUGSoutput$DIC
-  ),
+    samples_bb_nu20$BUGSoutput$DIC),
   pD = c(
     samples_bb_orig$BUGSoutput$pD,
     samples_bb_beta22$BUGSoutput$pD,
-    samples_bb_nu20$BUGSoutput$pD
-  )
-)
+    samples_bb_nu20$BUGSoutput$pD))
 
 kable(table_bb_summary, digits = 3)
 kable(table_bb_dic, digits = 2)
@@ -201,13 +190,11 @@ bb_pp_df <- bind_rows(
   tibble(value = draws_bb_beta22[, "pop_p"], source = "posterior", model = "beta22", parameter = "pop_p"),
   tibble(value = draws_bb_beta22[, "pop_p_prior"], source = "prior", model = "beta22", parameter = "pop_p"),
   tibble(value = draws_bb_nu20[, "pop_p"], source = "posterior", model = "nu20", parameter = "pop_p"),
-  tibble(value = draws_bb_nu20[, "pop_p_prior"], source = "prior", model = "nu20", parameter = "pop_p")
-) %>%
+  tibble(value = draws_bb_nu20[, "pop_p_prior"], source = "prior", model = "nu20", parameter = "pop_p")) %>%
   mutate(
     parameter = factor(parameter, levels = c("mu", "nu", "pop_p"),
                        labels = c("Population mean", "Concentration", "Population distribution draw")),
-    model = factor(model, levels = c("original", "beta22", "nu20"))
-  )
+    model = factor(model, levels = c("original", "beta22", "nu20")))
 
 plot_png_path <- file.path(figure_path, "s1_prior_sens_beta_bernoulli_prior_posterior.png")
 
@@ -223,16 +210,14 @@ if (file.exists(plot_png_path)) {
       x = "Value",
       y = "Density",
       fill = NULL,
-      colour = NULL
-    )
+      colour = NULL)
 
   show_or_save_ggplot(
     plot_png_path = plot_png_path,
     plot_object = p_bb_prior_post_sens,
     width = 10,
     height = 8,
-    dpi = 300
-  )
+    dpi = 300)
 }
 ```
 
@@ -242,8 +227,7 @@ if (file.exists(plot_png_path)) {
 data_list_markov <- list(
   y = markov_mat,
   K = 3,
-  alpha = rep(1, 3)
-)
+  alpha = rep(1, 3))
 
 params_markov <- c(
   "theta0", "theta", "theta_p",
@@ -265,8 +249,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_mult3.rds")))
     n.chains = 12,
     n.iter = 15000,
     n.burnin = 2500,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_markov_mult3, file.path(results_path, "s1_prior_sens_hier_markov_mult3.rds"))
 }
 
@@ -281,8 +264,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_mult1.rds")))
     n.chains = 12,
     n.iter = 15000,
     n.burnin = 2500,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_markov_mult1,file.path(results_path, "s1_prior_sens_hier_markov_mult1.rds"))
 }
 
@@ -297,8 +279,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_mult10.rds"))
     n.chains = 12,
     n.iter = 15000,
     n.burnin = 2500,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_markov_mult10, file.path(results_path, "s1_prior_sens_hier_markov_mult10.rds"))
 }
 
@@ -309,8 +290,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_mult10.rds"))
 table_markov_pool <- bind_rows(
   extract_theta_summary(samples_markov_mult1, "mult1"),
   extract_theta_summary(samples_markov_mult3, "mult3"),
-  extract_theta_summary(samples_markov_mult10, "mult10")
-)
+  extract_theta_summary(samples_markov_mult10, "mult10"))
 
 kable(table_markov_pool, digits = 3)
 ```
@@ -320,14 +300,12 @@ kable(table_markov_pool, digits = 3)
 theta_markov_pool_draws <- bind_rows(
   extract_theta_draws(samples_markov_mult1, "mult1"),
   extract_theta_draws(samples_markov_mult3, "mult3"),
-  extract_theta_draws(samples_markov_mult10, "mult10")
-)
+  extract_theta_draws(samples_markov_mult10, "mult10"))
 
 theta_markov_pool_prior_draws <- bind_rows(
   extract_theta_prior_draws(samples_markov_mult1, "mult1"),
   extract_theta_prior_draws(samples_markov_mult3, "mult3"),
-  extract_theta_prior_draws(samples_markov_mult10, "mult10")
-)
+  extract_theta_prior_draws(samples_markov_mult10, "mult10"))
 
 
 plot_png_path <- file.path(figure_path, "s1_prior_sens_markov_pool_prior_posterior.png")
@@ -339,15 +317,13 @@ if (file.exists(plot_png_path)) {
     geom_density(
       data = theta_markov_pool_draws,
       aes(x = value, fill = to),
-      alpha = 0.35
-    ) +
+      alpha = 0.35) +
     geom_density(
       data = theta_markov_pool_prior_draws,
       aes(x = value, colour = to),
       fill = NA,
       linetype = 2,
-      linewidth = 0.7
-    ) +
+      linewidth = 0.7) +
   
     facet_grid(from ~ model) +
     theme_minimal() +
@@ -355,16 +331,14 @@ if (file.exists(plot_png_path)) {
       title = "Hierarchical Markov: pooling sensitivity",
       subtitle = "Dashed lines = monitored prior draws; filled densities = posterior draws",
       x = "Transition probability",
-      y = "Density"
-    )
+      y = "Density")
 
   show_or_save_ggplot(
     plot_png_path = plot_png_path,
     plot_object = p_markov_pool_overlay,
     width = 10,
     height = 7,
-    dpi = 300
-  )
+    dpi = 300)
 }
 ```
 
@@ -384,16 +358,14 @@ if (file.exists(plot_png_path)) {
     labs(
       title = "Hierarchical first-order Markov: population transition probabilities by pooling prior",
       x = "Previous state",
-      y = "Next state"
-    )
+      y = "Next state")
 
   show_or_save_ggplot(
     plot_png_path = plot_png_path,
     plot_object = p_markov_pool_heatmap,
     width = 9,
     height = 4,
-    dpi = 300
-  )
+    dpi = 300)
 }
 ```
 
@@ -408,34 +380,28 @@ if (file.exists(plot_png_path)) {
   theta_p_post_compare <- bind_rows(
     extract_theta_p_draws(samples_markov_mult1, "mult1"),
     extract_theta_p_draws(samples_markov_mult3, "mult3"),
-    extract_theta_p_draws(samples_markov_mult10, "mult10")
-  ) %>%
+    extract_theta_p_draws(samples_markov_mult10, "mult10")) %>%
     filter(
       dyad %in% selected_dyads,
       (from == "none" & to == "none") |
         (from == "male" & to == "male") |
-        (from == "female" & to == "female")
-    ) %>%
+        (from == "female" & to == "female")) %>%
     mutate(
       transition = paste0(from, " → ", to),
-      source = "posterior"
-    )
+      source = "posterior")
 
   theta_p_prior_compare <- bind_rows(
     extract_theta_p_prior_draws(samples_markov_mult1, "mult1"),
     extract_theta_p_prior_draws(samples_markov_mult3, "mult3"),
-    extract_theta_p_prior_draws(samples_markov_mult10, "mult10")
-  ) %>%
+    extract_theta_p_prior_draws(samples_markov_mult10, "mult10")) %>%
     filter(
       dyad %in% selected_dyads,
       (from == "none" & to == "none") |
         (from == "male" & to == "male") |
-        (from == "female" & to == "female")
-    ) %>%
+        (from == "female" & to == "female")) %>%
     mutate(
       transition = paste0(from, " → ", to),
-      source = "prior"
-    )
+      source = "prior")
 
   p_markov_dyad_sens <- bind_rows(theta_p_post_compare, theta_p_prior_compare) %>%
     ggplot(aes(value, colour = model, fill = model, linetype = source)) +
@@ -449,8 +415,7 @@ if (file.exists(plot_png_path)) {
       y = "Density",
       colour = "Pooling prior",
       fill = "Pooling prior",
-      linetype = NULL
-    ) +
+      linetype = NULL) +
     scale_linetype_manual(values = c(prior = 2, posterior = 1))
 
   show_or_save_ggplot(
@@ -458,8 +423,7 @@ if (file.exists(plot_png_path)) {
     plot_object = p_markov_dyad_sens,
     width = 11,
     height = 7,
-    dpi = 300
-  )
+    dpi = 300)
 }
 ```
 
@@ -469,14 +433,12 @@ if (file.exists(plot_png_path)) {
 data_list_markov_alpha05 <- list(
   y = markov_mat,
   K = 3,
-  alpha = rep(0.5, 3)
-)
+  alpha = rep(0.5, 3))
 
 data_list_markov_alpha2 <- list(
   y = markov_mat,
   K = 3,
-  alpha = rep(2, 3)
-)
+  alpha = rep(2, 3))
 
 
 if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_alpha0_5.rds"))) {
@@ -490,8 +452,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_alpha0_5.rds"
     n.chains = 12,
     n.iter = 15000,
     n.burnin = 2500,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_markov_alpha05, file.path(results_path, "s1_prior_sens_hier_markov_alpha0_5.rds"))
 }
 
@@ -507,8 +468,7 @@ if (file.exists(file.path(results_path, "s1_prior_sens_hier_markov_alpha2.rds"))
     n.chains = 12,
     n.iter = 15000,
     n.burnin = 2500,
-    n.thin = 1
-  )
+    n.thin = 1)
   saveRDS(samples_markov_alpha2, file.path(results_path, "s1_prior_sens_hier_markov_alpha2.rds"))
 }
 
@@ -521,8 +481,7 @@ samples_markov_alpha1 <- samples_markov_mult3
 table_markov_alpha <- bind_rows(
   extract_theta_summary(samples_markov_alpha05, "alpha0.5"),
   extract_theta_summary(samples_markov_alpha1, "alpha1"),
-  extract_theta_summary(samples_markov_alpha2, "alpha2")
-)
+  extract_theta_summary(samples_markov_alpha2, "alpha2"))
 
 kable(table_markov_alpha, digits = 3)
 ```
@@ -537,19 +496,16 @@ if (file.exists(plot_png_path)) {
   theta_markov_alpha_draws <- bind_rows(
     extract_theta_draws(samples_markov_alpha05, "alpha0.5"),
     extract_theta_draws(samples_markov_alpha1, "alpha1"),
-    extract_theta_draws(samples_markov_alpha2, "alpha2")
-  )
+    extract_theta_draws(samples_markov_alpha2, "alpha2"))
   
   theta_markov_alpha_prior_draws <- bind_rows(
     extract_theta_prior_draws(samples_markov_alpha05, "alpha0.5"),
     extract_theta_prior_draws(samples_markov_alpha1, "alpha1"),
-    extract_theta_prior_draws(samples_markov_alpha2, "alpha2")
-  )
+    extract_theta_prior_draws(samples_markov_alpha2, "alpha2"))
   
   p_markov_alpha_overlay <- bind_rows(
     theta_markov_alpha_draws %>% mutate(source = "posterior"),
-    theta_markov_alpha_prior_draws %>% mutate(source = "prior")
-  ) %>%
+    theta_markov_alpha_prior_draws %>% mutate(source = "prior")) %>%
     ggplot(aes(value, colour = model, fill = model, linetype = source)) +
     geom_density(alpha = 0.18, linewidth = 0.4) +
     facet_grid(from ~ to) +
@@ -561,8 +517,7 @@ if (file.exists(plot_png_path)) {
       y = "Density",
       colour = "Prior condition",
       fill = "Prior condition",
-      linetype = NULL
-    ) +
+      linetype = NULL) +
     scale_linetype_manual(values = c(prior = 2, posterior = 1))
 
   show_or_save_ggplot(
@@ -570,7 +525,6 @@ if (file.exists(plot_png_path)) {
     plot_object = p_markov_alpha_overlay,
     width = 10,
     height = 7,
-    dpi = 300
-  )
+    dpi = 300)
 }
 ```

@@ -1,0 +1,1122 @@
+---
+title: "s2_03_bayesian_sound_effect_analysis"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(R2jags)
+library(coda)
+library(patchwork)
+
+main_path <- getwd()
+data_path <- file.path(main_path, "data/cleaned_data")
+study_2_path <- file.path(main_path, "study_2")
+results_path <- file.path(main_path, "results")
+models_path <- file.path(main_path, "models")
+figure_path <- file.path(study_2_path, "figures")
+
+set.seed(7386)
+
+demographics <- read_csv(file.path(data_path, "demographics.csv"), show_col_types = FALSE)
+roundwise_clean <- read_csv(file.path(data_path, "roundwise_clean.csv"), show_col_types = FALSE)
+source(file.path(main_path, "overall_functions.R"))
+
+```
+
+```{r}
+#analytic sample
+dem_solo_analytic <- demographics %>%
+  filter(
+    setup == "SOLO",
+    !excluded,
+    !participant.code %in% c("l6gxo7po", "n0ndmyka")) # Two participants excluded due to technical errors
+
+solo_ids <- dem_solo_analytic %>%
+  distinct(id)
+
+solo_rounds <- roundwise_clean %>%
+  filter(!excluded, setup == "SOLO") %>%
+  semi_join(solo_ids, by = "id")
+```
+
+```{r}
+# Derive duration and sound-condition variables
+solo_rounds <- solo_rounds %>%
+  mutate(
+    gender = factor(gender, levels = c("Female", "Male")),
+    completed = as.integer(completed),
+    secs = as.numeric(secs),
+    log_secs = log(secs + 1),
+    any_sound = as.integer(replace_na(any_stimulus, FALSE)),
+    sound1_lower = str_to_lower(coalesce(sound1_stimulus, "")),
+    sound2_lower = str_to_lower(coalesce(sound2_stimulus, "")),
+    sound3_lower = str_to_lower(coalesce(sound3_stimulus, "")),
+    any_cry = as.integer(
+      str_detect(sound1_lower, "cry|cries") |
+        str_detect(sound2_lower, "cry|cries") |
+        str_detect(sound3_lower, "cry|cries")),
+    any_alarm = as.integer(
+      str_detect(sound1_lower, "alarm") |
+        str_detect(sound2_lower, "alarm") |
+        str_detect(sound3_lower, "alarm")),
+    round_sound_type = case_when(
+      any_sound == 0 ~ "none",
+      any_cry == 1 & any_alarm == 0 ~ "cry_only",
+      any_cry == 0 & any_alarm == 1 ~ "alarm_only",
+      any_cry == 1 & any_alarm == 1 ~ "mixed_cry_alarm"),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "none",
+        "alarm_only",
+        "cry_only",
+        "mixed_cry_alarm"))) %>%
+  filter(round_sound_type != "mixed_cry_alarm") %>%
+  droplevels()
+```
+
+```{r}
+duration_df <- solo_rounds %>%
+  filter(
+    completed == 1,
+    round_sound_type %in% c("none", "alarm_only", "cry_only"),
+    !is.na(log_secs),
+    !is.na(gender),
+    !is.na(participant.code)) %>%
+  droplevels() %>%
+  mutate(
+    gender = relevel(gender, ref = "Female"),
+    round_sound_type = relevel(
+      round_sound_type,
+      ref = "none"))
+```
+
+```{r}
+# Raw and log-transformed answered-round duration distributions
+
+duration_dist_df <- duration_df %>%
+  dplyr::select(
+    secs,
+    log_secs) %>%
+  pivot_longer(
+    cols = c(
+      secs,
+      log_secs),
+    names_to = "scale",
+    values_to = "duration") %>%
+  mutate(
+    scale = factor(
+      scale,
+      levels = c(
+        "secs",
+        "log_secs"),
+      labels = c(
+        "Raw round duration",
+        "Log-transformed round duration")))
+
+p_duration_distributions <- ggplot(
+  duration_dist_df,
+  aes(x = duration)) +
+  geom_histogram(
+    bins = 30) +
+  facet_wrap(
+    ~ scale,
+    scales = "free_x",
+    ncol = 2) +
+  labs(
+    x = NULL,
+    y = "Count") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"))
+
+show_or_save_ggplot(
+  plot_png_path = file.path(
+    figure_path,
+    "s2_duration_raw_log_distributions.png"),
+  plot_object = p_duration_distributions,
+  width = 10,
+  height = 5,
+  dpi = 300)
+```
+
+```{r}
+# Check original factor coding
+duration_df %>%
+  count(gender)
+
+duration_df %>%
+  count(round_sound_type)
+
+duration_df %>%
+  count(gender, round_sound_type)
+
+duration_model_df <- duration_df %>%
+  mutate(
+    gender_num = if_else(gender == "Male", 1L, 0L),
+    sound_num = case_when(
+      round_sound_type == "none" ~ 1L,
+      round_sound_type == "alarm_only" ~ 2L,
+      round_sound_type == "cry_only" ~ 3L),
+    participant_id = as.integer(factor(participant.code)))
+
+# Check numeric coding used in JAGS
+duration_model_df %>%
+  count(gender, gender_num)
+
+duration_model_df %>%
+  count(round_sound_type, sound_num)
+
+duration_model_df %>%
+  count(gender, gender_num, round_sound_type, sound_num)
+```
+
+```{r}
+data_list_duration <- list(
+  N = nrow(duration_model_df),
+  J = n_distinct(duration_model_df$participant_id),
+  y = as.numeric(duration_model_df$log_secs),
+  gender = as.integer(duration_model_df$gender_num),
+  sound = as.integer(duration_model_df$sound_num),
+  participant = as.integer(duration_model_df$participant_id))
+
+str(data_list_duration)
+
+range(data_list_duration$gender)
+range(data_list_duration$sound)
+range(data_list_duration$participant)
+
+data_list_duration$N
+data_list_duration$J
+
+params_duration <- c(
+  # Basic coefficients
+  "b0",
+  "b_gender",
+  "b_sound",
+  "b_sound_gender",
+
+  # Variance components
+  "sigma_participant",
+  "sigma",
+
+  # Condition means
+  "mean_none_female",
+  "mean_alarm_female",
+  "mean_cry_female",
+  "mean_none_male",
+  "mean_alarm_male",
+  "mean_cry_male",
+
+  # Within-gender contrasts
+  "alarm_vs_none_female",
+  "cry_vs_none_female",
+  "alarm_vs_cry_female",
+  "alarm_vs_none_male",
+  "cry_vs_none_male",
+  "alarm_vs_cry_male",
+
+  # Gender differences in sound contrasts
+  "gender_diff_alarm",
+  "gender_diff_cry",
+  "gender_diff_alarm_vs_cry",
+
+  # Prior-reference draws
+  "b_gender_prior",
+  "b_sound_prior",
+  "b_sound_gender_prior",
+
+  # Prior-reference contrasts
+  "alarm_vs_none_female_prior",
+  "cry_vs_none_female_prior",
+  "alarm_vs_cry_female_prior",
+  "alarm_vs_none_male_prior",
+  "cry_vs_none_male_prior",
+  "alarm_vs_cry_male_prior",
+  "gender_diff_alarm_prior",
+  "gender_diff_cry_prior",
+  "gender_diff_alarm_vs_cry_prior",
+  
+  # Posterior predictive check
+  "fit_obs",
+  "fit_rep",
+  "ppc_greater")
+```
+
+```{r}
+samples_path_duration <- file.path(results_path, "s2_jags_duration_sound_gender.rds")
+
+if (file.exists(samples_path_duration)) {
+
+  samples_duration <- readRDS(samples_path_duration)
+
+} else {
+
+  samples_duration <- jags.parallel(
+    data = data_list_duration,
+    inits = NULL,
+    parameters.to.save = params_duration,
+    model.file = file.path(
+      models_path,
+      "s2_sound_effect.bugs"),
+    n.chains = 12,
+    n.iter = 25000,
+    n.burnin = 5000,
+    n.thin = 1)
+
+  saveRDS(
+    samples_duration,
+    samples_path_duration)
+}
+
+samples_duration
+```
+
+```{r}
+# Model convergence summary
+
+duration_model_summary <-
+  samples_duration$BUGSoutput$summary %>%
+  as.data.frame() %>%
+  rownames_to_column("parameter")
+
+key_duration_parameters <- c(
+  "b0",
+  "b_gender",
+  "b_sound[2]",
+  "b_sound[3]",
+  "b_sound_gender[2]",
+  "b_sound_gender[3]",
+  "sigma_participant",
+  "sigma",
+  "gender_diff_alarm",
+  "gender_diff_cry",
+  "gender_diff_alarm_vs_cry")
+
+duration_convergence <- duration_model_summary %>%
+  filter(parameter %in% key_duration_parameters) %>%
+  dplyr::select(
+    parameter,
+    mean,
+    sd,
+    `2.5%`,
+    `50%`,
+    `97.5%`,
+    Rhat,
+    n.eff)
+
+duration_convergence
+
+duration_convergence %>%
+  summarise(
+    max_Rhat = max(Rhat, na.rm = TRUE),
+    min_n_eff = min(n.eff, na.rm = TRUE))
+
+duration_model_summary %>%
+  summarise(
+    max_Rhat = max(Rhat, na.rm = TRUE),
+    min_n_eff = min(n.eff, na.rm = TRUE))
+
+duration_model_summary %>%
+  filter(Rhat > 1.01) %>%
+  arrange(desc(Rhat))
+```
+
+```{r}
+plot_png_path <- file.path(figure_path, "s2_duration_bayesian_traceplots.png")
+
+if (!file.exists(plot_png_path)) {
+
+  mcmc_list_duration <- as.mcmc(samples_duration)
+
+  trace_parameters <- c(
+    "b0",
+    "b_gender",
+    "b_sound[2]",
+    "b_sound[3]",
+    "b_sound_gender[2]",
+    "b_sound_gender[3]",
+    "sigma_participant",
+    "sigma",
+    "gender_diff_cry",
+    "gender_diff_alarm")
+
+  trace_df_duration <- purrr::map2_dfr(
+    mcmc_list_duration,
+    seq_along(mcmc_list_duration),
+    ~ as.data.frame(.x) %>%
+      rownames_to_column("iteration") %>%
+      mutate(
+        iteration = as.integer(iteration),
+        chain = paste0("chain_", .y))) %>%
+    dplyr::select(
+      iteration,
+      chain,
+      all_of(trace_parameters)) %>%
+    group_by(chain) %>%
+    slice(seq(1, n(), by = 20)) %>%
+    ungroup() %>%
+    pivot_longer(
+      cols = all_of(trace_parameters),
+      names_to = "parameter",
+      values_to = "value")
+
+  p_trace_duration <- ggplot(
+    trace_df_duration,
+    aes(
+      x = iteration,
+      y = value,
+      colour = chain)) +
+    geom_line(
+      alpha = 0.6,
+      linewidth = 0.25) +
+    facet_wrap(
+      ~ parameter,
+      scales = "free_y",
+      ncol = 2) +
+    theme_minimal() +
+    labs(
+      x = "Iteration",
+      y = "Value",
+      colour = "Chain")
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path,
+    plot_object = p_trace_duration,
+    width = 11,
+    height = 12,
+    dpi = 300)
+
+} else {
+
+  show_or_save_ggplot(
+    plot_png_path = plot_png_path)
+}
+
+s_duration <- as.matrix(as.mcmc(samples_duration))
+
+```
+
+```{r}
+prior_post_duration <- bind_rows(
+  tibble(
+    parameter = "Male versus female",
+    posterior = s_duration[, "b_gender"],
+    prior = s_duration[, "b_gender_prior"]),
+  tibble(
+    parameter = "Alarm versus no sound",
+    posterior = s_duration[, "b_sound[2]"],
+    prior = s_duration[, "b_sound_prior[2]"]),
+  tibble(
+    parameter = "Infant cry versus no sound",
+    posterior = s_duration[, "b_sound[3]"],
+    prior = s_duration[, "b_sound_prior[3]"]),
+  tibble(
+    parameter = "Alarm × male",
+    posterior = s_duration[, "b_sound_gender[2]"],
+    prior = s_duration[, "b_sound_gender_prior[2]"]),
+  tibble(
+    parameter = "Infant cry × male",
+    posterior = s_duration[, "b_sound_gender[3]"],
+    prior = s_duration[, "b_sound_gender_prior[3]"])) %>%
+  pivot_longer(
+    cols = c(posterior, prior),
+    names_to = "distribution",
+    values_to = "value") %>%
+  mutate(
+    parameter = factor(
+      parameter,
+      levels = c(
+        "Male versus female",
+        "Alarm versus no sound",
+        "Infant cry versus no sound",
+        "Alarm × male",
+        "Infant cry × male")),
+    distribution = factor(
+      distribution,
+      levels = c("prior", "posterior")))
+
+plot_png_path <- file.path(figure_path, "s2_duration_prior_posterior.png")
+
+p_duration_prior_post <- ggplot(
+  prior_post_duration,
+  aes(
+    x = value,
+    colour = distribution,
+    fill = distribution)) +
+  geom_density(
+    alpha = 0.25,
+    linewidth = 0.7) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 3) +
+  facet_wrap(
+    ~ parameter,
+    scales = "free_y",
+    ncol = 2) +
+  theme_minimal(base_size = 12) +
+  labs(
+    x = "Effect on log-transformed round duration",
+    y = "Density",
+    colour = NULL,
+    fill = NULL) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"))
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_duration_prior_post,
+  width = 10,
+  height = 8,
+  dpi = 300)
+```
+
+```{r}
+# Prior and posterior distributions for the key gender-difference contrasts
+
+plot_alarm_gender <- plot_prior_posterior(
+  draws = s_duration,
+  posterior_name = "gender_diff_alarm",
+  prior_name = "gender_diff_alarm_prior",
+  xlab = "Female-male difference: alarm vs. no sound",
+  vline = 0,
+  central_prob = 0.99) +
+  theme(
+    plot.margin = margin(8, 12, 8, 12))
+
+plot_cry_gender <- plot_prior_posterior(
+  draws = s_duration,
+  posterior_name = "gender_diff_cry",
+  prior_name = "gender_diff_cry_prior",
+  xlab = "Female-male difference: infant cry vs. no sound",
+  vline = 0,
+  central_prob = 0.99) +
+  theme(
+    plot.margin = margin(8, 12, 8, 12))
+
+plot_alarm_vs_cry_gender <- plot_prior_posterior(
+  draws = s_duration,
+  posterior_name = "gender_diff_alarm_vs_cry",
+  prior_name = "gender_diff_alarm_vs_cry_prior",
+  xlab = "Female-male difference: alarm vs. infant cry",
+  vline = 0,
+  central_prob = 0.99) +
+  theme(
+    plot.margin = margin(8, 12, 8, 12))
+
+p_duration_gender_prior_post <-
+  (plot_alarm_gender / plot_cry_gender / plot_alarm_vs_cry_gender) +
+  plot_annotation(
+    theme = theme(
+      plot.margin = margin(
+        t = 20,
+        r = 35,
+        b = 25,
+        l = 35)))
+
+plot_png_path <- file.path(figure_path, "s2_duration_gender_difference_prior_posterior.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_duration_gender_prior_post,
+  width = 9,
+  height = 9,
+  dpi = 300)
+```
+
+
+```{r}
+## Extra Bayesian quantities for Table S18 fixed effects
+s18_extra <- tibble(
+  parameter = c(
+    "b_gender",
+    "b_sound[2]",
+    "b_sound[3]",
+    "b_sound_gender[2]",
+    "b_sound_gender[3]"),
+  prior_parameter = c(
+    "b_gender_prior",
+    "b_sound_prior[2]",
+    "b_sound_prior[3]",
+    "b_sound_gender_prior[2]",
+    "b_sound_gender_prior[3]")) %>%
+  mutate(
+    extra = map2(
+      parameter,
+      prior_parameter,
+      function(parameter, prior_parameter) {
+
+        posterior_draws <- s_duration[, parameter]
+        prior_draws <- s_duration[, prior_parameter]
+
+        p_positive <- mean(posterior_draws > 0)
+        p_negative <- mean(posterior_draws < 0)
+
+        if (p_positive >= p_negative) {
+          posterior_probability <- p_positive
+          direction <- "> 0"
+        } else {
+          posterior_probability <- p_negative
+          direction <- "< 0"
+        }
+
+        ER <- posterior_probability /
+          (1 - posterior_probability)
+
+        # Savage-Dickey BF01
+        d_post <- density(posterior_draws)
+        d_prior <- density(prior_draws)
+
+        post_at_0 <- approx(
+          d_post$x,
+          d_post$y,
+          xout = 0)$y
+
+        prior_at_0 <- approx(
+          d_prior$x,
+          d_prior$y,
+          xout = 0)$y
+
+        BF01 <- post_at_0 / prior_at_0
+
+        tibble(
+          direction = direction,
+          posterior_probability = posterior_probability,
+          ER = ER,
+          BF01 = BF01)
+      })) %>%
+  unnest(extra) %>%
+  dplyr::select(
+    parameter,
+    direction,
+    posterior_probability,
+    ER,
+    BF01)
+
+s18_extra
+```
+
+```{r}
+table_s18_fixed <- duration_model_summary %>%
+  filter(
+    parameter %in% c(
+      "b0",
+      "b_gender",
+      "b_sound[2]",
+      "b_sound[3]",
+      "b_sound_gender[2]",
+      "b_sound_gender[3]")) %>%
+  left_join(
+    s18_extra,
+    by = "parameter") %>%
+  mutate(
+    effect = recode(
+      parameter,
+      "b0" = "Intercept",
+      "b_gender" = "Male versus female",
+      "b_sound[2]" = "Alarm versus no sound",
+      "b_sound[3]" = "Infant cry versus no sound",
+      "b_sound_gender[2]" = "Alarm × male",
+      "b_sound_gender[3]" = "Infant cry × male")) %>%
+  dplyr::select(
+    effect,
+    mean,
+    `2.5%`,
+    `97.5%`,
+    Rhat,
+    n.eff,
+    direction,
+    posterior_probability,
+    ER,
+    BF01)
+
+table_s18_fixed
+```
+
+```{r}
+# Extra Bayesian quantities for Table S19 gender-difference contrasts
+# Bayesian evidence quantities for all Table S19 contrasts
+
+get_bayesian_evidence <- function(
+    posterior_draws,
+    prior_draws) {
+
+  p_positive <- mean(posterior_draws > 0)
+  p_negative <- mean(posterior_draws < 0)
+
+  if (p_positive >= p_negative) {
+
+    posterior_probability <- p_positive
+    direction <- "> 0"
+
+  } else {
+
+    posterior_probability <- p_negative
+    direction <- "< 0"
+  }
+
+  ER <- posterior_probability /
+    (1 - posterior_probability)
+
+  # Savage-Dickey BF01
+  d_post <- density(posterior_draws)
+  d_prior <- density(prior_draws)
+
+  post_at_0 <- approx(
+    d_post$x,
+    d_post$y,
+    xout = 0)$y
+
+  prior_at_0 <- approx(
+    d_prior$x,
+    d_prior$y,
+    xout = 0)$y
+
+  BF01 <- post_at_0 / prior_at_0
+
+  tibble(
+    direction = direction,
+    posterior_probability = posterior_probability,
+    ER = ER,
+    BF01 = BF01)
+}
+
+s19_evidence <- tibble(
+  effect = c(
+    "Female: alarm versus no sound",
+    "Male: alarm versus no sound",
+    "Female-male: alarm versus no sound",
+
+    "Female: infant cry versus no sound",
+    "Male: infant cry versus no sound",
+    "Female-male: infant cry versus no sound",
+
+    "Female: alarm versus infant cry",
+    "Male: alarm versus infant cry",
+    "Female-male: alarm versus infant cry"),
+
+  parameter = c(
+    "alarm_vs_none_female",
+    "alarm_vs_none_male",
+    "gender_diff_alarm",
+
+    "cry_vs_none_female",
+    "cry_vs_none_male",
+    "gender_diff_cry",
+
+    "alarm_vs_cry_female",
+    "alarm_vs_cry_male",
+    "gender_diff_alarm_vs_cry"),
+
+  prior_parameter = c(
+    "alarm_vs_none_female_prior",
+    "alarm_vs_none_male_prior",
+    "gender_diff_alarm_prior",
+
+    "cry_vs_none_female_prior",
+    "cry_vs_none_male_prior",
+    "gender_diff_cry_prior",
+
+    "alarm_vs_cry_female_prior",
+    "alarm_vs_cry_male_prior",
+    "gender_diff_alarm_vs_cry_prior")) %>%
+  mutate(
+    evidence = map2(
+      parameter,
+      prior_parameter,
+      ~ get_bayesian_evidence(
+        posterior_draws = s_duration[, .x],
+        prior_draws = s_duration[, .y]))) %>%
+  unnest(evidence)
+
+s19_evidence
+```
+
+```{r}
+table_s19 <- tibble(
+  sound_contrast = c(
+    "Alarm versus no sound",
+    "Infant cry versus no sound",
+    "Alarm versus infant cry"),
+  female_parameter = c(
+    "alarm_vs_none_female",
+    "cry_vs_none_female",
+    "alarm_vs_cry_female"),
+  male_parameter = c(
+    "alarm_vs_none_male",
+    "cry_vs_none_male",
+    "alarm_vs_cry_male"),
+  diff_parameter = c(
+    "gender_diff_alarm",
+    "gender_diff_cry",
+    "gender_diff_alarm_vs_cry")) %>%
+  left_join(
+    duration_model_summary %>%
+      transmute(
+        female_parameter = parameter,
+        female_mean = mean,
+        female_lower = `2.5%`,
+        female_upper = `97.5%`),
+    by = "female_parameter") %>%
+  left_join(
+    duration_model_summary %>%
+      transmute(
+        male_parameter = parameter,
+        male_mean = mean,
+        male_lower = `2.5%`,
+        male_upper = `97.5%`),
+    by = "male_parameter") %>%
+  left_join(
+    duration_model_summary %>%
+      transmute(
+        diff_parameter = parameter,
+        diff_mean = mean,
+        diff_lower = `2.5%`,
+        diff_upper = `97.5%`),
+    by = "diff_parameter") %>%
+  left_join(
+    s19_extra,
+    by = "diff_parameter")
+
+table_s19
+```
+
+
+--------------
+Visualisation
+--------------
+```{r}
+# Colours used throughout the manuscript
+gender_colours <- c(
+  "Female" = "#2A9D8F",
+  "Male" = "#eb8005")
+
+# Participant-level observed mean log durations
+duration_participant_means <- duration_df %>%
+  group_by(
+    participant.code,
+    gender,
+    round_sound_type) %>%
+  summarise(
+    mean_log_secs = mean(
+      log_secs,
+      na.rm = TRUE),
+    .groups = "drop") %>%
+  mutate(
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "none",
+        "alarm_only",
+        "cry_only"),
+      labels = c(
+        "No sound",
+        "Alarm",
+        "Infant cry")))
+```
+
+```{r}
+panel_a_parameters <- tibble(
+  parameter = c(
+    "mean_none_female",
+    "mean_alarm_female",
+    "mean_cry_female",
+    "mean_none_male",
+    "mean_alarm_male",
+    "mean_cry_male"),
+  gender = c(
+    "Female",
+    "Female",
+    "Female",
+    "Male",
+    "Male",
+    "Male"),
+  round_sound_type = c(
+    "No sound",
+    "Alarm",
+    "Infant cry",
+    "No sound",
+    "Alarm",
+    "Infant cry"))
+
+panel_a_summary <- panel_a_parameters %>%
+  mutate(
+    mean = map_dbl(
+      parameter,
+      ~ mean(s_duration[, .x])),
+    lower = map_dbl(
+      parameter,
+      ~ quantile(
+        s_duration[, .x],
+        0.025)),
+    upper = map_dbl(
+      parameter,
+      ~ quantile(
+        s_duration[, .x],
+        0.975)),
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")),
+    round_sound_type = factor(
+      round_sound_type,
+      levels = c(
+        "No sound",
+        "Alarm",
+        "Infant cry")))
+```
+
+```{r}
+duration_dodge <- position_dodge(width = 0.78)
+
+p_panel_a <- ggplot(
+  duration_participant_means,
+  aes(
+    x = round_sound_type,
+    y = mean_log_secs,
+    fill = gender,
+    colour = gender)) +
+  geom_violin(
+    aes(
+      group = interaction(
+        round_sound_type,
+        gender)),
+    position = duration_dodge,
+    width = 0.70,
+    scale = "width",
+    trim = FALSE,
+    alpha = 0.10,
+    linewidth = 0.55) +
+  geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.07,
+      jitter.height = 0,
+      dodge.width = 0.78),
+    size = 1.7,
+    alpha = 0.40) +
+  geom_errorbar(
+    data = panel_a_summary,
+    aes(
+      x = round_sound_type,
+      ymin = lower,
+      ymax = upper,
+      colour = gender),
+    position = duration_dodge,
+    width = 0.10,
+    linewidth = 0.9,
+    inherit.aes = FALSE) +
+  geom_point(
+    data = panel_a_summary,
+    aes(
+      x = round_sound_type,
+      y = mean,
+      colour = gender),
+    position = duration_dodge,
+    size = 3.2,
+    inherit.aes = FALSE) +
+  scale_fill_manual(
+    values = gender_colours) +
+  scale_colour_manual(
+    values = gender_colours) +
+  labs(
+    title = "A.",
+    x = NULL,
+    y = "Log-transformed answered-round duration",
+    fill = NULL,
+    colour = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    legend.position = "top")
+```
+
+```{r}
+panel_b_parameters <- tibble(
+  parameter = c(
+    "alarm_vs_none_female",
+    "cry_vs_none_female",
+    "alarm_vs_cry_female",
+    "alarm_vs_none_male",
+    "cry_vs_none_male",
+    "alarm_vs_cry_male"),
+  gender = c(
+    "Female",
+    "Female",
+    "Female",
+    "Male",
+    "Male",
+    "Male"),
+  contrast = c(
+    "Alarm versus no sound",
+    "Infant cry versus no sound",
+    "Alarm versus infant cry",
+    "Alarm versus no sound",
+    "Infant cry versus no sound",
+    "Alarm versus infant cry"))
+
+panel_b_summary <- panel_b_parameters %>%
+  mutate(
+    mean = map_dbl(
+      parameter,
+      ~ mean(s_duration[, .x])),
+    lower = map_dbl(
+      parameter,
+      ~ quantile(
+        s_duration[, .x],
+        0.025)),
+    upper = map_dbl(
+      parameter,
+      ~ quantile(
+        s_duration[, .x],
+        0.975)),
+    gender = factor(
+      gender,
+      levels = c("Female", "Male")),
+    contrast = factor(
+      contrast,
+      levels = c(
+        "Alarm versus no sound",
+        "Infant cry versus no sound",
+        "Alarm versus infant cry")))
+```
+
+```{r}
+p_panel_b <- ggplot(
+  panel_b_summary,
+  aes(
+    x = mean,
+    y = contrast,
+    colour = gender)) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 2,
+    linewidth = 0.7) +
+  geom_errorbar(
+    aes(
+      xmin = lower,
+      xmax = upper),
+    position = position_dodge(
+      width = 0.45),
+    width = 0,
+    linewidth = 0.9,
+    orientation = "y") +
+  geom_point(
+    position = position_dodge(
+      width = 0.45),
+    size = 3.2) +
+  scale_colour_manual(
+    values = gender_colours) +
+  labs(
+    title = "B.",
+    x = "Estimated difference in log-transformed round duration",
+    y = NULL,
+    colour = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none")
+```
+
+```{r}
+panel_c_parameters <- tibble(
+  parameter = c(
+    "gender_diff_alarm",
+    "gender_diff_cry",
+    "gender_diff_alarm_vs_cry"),
+  contrast = c(
+    "Alarm versus no sound",
+    "Infant cry versus no sound",
+    "Alarm versus infant cry"))
+
+panel_c_summary <- panel_c_parameters %>%
+  mutate(
+    mean = map_dbl(
+      parameter,
+      ~ mean(s_duration[, .x])),
+    lower = map_dbl(
+      parameter,
+      ~ quantile(
+        s_duration[, .x],
+        0.025)),
+    upper = map_dbl(
+      parameter,
+      ~ quantile(
+        s_duration[, .x],
+        0.975)),
+    contrast = factor(
+      contrast,
+      levels = c(
+        "Alarm versus no sound",
+        "Infant cry versus no sound",
+        "Alarm versus infant cry")))
+```
+
+```{r}
+p_panel_c <- ggplot(
+  panel_c_summary,
+  aes(
+    x = mean,
+    y = contrast)) +
+  geom_vline(
+    xintercept = 0,
+    linetype = 2,
+    linewidth = 0.7) +
+  geom_errorbar(
+    aes(
+      xmin = lower,
+      xmax = upper),
+    width = 0,
+    linewidth = 0.9,
+    orientation = "y") +
+  geom_point(
+    size = 3.2) +
+  labs(
+    title = "C.",
+    x = "Female-male difference in estimated sound effect",
+    y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank())
+
+```
+
+```{r}
+p_panel_a <- p_panel_a +
+  guides(
+    fill = "none",
+    colour = guide_legend(
+      override.aes = list(
+        fill = NA,
+        alpha = 1,
+        size = 3)))
+
+p_duration_full <-
+  p_panel_a +
+  (p_panel_b / p_panel_c) +
+  plot_layout(widths = c(1.2, 1))
+
+p_duration_full
+```
+
+```{r}
+plot_png_path <- file.path(figure_path, "s2_duration_full_figure_bayesian.png")
+
+show_or_save_ggplot(
+  plot_png_path = plot_png_path,
+  plot_object = p_duration_full,
+  width = 12,
+  height = 8,
+  dpi = 300)
+```
+

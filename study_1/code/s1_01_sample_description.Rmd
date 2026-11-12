@@ -42,8 +42,7 @@ dem_coop_full %>%
     language_other = sum(language == "Other", na.rm = TRUE),
     is_parent = sum(parent == "Yes", na.rm = TRUE),
     have_experience = sum(experience == "Yes", na.rm = TRUE),
-    regular_exposure = sum(regular == "Yes", na.rm = TRUE)
-  )
+    regular_exposure = sum(regular == "Yes", na.rm = TRUE))
 
 dem_coop_full %>%
   count(id, name = "n_people_in_id") %>%
@@ -75,8 +74,7 @@ dem_coop_analytic %>%
     language_other = sum(language == "Other", na.rm = TRUE),
     is_parent = sum(parent == "Yes", na.rm = TRUE),
     have_experience = sum(experience == "Yes", na.rm = TRUE),
-    regular_exposure = sum(regular == "Yes", na.rm = TRUE)
-  )
+    regular_exposure = sum(regular == "Yes", na.rm = TRUE))
 
 dem_coop_analytic %>%
   count(id, name = "n_people_in_id") %>%
@@ -94,8 +92,7 @@ dem_coop_analytic %>%
     is_parent = sum(parent == "Yes", na.rm = TRUE),
     have_experience = sum(experience == "Yes", na.rm = TRUE),
     regular_exposure = sum(regular == "Yes", na.rm = TRUE),
-    .groups = "drop"
-  )
+    .groups = "drop")
 
 ```
 
